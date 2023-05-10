@@ -6,9 +6,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.ArgumentPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
+import java.util.stream.Collectors;
 
 import static com.parolisoft.dbquerywatch.JsonPathUtils.JSON_PATH_CONFIGURATION;
 
@@ -16,7 +18,7 @@ import static com.parolisoft.dbquerywatch.JsonPathUtils.JSON_PATH_CONFIGURATION;
 class PostgresExecutionPlanAnalyzer implements ExecutionPlanAnalyzer {
 
     private static final String EXPLAIN_PLAN_QUERY = "EXPLAIN (FORMAT JSON) ";
-    private static final List<String> NODE_TYPES = List.of("Seq Scan");
+    private static final List<String> NODE_TYPES = Collections.singletonList("Seq Scan");
 
     private static final JsonPath JSON_PATH;
 
@@ -41,13 +43,13 @@ class PostgresExecutionPlanAnalyzer implements ExecutionPlanAnalyzer {
                 });
         List<Map<String, Object>> plan = JsonPath
                 .parse(planJson, JSON_PATH_CONFIGURATION)
-                .read(JSON_PATH, new TypeRef<>() {});
+                .read(JSON_PATH, new TypeRef<List<Map<String, Object>>>() {});
         return plan.stream()
                 .map(p -> {
                     String objectName = String.valueOf(p.get("Relation Name"));
                     String filter = String.valueOf(p.get("Filter"));
                     return new Issue(IssueType.FULL_ACCESS, objectName, filter);
                 })
-                .toList();
+                .collect(Collectors.toList());
     }
 }

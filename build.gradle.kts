@@ -12,7 +12,7 @@ plugins {
 
 group = "com.parolisoft"
 version = "0.0.1-SNAPSHOT"
-java.sourceCompatibility = JavaVersion.VERSION_17
+java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 apply(plugin = "io.spring.dependency-management")
 
@@ -47,6 +47,7 @@ dependencies {
 tasks.withType<JavaCompile> {
     options.encoding = "UTF-8"
     options.compilerArgs.addAll(listOf(
+        "--release", "8",
         "-Xlint:deprecation",
         "-Xlint:unchecked",
         "-Werror",

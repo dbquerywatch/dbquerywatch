@@ -28,7 +28,7 @@ public class SpringConfiguration {
                 // @see https://arnoldgalovics.com/configuring-a-datasource-proxy-in-spring-boot/
                 final ProxyFactory factory = new ProxyFactory(bean);
                 factory.setProxyTargetClass(true);
-                factory.addAdvice(new SpringConfiguration.ProxyDataSourceInterceptor((DataSource) bean));
+                factory.addAdvice(new SpringConfiguration.ProxyDataSourceInterceptor(beanName, (DataSource) bean));
                 return factory.getProxy();
             }
             return bean;
@@ -43,8 +43,8 @@ public class SpringConfiguration {
     private static class ProxyDataSourceInterceptor implements MethodInterceptor {
         private final DataSource dataSource;
 
-        public ProxyDataSourceInterceptor(final DataSource dataSource) {
-            this.dataSource = ProxyDataSourceBuilder.create("dsproxy", dataSource)
+        public ProxyDataSourceInterceptor(String beanName, final DataSource dataSource) {
+            this.dataSource = ProxyDataSourceBuilder.create(beanName + "-dsproxy", dataSource)
                     .listener(new QueryReporterExecutionListener(dataSource))
                     .build();
         }

@@ -4,16 +4,18 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.ArgumentPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 class OracleExecutionPlanAnalyzer implements ExecutionPlanAnalyzer {
 
     private static final String EXPLAIN_PLAN_QUERY = "EXPLAIN PLAN SET STATEMENT_ID = '%s' FOR %s";
     private static final String GET_PLAN_QUERY = "SELECT * FROM plan_table WHERE statement_id = ?";
-    private static final List<String> OPERATIONS = List.of("INDEX", "MAT_VIEW REWRITE ACCESS", "TABLE ACCESS");
-    private static final List<String> OPTIONS = List.of("FULL SCAN", "FULL SCAN DESCENDING", "FULL");
+    private static final List<String> OPERATIONS = Arrays.asList("INDEX", "MAT_VIEW REWRITE ACCESS", "TABLE ACCESS");
+    private static final List<String> OPTIONS = Arrays.asList("FULL SCAN", "FULL SCAN DESCENDING", "FULL");
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -33,6 +35,6 @@ class OracleExecutionPlanAnalyzer implements ExecutionPlanAnalyzer {
                     String filter = String.valueOf(plan.get("FILTER_PREDICATES"));
                     return new Issue(IssueType.FULL_ACCESS, objectName, filter);
                 })
-                .toList();
+                .collect(Collectors.toList());
     }
 }

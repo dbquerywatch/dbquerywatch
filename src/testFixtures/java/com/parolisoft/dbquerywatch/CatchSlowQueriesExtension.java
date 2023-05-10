@@ -9,6 +9,7 @@ import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.parolisoft.dbquerywatch.ExecutionPlanReporter.BAD_QUERY_MESSAGE;
 import static com.parolisoft.dbquerywatch.ExecutionPlanReporter.jsonMapper;
@@ -37,13 +38,13 @@ public class CatchSlowQueriesExtension implements BeforeEachCallback, AfterEachC
                         .filter(ev -> BAD_QUERY_MESSAGE.equals(ev.getMessage()))
                         .map(ev -> toStringList(ev.getArguments()))
                         .map(args ->
-                                () -> fail("\nQuery: %s\nIssue(s): %s\n".formatted(args.get(0), parseIssueList(args.get(1))))
+                                () -> fail(String.format("\nQuery: %s\nIssue(s): %s\n", args.get(0), parseIssueList(args.get(1))))
                         )
         );
     }
 
     private static List<String> toStringList(List<?> objects) {
-        return objects.stream().map(String::valueOf).toList();
+        return objects.stream().map(String::valueOf).collect(Collectors.toList());
     }
 
     @SneakyThrows
