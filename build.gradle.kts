@@ -4,7 +4,6 @@ import io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension
 
 plugins {
     `java-library`
-    `java-test-fixtures`
 
     id("io.freefair.lombok") version "8.0.1"
     id("org.springframework.boot") version "2.7.11" apply false
@@ -29,19 +28,17 @@ the<DependencyManagementExtension>().apply {
 }
 
 dependencies {
+    api("org.junit.jupiter", "junit-jupiter-api")
+
     implementation("com.fasterxml.jackson.core", "jackson-databind")
     implementation("com.google.code.findbugs", "jsr305", versions.findbugs.get())
     implementation("com.jayway.jsonpath", "json-path")
+    implementation("io.github.hakky54", "logcaptor", versions.logcaptor.get())
     implementation("net.ttddyy", "datasource-proxy", versions.dsproxy.get())
     implementation("org.slf4j", "slf4j-api")
     implementation("org.springframework", "spring-aop")
     implementation("org.springframework", "spring-context")
     implementation("org.springframework", "spring-jdbc")
-
-    testFixturesApi("org.junit.jupiter", "junit-jupiter-api")
-
-    testFixturesImplementation("io.github.hakky54", "logcaptor", versions.logcaptor.get())
-    testFixturesImplementation("com.fasterxml.jackson.core", "jackson-databind")
 }
 
 tasks.withType<JavaCompile> {
