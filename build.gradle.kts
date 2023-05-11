@@ -10,7 +10,7 @@ plugins {
     id("io.freefair.lombok") version "8.0.1"
     id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
     id("org.ajoberstar.grgit") version "4.1.1"
-    id("org.springframework.boot") version "2.7.11" apply false
+    id("org.springframework.boot") version "3.0.6" apply false
 }
 
 apply(plugin = "io.spring.dependency-management")
