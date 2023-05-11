@@ -21,3 +21,5 @@ updates:
         update-types: [ "version-update:semver-major", "version-update:semver-minor" ]
       - dependency-name: "logback-classic"
         update-types: [ "version-update:semver-major", "version-update:semver-minor" ]
+      - dependency-name: "org.springframework.boot"
+        update-types: ["version-update:semver-major"]
