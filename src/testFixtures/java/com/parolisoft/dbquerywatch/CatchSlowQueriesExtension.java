@@ -12,8 +12,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.parolisoft.dbquerywatch.ExecutionPlanReporter.BAD_QUERY_MESSAGE;
+import static com.parolisoft.dbquerywatch.ExecutionPlanReporter.GOOD_QUERY_MESSAGE;
 import static com.parolisoft.dbquerywatch.ExecutionPlanReporter.jsonMapper;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 @Slf4j
@@ -41,6 +43,9 @@ public class CatchSlowQueriesExtension implements BeforeEachCallback, AfterEachC
                                 () -> fail(String.format("\nQuery: %s\nIssue(s): %s\n", args.get(0), parseIssueList(args.get(1))))
                         )
         );
+        boolean anyGoodMessage = events.stream()
+                .anyMatch(ev -> GOOD_QUERY_MESSAGE.equals(ev.getMessage()));
+        assertTrue(anyGoodMessage, "No query was capture and analyzed");
     }
 
     private static List<String> toStringList(List<?> objects) {
