@@ -4,16 +4,29 @@ import io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension
 
 plugins {
     `java-library`
+    `maven-publish`
+    signing
 
     id("io.freefair.lombok") version "8.0.1"
+    id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
+    id("org.ajoberstar.grgit") version "4.1.1"
     id("org.springframework.boot") version "2.7.11" apply false
 }
 
-group = "com.parolisoft"
-version = "0.0.1-SNAPSHOT"
-java.sourceCompatibility = JavaVersion.VERSION_1_8
-
 apply(plugin = "io.spring.dependency-management")
+
+group = "com.parolisoft"
+description = "A test lib to help catch slow queries on integration tests"
+version = grgit.describe(mapOf(
+    "tags" to true,
+    "always" to true,
+)).removePrefix("v")
+println("version: $version")
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    withSourcesJar()
+}
 
 repositories {
     mavenCentral()
@@ -53,4 +66,70 @@ tasks.withType<JavaCompile> {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+val groupId = group.toString()
+val artifactId = name
+
+val ghOrg = "parolisoft"
+val ghRepo = name
+val ghHostAndPath = "github.com/${ghOrg}/${ghRepo}.git"
+
+publishing {
+    publications {
+        create<MavenPublication>(artifactId) {
+            from(components["java"])
+            version = version.toString()
+            pom {
+                name.set(artifactId)
+                description.set(project.description)
+                url.set("https://$ghHostAndPath")
+                licenses {
+                    license {
+                        name.set("MIT License")
+                        url.set("https://opensource.org/licenses/MIT")
+                    }
+                }
+                developers {
+                    developer {
+                        id.set("ebo")
+                        name.set("Eliezio Oliveira")
+                        email.set("eliezio@parolisoft.com")
+                    }
+                }
+                scm {
+                    connection.set("scm:git:$ghHostAndPath")
+                    developerConnection.set("scm:git:ssh://$ghHostAndPath")
+                    url.set("https://$ghHostAndPath")
+                }
+            }
+        }
+    }
+}
+
+signing {
+    val signingKey: String? by project
+    val signingPassword: String? by project
+
+    useInMemoryPgpKeys(signingKey, signingPassword)
+    sign(publishing.publications[artifactId])
+}
+
+nexusPublishing {
+    this.repositories {
+        val sonatypeStagingProfileId: String? by project
+        val sonatypeUsername: String? by project
+        val sonatypePassword: String? by project
+
+        if ((sonatypeStagingProfileId != null) && (sonatypeUsername != null) && (sonatypePassword != null)) {
+            sonatype {
+                nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
+                snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
+
+                stagingProfileId.set(sonatypeStagingProfileId)
+                username.set(sonatypeUsername)
+                password.set(sonatypePassword)
+            }
+        }
+    }
 }
