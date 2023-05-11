@@ -16,7 +16,7 @@ import java.lang.reflect.Method;
 
 
 @Configuration
-public class SpringConfiguration {
+class SpringConfiguration {
 
     @Component
     static class DatasourceProxyBeanPostProcessor implements BeanPostProcessor {

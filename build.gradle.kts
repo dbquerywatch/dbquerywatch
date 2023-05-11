@@ -25,6 +25,7 @@ println("version: $version")
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
+    withJavadocJar()
     withSourcesJar()
 }
 

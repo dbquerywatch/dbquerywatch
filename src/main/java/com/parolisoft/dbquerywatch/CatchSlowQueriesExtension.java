@@ -18,6 +18,10 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
+/**
+ * JUnit 5 extension that checks if any query executed during each test was identified as slow.
+ *
+ */
 @Slf4j
 public class CatchSlowQueriesExtension implements BeforeEachCallback, AfterEachCallback {
 
