@@ -44,6 +44,6 @@ class ExecutionPlanReporter {
     private static String getStatementID() {
         String uuid = UUID.randomUUID().toString();
         // Oracle STATEMENT_ID capacity is 30 chars.
-        return uuid.substring(uuid.length() - (24 - 3));
+        return uuid.substring(uuid.length() - (24 + 3));
     }
 }
