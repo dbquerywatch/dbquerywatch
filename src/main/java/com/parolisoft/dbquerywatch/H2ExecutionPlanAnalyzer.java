@@ -10,6 +10,8 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static java.util.Objects.requireNonNull;
+
 @RequiredArgsConstructor
 class H2ExecutionPlanAnalyzer implements ExecutionPlanAnalyzer {
 
@@ -27,9 +29,9 @@ class H2ExecutionPlanAnalyzer implements ExecutionPlanAnalyzer {
                     rs.next();
                     return rs.getString(1);
                 });
-        Matcher matcher = TABLE_SCAN_PATTERN.matcher(Objects.requireNonNull(commentedPlan));
+        Matcher matcher = TABLE_SCAN_PATTERN.matcher(requireNonNull(commentedPlan));
         List<Issue> issues = new ArrayList<>();
-        if (matcher.find()) {
+        while (matcher.find()) {
             issues.add(new Issue(IssueType.FULL_ACCESS, matcher.group(1), null));
         }
         return issues;
