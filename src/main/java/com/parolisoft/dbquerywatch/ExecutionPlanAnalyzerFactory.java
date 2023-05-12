@@ -16,6 +16,8 @@ class ExecutionPlanAnalyzerFactory {
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
         String productName = JdbcUtils.extractDatabaseMetaData(dataSource, DatabaseMetaData::getDatabaseProductName);
         switch (productName) {
+            case "H2":
+                return new H2ExecutionPlanAnalyzer(jdbcTemplate);
             case "Oracle":
                 return new OracleExecutionPlanAnalyzer(jdbcTemplate);
             case "PostgreSQL":
