@@ -3,6 +3,7 @@ package com.parolisoft.dbquerywatch;
 import net.ttddyy.dsproxy.ExecutionInfo;
 import net.ttddyy.dsproxy.QueryInfo;
 import net.ttddyy.dsproxy.listener.QueryExecutionListener;
+import org.springframework.core.env.Environment;
 
 import javax.sql.DataSource;
 import java.util.Arrays;
@@ -13,8 +14,8 @@ class QueryReporterExecutionListener implements QueryExecutionListener {
 
     private final ExecutionPlanReporter reporter;
 
-    QueryReporterExecutionListener(DataSource dataSource) {
-        this.reporter = ExecutionPlanReporter.create(dataSource);
+    QueryReporterExecutionListener(Environment environment, DataSource dataSource) {
+        this.reporter = ExecutionPlanReporter.create(environment, dataSource);
     }
 
     @Override
