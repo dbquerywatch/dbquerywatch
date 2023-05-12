@@ -13,11 +13,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 @Slf4j
 class ExecutionPlanReporter {
+
+    private static final Pattern NON_ANALYZABLE_STATEMENT = Pattern.compile("^call\\b", Pattern.CASE_INSENSITIVE);
 
     static final String GOOD_QUERY_MESSAGE = "No issues found for query {{}}";
     static final String BAD_QUERY_MESSAGE = "Issues found for query {{}}: {}";
@@ -35,13 +38,13 @@ class ExecutionPlanReporter {
 
     @SneakyThrows
     public void report(String querySql, Supplier<Object[]> parametersSupplier) {
-        if (!log.isDebugEnabled()) {
+        if (!log.isDebugEnabled() || isNonAnalyzableStatement(querySql)) {
             return;
         }
         String statementId = getStatementID();
         List<Issue> issues = analyzer.analyze(statementId, querySql, parametersSupplier.get())
             .stream().filter(issue ->
-                settings.smallTables.stream().noneMatch(s -> tableNameMatch(s, issue.getObjectName()))
+                settings.smallTables.stream().noneMatch(st -> tableNameMatch(st, issue.getObjectName()))
             )
             .collect(Collectors.toList());
         if (issues.isEmpty()) {
@@ -49,6 +52,10 @@ class ExecutionPlanReporter {
         } else {
             log.debug(BAD_QUERY_MESSAGE, querySql, jsonMapper.writeValueAsString(issues));
         }
+    }
+
+    private static boolean isNonAnalyzableStatement(String querySql) {
+        return NON_ANALYZABLE_STATEMENT.matcher(querySql).find();
     }
 
     private static boolean tableNameMatch(String targetName, String issueName) {
