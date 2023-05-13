@@ -1,4 +1,4 @@
-package com.parolisoft.dbquerywatch;
+package com.parolisoft.dbquerywatch.internal;
 
 import net.ttddyy.dsproxy.ExecutionInfo;
 import net.ttddyy.dsproxy.QueryInfo;
@@ -10,11 +10,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
-class QueryReporterExecutionListener implements QueryExecutionListener {
+public class QueryReporterExecutionListener implements QueryExecutionListener {
 
     private final ExecutionPlanReporter reporter;
 
-    QueryReporterExecutionListener(Environment environment, DataSource dataSource) {
+    public QueryReporterExecutionListener(Environment environment, DataSource dataSource) {
         this.reporter = ExecutionPlanReporter.create(environment, dataSource);
     }
 

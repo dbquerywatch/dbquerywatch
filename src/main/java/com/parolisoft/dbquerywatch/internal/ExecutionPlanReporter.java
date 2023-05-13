@@ -1,6 +1,5 @@
-package com.parolisoft.dbquerywatch;
+package com.parolisoft.dbquerywatch.internal;
 
-import com.fasterxml.jackson.databind.json.JsonMapper;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -18,14 +17,12 @@ import java.util.stream.Collectors;
 
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 @Slf4j
-class ExecutionPlanReporter {
+public class ExecutionPlanReporter {
 
     private static final Pattern NON_ANALYZABLE_STATEMENT = Pattern.compile("^call\\b", Pattern.CASE_INSENSITIVE);
 
-    static final String GOOD_QUERY_MESSAGE = "No issues found for query {{}}";
-    static final String BAD_QUERY_MESSAGE = "Issues found for query {{}}: {}";
-
-    static final JsonMapper jsonMapper = new JsonMapper();
+    public static final String GOOD_QUERY_MESSAGE = "No issues found for query {{}}";
+    public static final String BAD_QUERY_MESSAGE = "Issues found for query {{}}: {}";
 
     private final AnalyzerSettings settings;
     private final ExecutionPlanAnalyzer analyzer;
@@ -50,7 +47,7 @@ class ExecutionPlanReporter {
         if (issues.isEmpty()) {
             log.debug(GOOD_QUERY_MESSAGE, querySql);
         } else {
-            log.debug(BAD_QUERY_MESSAGE, querySql, jsonMapper.writeValueAsString(issues));
+            log.debug(BAD_QUERY_MESSAGE, querySql, Issues.toString(issues));
         }
     }
 
@@ -65,11 +62,9 @@ class ExecutionPlanReporter {
         if (issueNameLen == targetNameLen) {
             return targetName.equals(canonicalIssueName);
         } else if (targetNameLen > issueNameLen) {
-            return targetName.substring(targetNameLen - issueNameLen).equals(canonicalIssueName) &&
-                targetName.charAt(targetNameLen - issueNameLen - 1) == '.';
+            return targetName.endsWith("." + canonicalIssueName);
         } else {
-            return canonicalIssueName.substring(issueNameLen - targetNameLen).equals(targetName) &&
-                canonicalIssueName.charAt(issueNameLen - targetNameLen - 1) == '.';
+            return canonicalIssueName.endsWith("." + targetName);
         }
     }
 

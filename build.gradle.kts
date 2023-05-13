@@ -69,6 +69,10 @@ tasks.withType<Test> {
     useJUnitPlatform()
 }
 
+tasks.withType<Javadoc> {
+    exclude("**/internal/*")
+}
+
 val groupId = group.toString()
 val artifactId = name
 

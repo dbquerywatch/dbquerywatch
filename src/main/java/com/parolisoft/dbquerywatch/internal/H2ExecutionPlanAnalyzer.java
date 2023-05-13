@@ -1,4 +1,4 @@
-package com.parolisoft.dbquerywatch;
+package com.parolisoft.dbquerywatch.internal;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.ArgumentPreparedStatementSetter;
@@ -6,7 +6,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

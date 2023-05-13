@@ -1,5 +1,6 @@
 package com.parolisoft.dbquerywatch;
 
+import com.parolisoft.dbquerywatch.internal.QueryReporterExecutionListener;
 import net.ttddyy.dsproxy.support.ProxyDataSource;
 import net.ttddyy.dsproxy.support.ProxyDataSourceBuilder;
 import org.aopalliance.intercept.MethodInterceptor;
@@ -26,7 +27,7 @@ class SpringConfiguration {
         private Environment environment;
 
         @Override
-        public void setEnvironment(Environment environment) {
+        public void setEnvironment(@Nonnull Environment environment) {
             this.environment = environment;
         }
 
@@ -52,7 +53,7 @@ class SpringConfiguration {
             private final DataSource dataSource;
 
             public ProxyDataSourceInterceptor(Environment environment, String beanName, final DataSource dataSource) {
-                this.dataSource = ProxyDataSourceBuilder.create(beanName + "-dsproxy", dataSource)
+                this.dataSource = ProxyDataSourceBuilder.create(beanName + "-proxy", dataSource)
                     .listener(new QueryReporterExecutionListener(environment, dataSource))
                     .build();
             }

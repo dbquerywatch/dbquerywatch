@@ -1,4 +1,4 @@
-package com.parolisoft.dbquerywatch;
+package com.parolisoft.dbquerywatch.internal;
 
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.TypeRef;
@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
-import static com.parolisoft.dbquerywatch.JsonPathUtils.JSON_PATH_CONFIGURATION;
+import static com.parolisoft.dbquerywatch.internal.JsonPathUtils.JSON_PATH_CONFIGURATION;
 
 @RequiredArgsConstructor
 class PostgresExecutionPlanAnalyzer implements ExecutionPlanAnalyzer {

@@ -1,4 +1,4 @@
-package com.parolisoft.dbquerywatch;
+package com.parolisoft.dbquerywatch.internal;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.ArgumentPreparedStatementSetter;

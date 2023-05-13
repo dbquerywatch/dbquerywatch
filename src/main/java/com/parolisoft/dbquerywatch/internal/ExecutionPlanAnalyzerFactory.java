@@ -1,4 +1,4 @@
-package com.parolisoft.dbquerywatch;
+package com.parolisoft.dbquerywatch.internal;
 
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
