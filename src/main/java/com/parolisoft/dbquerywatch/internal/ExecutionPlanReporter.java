@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ExecutionPlanReporter {
 
-    private static final Pattern NON_ANALYZABLE_STATEMENT = Pattern.compile("^call\\b", Pattern.CASE_INSENSITIVE);
+    private static final Pattern ANALYZABLE_COMMANDS = Pattern.compile("^(delete|insert|merge|select|update|with)\\b", Pattern.CASE_INSENSITIVE);
 
     public static final String GOOD_QUERY_MESSAGE = "No issues found for query {{}}";
     public static final String BAD_QUERY_MESSAGE = "Issues found for query {{}}: {}";
@@ -35,7 +35,7 @@ public class ExecutionPlanReporter {
 
     @SneakyThrows
     public void report(String querySql, Supplier<Object[]> parametersSupplier) {
-        if (!log.isDebugEnabled() || isNonAnalyzableStatement(querySql)) {
+        if (!log.isDebugEnabled() || !isAnalyzableStatement(querySql)) {
             return;
         }
         String statementId = getStatementID();
@@ -51,8 +51,8 @@ public class ExecutionPlanReporter {
         }
     }
 
-    private static boolean isNonAnalyzableStatement(String querySql) {
-        return NON_ANALYZABLE_STATEMENT.matcher(querySql).find();
+    private static boolean isAnalyzableStatement(String querySql) {
+        return ANALYZABLE_COMMANDS.matcher(querySql).find();
     }
 
     private static boolean tableNameMatch(String targetName, String issueName) {
