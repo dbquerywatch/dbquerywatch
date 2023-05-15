@@ -18,6 +18,8 @@ class ExecutionPlanAnalyzerFactory {
         switch (productName) {
             case "H2":
                 return new H2ExecutionPlanAnalyzer(name, settings, jdbcTemplate);
+            case "MySQL":
+                return new MySQLExecutionPlanAnalyzer(name, settings, jdbcTemplate);
             case "Oracle":
                 return new OracleExecutionPlanAnalyzer(name, settings, jdbcTemplate);
             case "PostgreSQL":

@@ -8,9 +8,11 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
+import static com.parolisoft.dbquerywatch.internal.JdbcTemplateUtils.queryForString;
 import static com.parolisoft.dbquerywatch.internal.JsonPathUtils.JSON_PATH_CONFIGURATION;
 
 class PostgresExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
@@ -28,31 +30,23 @@ class PostgresExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
         JSON_PATH = JsonPath.compile(sj.toString());
     }
 
-    private final JdbcTemplate jdbcTemplate;
-
     PostgresExecutionPlanAnalyzer(String name, AnalyzerSettings settings, JdbcTemplate jdbcTemplate) {
-        super(name, settings);
-        this.jdbcTemplate = jdbcTemplate;
+        super(name, settings, jdbcTemplate);
     }
 
     @Override
     public List<Issue> analyze(String querySql, List<ParameterSetOperation> operations) {
-        String planJson = jdbcTemplate.query(
-                EXPLAIN_PLAN_QUERY + querySql,
-                ps -> setParameters(ps, operations),
-                rs -> {
-                    rs.next();
-                    return rs.getString(1);
-                });
+        String planJson = queryForString(jdbcTemplate, EXPLAIN_PLAN_QUERY + querySql, operations)
+            .orElseThrow(NoSuchElementException::new);
         List<Map<String, Object>> plan = JsonPath
-                .parse(planJson, JSON_PATH_CONFIGURATION)
-                .read(JSON_PATH, new TypeRef<List<Map<String, Object>>>() {});
+            .parse(planJson, JSON_PATH_CONFIGURATION)
+            .read(JSON_PATH, new TypeRef<List<Map<String, Object>>>() {});
         return plan.stream()
-                .map(p -> {
-                    String objectName = String.valueOf(p.get("Relation Name"));
-                    String filter = String.valueOf(p.get("Filter"));
-                    return new Issue(IssueType.FULL_ACCESS, objectName, filter);
-                })
-                .collect(Collectors.toList());
+            .map(p -> {
+                String objectName = String.valueOf(p.get("Relation Name"));
+                String filter = String.valueOf(p.get("Filter"));
+                return new Issue(IssueType.FULL_ACCESS, objectName, filter);
+            })
+            .collect(Collectors.toList());
     }
 }

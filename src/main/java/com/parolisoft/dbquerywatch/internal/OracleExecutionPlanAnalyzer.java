@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static com.parolisoft.dbquerywatch.internal.JdbcTemplateUtils.queryForString;
+
 class OracleExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
 
     private static final String EXPLAIN_PLAN_QUERY = "EXPLAIN PLAN SET STATEMENT_ID = '%s' FOR %s";
@@ -16,21 +18,14 @@ class OracleExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
     private static final List<String> OPERATIONS = Arrays.asList("INDEX", "MAT_VIEW REWRITE ACCESS", "TABLE ACCESS");
     private static final List<String> OPTIONS = Arrays.asList("FULL SCAN", "FULL SCAN DESCENDING", "FULL");
 
-    private final JdbcTemplate jdbcTemplate;
-
     OracleExecutionPlanAnalyzer(String name, AnalyzerSettings settings, JdbcTemplate jdbcTemplate) {
-        super(name, settings);
-        this.jdbcTemplate = jdbcTemplate;
+        super(name, settings, jdbcTemplate);
     }
 
     public List<Issue> analyze(String querySql, List<ParameterSetOperation> operations) {
         String statementId = getStatementID();
         String explainPlanSql = String.format(EXPLAIN_PLAN_QUERY, statementId, querySql);
-        jdbcTemplate.query(
-                explainPlanSql,
-                ps -> setParameters(ps, operations),
-                (rs, rowNum) -> null
-        );
+        queryForString(jdbcTemplate, explainPlanSql, operations);
         List<Map<String, Object>> plans = jdbcTemplate.queryForList(GET_PLAN_QUERY, statementId);
         return plans.stream()
                 .filter(plan -> OPERATIONS.contains(String.valueOf(plan.get("OPERATION"))) &&
