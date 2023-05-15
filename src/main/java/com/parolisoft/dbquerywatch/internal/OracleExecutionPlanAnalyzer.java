@@ -1,16 +1,15 @@
 package com.parolisoft.dbquerywatch.internal;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.jdbc.core.ArgumentPreparedStatementSetter;
+import net.ttddyy.dsproxy.proxy.ParameterSetOperation;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
-@RequiredArgsConstructor
-class OracleExecutionPlanAnalyzer implements ExecutionPlanAnalyzer {
+class OracleExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
 
     private static final String EXPLAIN_PLAN_QUERY = "EXPLAIN PLAN SET STATEMENT_ID = '%s' FOR %s";
     private static final String GET_PLAN_QUERY = "SELECT * FROM plan_table WHERE statement_id = ?";
@@ -19,11 +18,17 @@ class OracleExecutionPlanAnalyzer implements ExecutionPlanAnalyzer {
 
     private final JdbcTemplate jdbcTemplate;
 
-    public List<Issue> analyze(String statementId, String querySql, Object[] parameters) {
+    OracleExecutionPlanAnalyzer(String name, AnalyzerSettings settings, JdbcTemplate jdbcTemplate) {
+        super(name, settings);
+        this.jdbcTemplate = jdbcTemplate;
+    }
+
+    public List<Issue> analyze(String querySql, List<ParameterSetOperation> operations) {
+        String statementId = getStatementID();
         String explainPlanSql = String.format(EXPLAIN_PLAN_QUERY, statementId, querySql);
         jdbcTemplate.query(
                 explainPlanSql,
-                new ArgumentPreparedStatementSetter(parameters),
+                ps -> setParameters(ps, operations),
                 (rs, rowNum) -> null
         );
         List<Map<String, Object>> plans = jdbcTemplate.queryForList(GET_PLAN_QUERY, statementId);
@@ -36,5 +41,11 @@ class OracleExecutionPlanAnalyzer implements ExecutionPlanAnalyzer {
                     return new Issue(IssueType.FULL_ACCESS, objectName, filter);
                 })
                 .collect(Collectors.toList());
+    }
+
+    private static String getStatementID() {
+        String uuid = UUID.randomUUID().toString();
+        // Oracle STATEMENT_ID capacity is 30 chars.
+        return uuid.substring(uuid.length() - (24 + 3));
     }
 }

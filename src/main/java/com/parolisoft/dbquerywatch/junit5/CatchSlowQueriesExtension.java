@@ -1,7 +1,9 @@
 package com.parolisoft.dbquerywatch.junit5;
 
-import com.parolisoft.dbquerywatch.internal.SlowQueriesCatcher;
+import com.parolisoft.dbquerywatch.internal.ExecutionPlanManager;
+import com.parolisoft.dbquerywatch.internal.TestMethodTracker;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -11,17 +13,20 @@ import org.junit.jupiter.api.extension.ExtensionContext;
  *
  */
 @Slf4j
-public class CatchSlowQueriesExtension implements BeforeEachCallback, AfterEachCallback {
-
-    private final SlowQueriesCatcher catcher = new SlowQueriesCatcher();
+public class CatchSlowQueriesExtension implements BeforeEachCallback, AfterEachCallback, AfterAllCallback {
 
     @Override
     public void beforeEach(ExtensionContext context) {
-        catcher.beforeEach();
+        TestMethodTracker.setCurrentTestMethod(context.getRequiredTestClass(), context.getRequiredTestMethod());
     }
 
     @Override
     public void afterEach(ExtensionContext context) {
-        catcher.afterEach();
+        TestMethodTracker.unsetCurrentTestMethod();
+    }
+
+    @Override
+    public void afterAll(ExtensionContext context) {
+        ExecutionPlanManager.verifyAll(context.getRequiredTestClass());
     }
 }

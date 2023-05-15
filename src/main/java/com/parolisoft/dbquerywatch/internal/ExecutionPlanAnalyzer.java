@@ -1,8 +1,14 @@
 package com.parolisoft.dbquerywatch.internal;
 
+import net.ttddyy.dsproxy.proxy.ParameterSetOperation;
+
 import java.util.List;
 
 interface ExecutionPlanAnalyzer {
 
-    List<Issue> analyze(String statementId, String querySql, Object[] args);
+    String getName();
+
+    AnalyzerSettings getSettings();
+
+    List<Issue> analyze(String querySql, List<ParameterSetOperation> operations);
 }

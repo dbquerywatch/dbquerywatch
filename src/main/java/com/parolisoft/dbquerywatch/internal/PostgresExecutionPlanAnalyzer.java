@@ -2,8 +2,7 @@ package com.parolisoft.dbquerywatch.internal;
 
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.TypeRef;
-import lombok.RequiredArgsConstructor;
-import org.springframework.jdbc.core.ArgumentPreparedStatementSetter;
+import net.ttddyy.dsproxy.proxy.ParameterSetOperation;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.Collections;
@@ -14,8 +13,7 @@ import java.util.stream.Collectors;
 
 import static com.parolisoft.dbquerywatch.internal.JsonPathUtils.JSON_PATH_CONFIGURATION;
 
-@RequiredArgsConstructor
-class PostgresExecutionPlanAnalyzer implements ExecutionPlanAnalyzer {
+class PostgresExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
 
     private static final String EXPLAIN_PLAN_QUERY = "EXPLAIN (FORMAT JSON) ";
     private static final List<String> NODE_TYPES = Collections.singletonList("Seq Scan");
@@ -32,11 +30,16 @@ class PostgresExecutionPlanAnalyzer implements ExecutionPlanAnalyzer {
 
     private final JdbcTemplate jdbcTemplate;
 
+    PostgresExecutionPlanAnalyzer(String name, AnalyzerSettings settings, JdbcTemplate jdbcTemplate) {
+        super(name, settings);
+        this.jdbcTemplate = jdbcTemplate;
+    }
+
     @Override
-    public List<Issue> analyze(String statementId, String querySql, Object[] args) {
+    public List<Issue> analyze(String querySql, List<ParameterSetOperation> operations) {
         String planJson = jdbcTemplate.query(
                 EXPLAIN_PLAN_QUERY + querySql,
-                new ArgumentPreparedStatementSetter(args),
+                ps -> setParameters(ps, operations),
                 rs -> {
                     rs.next();
                     return rs.getString(1);

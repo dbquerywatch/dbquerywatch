@@ -1,6 +1,6 @@
 package com.parolisoft.dbquerywatch;
 
-import com.parolisoft.dbquerywatch.internal.QueryReporterExecutionListener;
+import com.parolisoft.dbquerywatch.internal.QueryExecutionListener;
 import net.ttddyy.dsproxy.support.ProxyDataSource;
 import net.ttddyy.dsproxy.support.ProxyDataSourceBuilder;
 import org.aopalliance.intercept.MethodInterceptor;
@@ -52,14 +52,14 @@ class SpringConfiguration {
         private static class ProxyDataSourceInterceptor implements MethodInterceptor {
             private final DataSource dataSource;
 
-            public ProxyDataSourceInterceptor(Environment environment, String beanName, final DataSource dataSource) {
+            public ProxyDataSourceInterceptor(Environment environment, String beanName, DataSource dataSource) {
                 this.dataSource = ProxyDataSourceBuilder.create(beanName + "-proxy", dataSource)
-                    .listener(new QueryReporterExecutionListener(environment, dataSource))
+                    .listener(new QueryExecutionListener(environment, beanName, dataSource))
                     .build();
             }
 
             @Override
-            public Object invoke(final MethodInvocation invocation) throws Throwable {
+            public Object invoke(MethodInvocation invocation) throws Throwable {
                 final Method proxyMethod = ReflectionUtils.findMethod(this.dataSource.getClass(),
                     invocation.getMethod().getName());
                 if (proxyMethod != null) {

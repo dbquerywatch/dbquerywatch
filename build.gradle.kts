@@ -44,15 +44,15 @@ the<DependencyManagementExtension>().apply {
 dependencies {
     api("org.junit.jupiter", "junit-jupiter-api")
 
-    implementation("com.fasterxml.jackson.core", "jackson-databind")
     implementation("com.google.code.findbugs", "jsr305", versions.findbugs.get())
     implementation("com.jayway.jsonpath", "json-path")
-    implementation("io.github.hakky54", "logcaptor", versions.logcaptor.get())
     implementation("net.ttddyy", "datasource-proxy", versions.dsproxy.get())
     implementation("org.slf4j", "slf4j-api")
     implementation("org.springframework", "spring-aop")
     implementation("org.springframework", "spring-context")
     implementation("org.springframework", "spring-jdbc")
+
+    runtimeOnly("com.fasterxml.jackson.core", "jackson-databind")
 }
 
 tasks.withType<JavaCompile> {

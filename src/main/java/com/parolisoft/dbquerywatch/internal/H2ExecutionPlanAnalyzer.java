@@ -1,7 +1,6 @@
 package com.parolisoft.dbquerywatch.internal;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.jdbc.core.ArgumentPreparedStatementSetter;
+import net.ttddyy.dsproxy.proxy.ParameterSetOperation;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.ArrayList;
@@ -11,23 +10,27 @@ import java.util.regex.Pattern;
 
 import static java.util.Objects.requireNonNull;
 
-@RequiredArgsConstructor
-class H2ExecutionPlanAnalyzer implements ExecutionPlanAnalyzer {
+class H2ExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
 
     private static final String EXPLAIN_PLAN_QUERY = "EXPLAIN PLAN FOR ";
     private static final Pattern TABLE_SCAN_PATTERN = Pattern.compile("/\\* (.*)\\.tableScan \\*/");
 
     private final JdbcTemplate jdbcTemplate;
 
+    H2ExecutionPlanAnalyzer(String name, AnalyzerSettings settings, JdbcTemplate jdbcTemplate) {
+        super(name, settings);
+        this.jdbcTemplate = jdbcTemplate;
+    }
+
     @Override
-    public List<Issue> analyze(String statementId, String querySql, Object[] args) {
+    public List<Issue> analyze(String querySql, List<ParameterSetOperation> operations) {
         String commentedPlan = jdbcTemplate.query(
-                EXPLAIN_PLAN_QUERY + querySql,
-                new ArgumentPreparedStatementSetter(args),
-                rs -> {
-                    rs.next();
-                    return rs.getString(1);
-                });
+            EXPLAIN_PLAN_QUERY + querySql,
+            ps -> setParameters(ps, operations),
+            rs -> {
+                rs.next();
+                return rs.getString(1);
+            });
         Matcher matcher = TABLE_SCAN_PATTERN.matcher(requireNonNull(commentedPlan));
         List<Issue> issues = new ArrayList<>();
         while (matcher.find()) {
