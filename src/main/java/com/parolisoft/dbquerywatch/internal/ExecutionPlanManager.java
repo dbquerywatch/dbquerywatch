@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 public class ExecutionPlanManager {
 
     private static final Pattern ANALYZABLE_COMMANDS = Pattern.compile(
-        "^\\s*(delete|insert|merge|select|update|with)\\b",
+        "^\\s*(delete|insert|merge|replace|select|table|update|with)\\b",
         Pattern.CASE_INSENSITIVE
     );
 
