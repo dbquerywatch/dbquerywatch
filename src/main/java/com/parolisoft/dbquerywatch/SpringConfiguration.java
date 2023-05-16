@@ -52,9 +52,9 @@ class SpringConfiguration {
         private static class ProxyDataSourceInterceptor implements MethodInterceptor {
             private final DataSource dataSource;
 
-            public ProxyDataSourceInterceptor(Environment environment, String beanName, DataSource dataSource) {
-                this.dataSource = ProxyDataSourceBuilder.create(beanName + "-proxy", dataSource)
-                    .listener(new QueryExecutionListener(environment, beanName, dataSource))
+            public ProxyDataSourceInterceptor(Environment environment, String dataSourceName, DataSource dataSource) {
+                this.dataSource = ProxyDataSourceBuilder.create(dataSourceName + "-proxy", dataSource)
+                    .listener(new QueryExecutionListener(environment, dataSourceName, dataSource))
                     .build();
             }
 

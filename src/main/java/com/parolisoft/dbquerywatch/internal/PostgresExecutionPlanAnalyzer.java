@@ -30,8 +30,8 @@ class PostgresExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
         JSON_PATH = JsonPath.compile(sj.toString());
     }
 
-    PostgresExecutionPlanAnalyzer(String name, AnalyzerSettings settings, JdbcTemplate jdbcTemplate) {
-        super(name, settings, jdbcTemplate);
+    PostgresExecutionPlanAnalyzer(String dataSourceName, AnalyzerSettings settings, JdbcTemplate jdbcTemplate) {
+        super(dataSourceName, settings, jdbcTemplate);
     }
 
     @Override
@@ -44,8 +44,8 @@ class PostgresExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
         return plan.stream()
             .map(p -> {
                 String objectName = String.valueOf(p.get("Relation Name"));
-                String filter = String.valueOf(p.get("Filter"));
-                return new Issue(IssueType.FULL_ACCESS, objectName, filter);
+                String predicate = String.valueOf(p.get("Filter"));
+                return new Issue(IssueType.FULL_ACCESS, objectName, predicate);
             })
             .collect(Collectors.toList());
     }

@@ -27,8 +27,8 @@ class MySQLExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
     );
     private static final JsonPath JSON_PATH = JsonPath.compile("$..table");
 
-    MySQLExecutionPlanAnalyzer(String name, AnalyzerSettings settings, JdbcTemplate jdbcTemplate) {
-        super(name, settings, jdbcTemplate);
+    MySQLExecutionPlanAnalyzer(String dataSourceName, AnalyzerSettings settings, JdbcTemplate jdbcTemplate) {
+        super(dataSourceName, settings, jdbcTemplate);
     }
 
     @Override
@@ -45,8 +45,8 @@ class MySQLExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
             .map(p -> {
                 String tableName = String.valueOf(p.get("table_name"));
                 String objectName = tableAliases.getOrDefault(tableName, tableName);
-                String filter = String.valueOf(p.get("attached_condition"));
-                return new Issue(IssueType.FULL_ACCESS, objectName, filter);
+                String predicate = String.valueOf(p.get("attached_condition"));
+                return new Issue(IssueType.FULL_ACCESS, objectName, predicate);
             })
             .collect(Collectors.toList());
     }

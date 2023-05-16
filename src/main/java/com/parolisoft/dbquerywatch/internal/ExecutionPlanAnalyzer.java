@@ -6,7 +6,7 @@ import java.util.List;
 
 interface ExecutionPlanAnalyzer {
 
-    String getName();
+    String getDataSourceName();
 
     AnalyzerSettings getSettings();
 

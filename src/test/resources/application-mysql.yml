@@ -1,0 +1,4 @@
+spring:
+  flyway:
+    placeholders:
+      autoIncrement: 'SERIAL PRIMARY KEY'

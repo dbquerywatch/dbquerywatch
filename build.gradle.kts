@@ -4,9 +4,12 @@ import io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension
 
 plugins {
     `java-library`
+    jacoco
     `maven-publish`
     signing
 
+    id("com.adarshr.test-logger") version "3.2.0"
+    id("com.github.ksoichiro.console.reporter") version "0.6.3"
     id("io.freefair.lombok") version "8.0.1"
     id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
     id("org.ajoberstar.grgit") version "4.1.1"
@@ -38,6 +41,7 @@ val versions = libs.versions
 the<DependencyManagementExtension>().apply {
     imports {
         mavenBom(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES)
+        mavenBom("org.testcontainers:testcontainers-bom:${versions.testcontainers.get()}")
     }
 }
 
@@ -53,20 +57,84 @@ dependencies {
     implementation("org.springframework", "spring-jdbc")
 
     runtimeOnly("com.fasterxml.jackson.core", "jackson-databind")
+
+    testAnnotationProcessor("org.mapstruct", "mapstruct-processor", versions.mapstruct.get())
+
+    testImplementation("ch.qos.logback", "logback-classic")
+    testImplementation("org.junit.platform", "junit-platform-testkit")
+    testImplementation("org.mapstruct", "mapstruct", versions.mapstruct.get())
+    testImplementation("org.springframework.boot", "spring-boot-starter-data-jpa")
+    testImplementation("org.springframework.boot", "spring-boot-starter-data-rest")
+    testImplementation("org.springframework.boot", "spring-boot-starter-test")
+    testImplementation("org.testcontainers", "mysql")
+    testImplementation("org.testcontainers", "oracle-xe")
+    testImplementation("org.testcontainers", "postgresql")
+
+    testRuntimeOnly("com.h2database", "h2")
+    testRuntimeOnly("com.mysql", "mysql-connector-j")
+    testRuntimeOnly("com.oracle.database.jdbc", "ojdbc11")
+    testRuntimeOnly("org.flywaydb", "flyway-core")
+    testRuntimeOnly("org.flywaydb", "flyway-mysql")
+    testRuntimeOnly("org.postgresql", "postgresql")
 }
 
 tasks.withType<JavaCompile> {
     options.encoding = "UTF-8"
     options.compilerArgs.addAll(listOf(
-        "--release", "8",
         "-Xlint:deprecation",
         "-Xlint:unchecked",
         "-Werror",
     ))
 }
 
+tasks.compileJava {
+    options.compilerArgs.addAll(listOf(
+        "--release", "8",
+    ))
+}
+
+tasks.compileTestJava {
+    sourceCompatibility = JavaVersion.VERSION_17.toString()
+    options.compilerArgs.addAll(listOf(
+        "-Amapstruct.suppressGeneratorTimestamp=true",
+        "-Amapstruct.suppressGeneratorVersionInfoComment=true",
+        "-Amapstruct.verbose=false",
+    ))
+}
+
 tasks.withType<Test> {
     useJUnitPlatform()
+    finalizedBy(tasks.reportCoverage)
+}
+
+testlogger {
+    showSkipped = false
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        xml.required.set(true)
+    }
+}
+
+tasks.jacocoTestCoverageVerification {
+    dependsOn(tasks.jacocoTestReport)
+    violationRules {
+        rule {
+            limit {
+                minimum = "0.90".toBigDecimal()
+            }
+        }
+    }
+}
+
+tasks.reportCoverage {
+    dependsOn(tasks.jacocoTestReport)
+}
+
+tasks.check {
+    dependsOn(tasks.jacocoTestCoverageVerification)
 }
 
 tasks.withType<Javadoc> {

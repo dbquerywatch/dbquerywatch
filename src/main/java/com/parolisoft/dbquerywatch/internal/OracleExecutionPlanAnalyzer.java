@@ -18,8 +18,8 @@ class OracleExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
     private static final List<String> OPERATIONS = Arrays.asList("INDEX", "MAT_VIEW REWRITE ACCESS", "TABLE ACCESS");
     private static final List<String> OPTIONS = Arrays.asList("FULL SCAN", "FULL SCAN DESCENDING", "FULL");
 
-    OracleExecutionPlanAnalyzer(String name, AnalyzerSettings settings, JdbcTemplate jdbcTemplate) {
-        super(name, settings, jdbcTemplate);
+    OracleExecutionPlanAnalyzer(String dataSourceName, AnalyzerSettings settings, JdbcTemplate jdbcTemplate) {
+        super(dataSourceName, settings, jdbcTemplate);
     }
 
     public List<Issue> analyze(String querySql, List<ParameterSetOperation> operations) {
@@ -32,8 +32,8 @@ class OracleExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
                         OPTIONS.contains(String.valueOf(plan.get("OPTIONS"))))
                 .map(plan -> {
                     String objectName = String.valueOf(plan.get("OBJECT_NAME"));
-                    String filter = String.valueOf(plan.get("FILTER_PREDICATES"));
-                    return new Issue(IssueType.FULL_ACCESS, objectName, filter);
+                    String predicate = String.valueOf(plan.get("FILTER_PREDICATES"));
+                    return new Issue(IssueType.FULL_ACCESS, objectName, predicate);
                 })
                 .collect(Collectors.toList());
     }

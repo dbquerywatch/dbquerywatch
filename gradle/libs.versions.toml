@@ -2,3 +2,5 @@
 
 dsproxy = "1.9"
 findbugs = "3.0.2"
+mapstruct = "1.5.5.Final"
+testcontainers = "1.18.0"

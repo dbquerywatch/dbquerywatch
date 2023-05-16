@@ -11,9 +11,9 @@ public class QueryExecutionListener implements net.ttddyy.dsproxy.listener.Query
 
     private final ExecutionPlanAnalyzer analyzer;
 
-    public QueryExecutionListener(Environment environment, String name, DataSource dataSource) {
+    public QueryExecutionListener(Environment environment, String dataSourceName, DataSource dataSource) {
         AnalyzerSettings settings = AnalyzerSettings.from(environment);
-        this.analyzer = ExecutionPlanAnalyzerFactory.create(settings, name, dataSource);
+        this.analyzer = ExecutionPlanAnalyzerFactory.create(settings, dataSourceName, dataSource);
     }
 
     @Override
