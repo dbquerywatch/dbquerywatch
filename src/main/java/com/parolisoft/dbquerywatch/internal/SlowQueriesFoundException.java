@@ -3,17 +3,12 @@ package com.parolisoft.dbquerywatch.internal;
 import java.util.Collections;
 import java.util.List;
 
-public class SlowQueriesFoundException extends RuntimeException {
+public class SlowQueriesFoundException extends CleanRuntimeException {
     private final List<SlowQueryReport> slowQueries;
 
     public SlowQueriesFoundException(List<SlowQueryReport> slowQueries) {
         super(describe(slowQueries));
         this.slowQueries = Collections.unmodifiableList(slowQueries);
-    }
-
-    @Override
-    public synchronized Throwable fillInStackTrace() {
-        return this;
     }
 
     public List<SlowQueryReport> getSlowQueries() {
@@ -24,7 +19,7 @@ public class SlowQueriesFoundException extends RuntimeException {
         StringBuilder sb = new StringBuilder("Potential slow queries were found\n");
         for (int i = 0; i < slowQueries.size(); i++) {
             SlowQueryReport slowQuery = slowQueries.get(i);
-            sb.append(String.format("\nQuery %d/%d: ", i + 1, slowQueries.size()))
+            sb.append(String.format("\nQuery %d/%d:\n    ", i + 1, slowQueries.size()))
                 .append(slowQuery.getQuerySql());
             sb.append("\nIssues:");
             for (Issue issue : slowQuery.getIssues()) {
