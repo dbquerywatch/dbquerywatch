@@ -5,6 +5,7 @@ import com.parolisoft.dbquerywatch.internal.SlowQueriesFoundException;
 import com.parolisoft.dbquerywatch.internal.SlowQueryReport;
 import org.assertj.core.api.Condition;
 import org.assertj.core.api.ObjectAssert;
+import org.junit.jupiter.api.Named;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.platform.engine.TestExecutionResult;
@@ -72,13 +73,14 @@ public class CatchSlowQueriesExtensionTest {
             .is(isTableNameCompatibleCondition("articles"));
     }
 
-    private static Stream<Class<? extends IntegrationTests>> testClassProvider() {
+    private static Stream<Named<Class<? extends IntegrationTests>>> testClassProvider() {
         return Stream.of(
-            H2IntegrationTests.class,
-            MySQLIntegrationTests.class,
-            OracleIntegrationTests.class,
-            PostgresIntegrationTests.class
-        );
+                H2IntegrationTests.class,
+                MySQLIntegrationTests.class,
+                OracleIntegrationTests.class,
+                PostgresIntegrationTests.class
+            )
+            .map(cls -> Named.of(cls.getSimpleName(), cls));
     }
 
     @SuppressWarnings("SameParameterValue")
