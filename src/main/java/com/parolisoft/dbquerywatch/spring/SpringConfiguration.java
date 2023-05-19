@@ -1,4 +1,4 @@
-package com.parolisoft.dbquerywatch;
+package com.parolisoft.dbquerywatch.spring;
 
 import com.parolisoft.dbquerywatch.internal.QueryExecutionListener;
 import net.ttddyy.dsproxy.support.ProxyDataSource;

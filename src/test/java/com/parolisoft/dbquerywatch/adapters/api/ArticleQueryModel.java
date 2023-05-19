@@ -15,4 +15,7 @@ class ArticleQueryModel {
 
     @Nullable
     Integer toYear;
+
+    @Nullable
+    String journalName;
 }

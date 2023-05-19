@@ -22,7 +22,7 @@ class H2ExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
     }
 
     @Override
-    public List<Issue> analyze(String querySql, List<ParameterSetOperation> operations) {
+    public AnalysisResult analyze(String querySql, List<ParameterSetOperation> operations) {
         String commentedPlan = queryForString(jdbcTemplate, EXPLAIN_PLAN_QUERY + querySql, operations)
             .orElseThrow(NoSuchElementException::new);
         Matcher matcher = TABLE_SCAN_PATTERN.matcher(requireNonNull(commentedPlan));
@@ -30,6 +30,6 @@ class H2ExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
         while (matcher.find()) {
             issues.add(new Issue(IssueType.FULL_ACCESS, matcher.group(1), null));
         }
-        return issues;
+        return new AnalysisResult(commentedPlan, issues);
     }
 }

@@ -13,4 +13,5 @@ public class Article {
     String authorFullName;
     String authorLastName;
     String title;
+    Journal journal;
 }

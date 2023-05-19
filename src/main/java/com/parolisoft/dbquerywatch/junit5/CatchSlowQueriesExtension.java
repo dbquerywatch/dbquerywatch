@@ -8,12 +8,8 @@ import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
-/**
- * JUnit 5 extension that checks if any query executed during each test was detected as potentially slow.
- *
- */
 @Slf4j
-public class CatchSlowQueriesExtension implements BeforeEachCallback, AfterEachCallback, AfterAllCallback {
+class CatchSlowQueriesExtension implements BeforeEachCallback, AfterEachCallback, AfterAllCallback {
 
     @Override
     public void beforeEach(ExtensionContext context) {

@@ -10,5 +10,5 @@ interface ExecutionPlanAnalyzer {
 
     AnalyzerSettings getSettings();
 
-    List<Issue> analyze(String querySql, List<ParameterSetOperation> operations);
+    AnalysisResult analyze(String querySql, List<ParameterSetOperation> operations);
 }

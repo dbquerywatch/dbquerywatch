@@ -16,4 +16,7 @@ public class ArticleQuery {
 
     @Nullable
     Integer toYear;
+
+    @Nullable
+    String journalName;
 }

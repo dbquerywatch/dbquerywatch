@@ -1,1 +1,1 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.parolisoft.dbquerywatch.SpringConfiguration
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.parolisoft.dbquerywatch.spring.SpringConfiguration

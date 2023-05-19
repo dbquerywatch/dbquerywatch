@@ -22,25 +22,33 @@ class OracleExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
         super(dataSourceName, settings, jdbcTemplate);
     }
 
-    public List<Issue> analyze(String querySql, List<ParameterSetOperation> operations) {
+    public AnalysisResult analyze(String querySql, List<ParameterSetOperation> operations) {
         String statementId = getStatementID();
         String explainPlanSql = String.format(EXPLAIN_PLAN_QUERY, statementId, querySql);
         queryForString(jdbcTemplate, explainPlanSql, operations);
         List<Map<String, Object>> plans = jdbcTemplate.queryForList(GET_PLAN_QUERY, statementId);
-        return plans.stream()
-                .filter(plan -> OPERATIONS.contains(String.valueOf(plan.get("OPERATION"))) &&
-                        OPTIONS.contains(String.valueOf(plan.get("OPTIONS"))))
+        removeNoisyProperties(plans);
+        List<Issue> issues = plans.stream()
+                .filter(plan -> OPERATIONS.contains(getString(plan, "OPERATION")) &&
+                        OPTIONS.contains(getString(plan, "OPTIONS")))
                 .map(plan -> {
-                    String objectName = String.valueOf(plan.get("OBJECT_NAME"));
-                    String predicate = String.valueOf(plan.get("FILTER_PREDICATES"));
+                    String objectName = getString(plan, "OBJECT_NAME");
+                    String predicate = getString(plan, "FILTER_PREDICATES");
                     return new Issue(IssueType.FULL_ACCESS, objectName, predicate);
                 })
                 .collect(Collectors.toList());
+        return new AnalysisResult(toJson(plans), issues);
     }
 
     private static String getStatementID() {
         String uuid = UUID.randomUUID().toString();
         // Oracle STATEMENT_ID capacity is 30 chars.
         return uuid.substring(uuid.length() - (24 + 3));
+    }
+
+    private static void removeNoisyProperties(List<Map<String, Object>> plans) {
+        for (Map<String, Object> plan : plans) {
+            plan.remove("OTHER_XML");
+        }
     }
 }

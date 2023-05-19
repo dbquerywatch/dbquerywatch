@@ -9,6 +9,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
+import javax.persistence.criteria.Join;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
@@ -37,7 +38,8 @@ class DefaultArticleRepository implements ArticleRepository {
     public List<Article> query(ArticleQuery query, Pageable pageable) {
         Specification<JpaArticleEntity> spec = Specification.where(authorLastName(query.getAuthorLastName()))
                 .and(fromYear(query.getFromYear()))
-                .and(toYear(query.getToYear()));
+                .and(toYear(query.getToYear()))
+                .and(journalName(query.getJournalName()));
         return jpaRepository.findAll(spec, pageable).stream()
                 .map(entityMapper::fromJpa)
                 .collect(Collectors.toList());
@@ -68,5 +70,15 @@ class DefaultArticleRepository implements ArticleRepository {
                 root.get("publishedAt"),
                 LocalDate.of(year, Month.DECEMBER, 31)
         );
+    }
+
+    private static @Nullable Specification<JpaArticleEntity> journalName(@Nullable String name) {
+        if (name == null) {
+            return null;
+        }
+        return (root, query, criteriaBuilder) -> {
+            Join<JpaArticleEntity, JpaJournalEntity> journal = root.join("journal");
+            return criteriaBuilder.equal(journal.get("name"), name);
+        };
     }
 }

@@ -32,7 +32,7 @@ class MySQLExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
     }
 
     @Override
-    public List<Issue> analyze(String querySql, List<ParameterSetOperation> operations) {
+    public AnalysisResult analyze(String querySql, List<ParameterSetOperation> operations) {
         Map<String, String> tableAliases = findTableAliases(querySql);
         String planJson = queryForString(jdbcTemplate, EXPLAIN_PLAN_QUERY + querySql, operations)
             .orElseThrow(NoSuchElementException::new);
@@ -40,15 +40,16 @@ class MySQLExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
             .parse(planJson, JSON_PATH_CONFIGURATION)
             .read(JSON_PATH, new TypeRef<List<Map<String, Object>>>() {
             });
-        return plan.stream()
+        List<Issue> issues = plan.stream()
             .filter(p -> "ALL".equals(p.get("access_type")))
             .map(p -> {
-                String tableName = String.valueOf(p.get("table_name"));
+                String tableName = getString(p, "table_name");
                 String objectName = tableAliases.getOrDefault(tableName, tableName);
-                String predicate = String.valueOf(p.get("attached_condition"));
+                String predicate = getString(p, "attached_condition");
                 return new Issue(IssueType.FULL_ACCESS, objectName, predicate);
             })
             .collect(Collectors.toList());
+        return new AnalysisResult(compactJson(planJson), issues);
     }
 
     @Nonnull

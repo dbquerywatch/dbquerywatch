@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import java.time.LocalDate;
 
@@ -26,4 +28,8 @@ class JpaArticleEntity {
 
     @Column(length = 100)
     String title;
+
+    @ManyToOne()
+    @JoinColumn(name = "journal_id", updatable = false, insertable = false)
+    JpaJournalEntity journal;
 }

@@ -1,6 +1,7 @@
 package com.parolisoft.dbquerywatch.internal;
 
 import lombok.Value;
+import lombok.extern.slf4j.Slf4j;
 import net.ttddyy.dsproxy.proxy.ParameterSetOperation;
 
 import java.util.ArrayList;
@@ -16,6 +17,7 @@ import static com.parolisoft.dbquerywatch.internal.SqlUtils.tableNameMatch;
 import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+@Slf4j
 public class ExecutionPlanManager {
 
     private static final Pattern ANALYZABLE_COMMANDS = Pattern.compile(
@@ -58,14 +60,21 @@ public class ExecutionPlanManager {
         List<SlowQueryReport> slowQueries = new ArrayList<>();
         usagesPerAnalyzer.forEach((analyzer, usagesPerSql) ->
             usagesPerSql.forEach((querySql, usages) -> {
-                List<Issue> issues = analyzer.analyze(querySql, firstOrElse(usages.allOperations, emptyList())).stream()
+                AnalysisResult result = analyzer.analyze(querySql, firstOrElse(usages.allOperations, emptyList()));
+                List<Issue> issues = result.getIssues().stream()
                     .filter(issue ->
                         analyzer.getSettings().getSmallTables().stream()
                             .noneMatch(st -> tableNameMatch(st, issue.getObjectName()))
                     )
                     .collect(Collectors.toList());
+                if (log.isDebugEnabled()) {
+                    log.debug("Query SQL: {}", querySql);
+                    log.debug("Execution plan: {}", result.getExecutionPlan());
+                    log.debug("Issues: {}", issues);
+                }
                 if (!issues.isEmpty()) {
-                    slowQueries.add(new SlowQueryReport(analyzer.getDataSourceName(), querySql, usages.methods, issues));
+                    slowQueries.add(new SlowQueryReport(analyzer.getDataSourceName(), querySql,
+                        result.getExecutionPlan(), usages.methods, issues));
                 }
             })
         );

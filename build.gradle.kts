@@ -46,11 +46,18 @@ the<DependencyManagementExtension>().apply {
 }
 
 dependencies {
+    modules {
+        module("com.vaadin.external.google:android-json") {
+            replacedBy("org.json:json", "JSON-java license now is Public Domain")
+        }
+    }
+
     api("org.junit.jupiter", "junit-jupiter-api")
 
     implementation("com.google.code.findbugs", "jsr305", versions.findbugs.get())
     implementation("com.jayway.jsonpath", "json-path")
     implementation("net.ttddyy", "datasource-proxy", versions.dsproxy.get())
+    implementation("org.json", "json", versions.orgjson.get())
     implementation("org.slf4j", "slf4j-api")
     implementation("org.springframework", "spring-aop")
     implementation("org.springframework", "spring-context")
