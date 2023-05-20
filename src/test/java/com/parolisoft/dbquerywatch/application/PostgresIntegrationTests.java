@@ -15,7 +15,13 @@ public class PostgresIntegrationTests extends IntegrationTests {
     @SuppressWarnings("resource")
     static final PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer<>("postgres:15.3-alpine")
         .withTmpFs(Map.of("/var/lib/postgresql/data", "rw"))
-        .withCommand("postgres", "-c", "fsync=off", "-c", "enable_seqscan=off")
+        .withCommand(
+            "postgres",
+            // There is no need to flush data to disk.
+            "-c", "fsync=off",
+            // Discourages the planner from using sequential scan plan types.
+            "-c", "enable_seqscan=off"
+        )
         .withReuse(true);
 
     @DynamicPropertySource
