@@ -1,0 +1,9 @@
+{
+    "properties": [
+        {
+            "name": "dbquerywatch.small-tables",
+            "type": "java.util.List<java.lang.String>",
+            "description": "Ignore FULL TABLE scan analysis for these small tables."
+        }
+    ]
+}

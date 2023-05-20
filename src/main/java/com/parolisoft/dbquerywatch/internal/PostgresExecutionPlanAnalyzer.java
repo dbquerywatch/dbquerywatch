@@ -30,8 +30,8 @@ class PostgresExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
         JSON_PATH = JsonPath.compile(sj.toString());
     }
 
-    PostgresExecutionPlanAnalyzer(String dataSourceName, AnalyzerSettings settings, JdbcTemplate jdbcTemplate) {
-        super(dataSourceName, settings, jdbcTemplate);
+    PostgresExecutionPlanAnalyzer(String dataSourceName, JdbcTemplate jdbcTemplate) {
+        super(dataSourceName, jdbcTemplate);
     }
 
     @Override

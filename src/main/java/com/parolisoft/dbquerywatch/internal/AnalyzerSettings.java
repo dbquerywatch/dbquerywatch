@@ -9,7 +9,7 @@ import java.util.List;
 import static java.util.Collections.emptyList;
 
 @Value
-class AnalyzerSettings {
+public class AnalyzerSettings {
 
     List<String> smallTables;
 

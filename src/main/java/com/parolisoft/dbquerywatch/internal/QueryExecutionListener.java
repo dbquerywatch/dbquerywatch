@@ -2,7 +2,6 @@ package com.parolisoft.dbquerywatch.internal;
 
 import net.ttddyy.dsproxy.ExecutionInfo;
 import net.ttddyy.dsproxy.QueryInfo;
-import org.springframework.core.env.Environment;
 
 import javax.sql.DataSource;
 import java.util.List;
@@ -11,9 +10,8 @@ public class QueryExecutionListener implements net.ttddyy.dsproxy.listener.Query
 
     private final ExecutionPlanAnalyzer analyzer;
 
-    public QueryExecutionListener(Environment environment, String dataSourceName, DataSource dataSource) {
-        AnalyzerSettings settings = AnalyzerSettings.from(environment);
-        this.analyzer = ExecutionPlanAnalyzerFactory.create(settings, dataSourceName, dataSource);
+    public QueryExecutionListener(String dataSourceName, DataSource dataSource) {
+        this.analyzer = ExecutionPlanAnalyzerFactory.create(dataSourceName, dataSource);
     }
 
     @Override

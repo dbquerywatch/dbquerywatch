@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -30,9 +29,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Sql({"/data.sql"})
 @CatchSlowQueries
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@TestPropertySource(properties = {
-    "dbquerywatch.small-tables=journals"
-})
 abstract class IntegrationTests {
 
     @Autowired
@@ -52,10 +48,12 @@ abstract class IntegrationTests {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
             )
-            .andExpect(status().isOk())
-            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$.length()").value(1))
-            .andExpect(jsonPath("$[0].author_full_name").value("David L. Parnas"));
+            .andExpectAll(
+                status().isOk(),
+                content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON),
+                jsonPath("$.length()").value(1),
+                jsonPath("$[0].author_full_name").value("David L. Parnas")
+            );
     }
 
     @Test
@@ -65,14 +63,16 @@ abstract class IntegrationTests {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
             )
-            .andExpect(status().isOk())
-            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$.length()").value(3))
-            .andExpect(jsonPath("$[*].author_last_name").value(containsInAnyOrder(
-                "Parnas",
-                "Diffie-Hellman",
-                "Lamport"
-            )));
+            .andExpectAll(
+                status().isOk(),
+                content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON),
+                jsonPath("$.length()").value(3),
+                jsonPath("$[*].author_last_name").value(containsInAnyOrder(
+                    "Parnas",
+                    "Diffie-Hellman",
+                    "Lamport"
+                ))
+            );
     }
 
     @Test
@@ -80,9 +80,11 @@ abstract class IntegrationTests {
         mvc.perform(get("/journals/{publisher}", "ACM")
                 .accept(MediaType.APPLICATION_JSON)
             )
-            .andExpect(status().isOk())
-            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$.length()").value(1))
-            .andExpect(jsonPath("$[0].name").value("Communications of the ACM"));
+            .andExpectAll(
+                status().isOk(),
+                content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON),
+                jsonPath("$.length()").value(1),
+                jsonPath("$[0].name").value("Communications of the ACM")
+            );
     }
 }

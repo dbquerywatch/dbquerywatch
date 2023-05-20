@@ -26,9 +26,6 @@ abstract class AbstractExecutionPlanAnalyzer implements ExecutionPlanAnalyzer {
     private final String dataSourceName;
 
     @Nonnull
-    private final AnalyzerSettings settings;
-
-    @Nonnull
     protected final JdbcTemplate jdbcTemplate;
 
     @Nullable

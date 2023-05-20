@@ -12,18 +12,18 @@ import java.sql.DatabaseMetaData;
 class ExecutionPlanAnalyzerFactory {
 
     @SneakyThrows
-    ExecutionPlanAnalyzer create(AnalyzerSettings settings, String dataSourceName, DataSource dataSource) {
+    ExecutionPlanAnalyzer create(String dataSourceName, DataSource dataSource) {
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
         String productName = JdbcUtils.extractDatabaseMetaData(dataSource, DatabaseMetaData::getDatabaseProductName);
         switch (productName) {
             case "H2":
-                return new H2ExecutionPlanAnalyzer(dataSourceName, settings, jdbcTemplate);
+                return new H2ExecutionPlanAnalyzer(dataSourceName, jdbcTemplate);
             case "MySQL":
-                return new MySQLExecutionPlanAnalyzer(dataSourceName, settings, jdbcTemplate);
+                return new MySQLExecutionPlanAnalyzer(dataSourceName, jdbcTemplate);
             case "Oracle":
-                return new OracleExecutionPlanAnalyzer(dataSourceName, settings, jdbcTemplate);
+                return new OracleExecutionPlanAnalyzer(dataSourceName, jdbcTemplate);
             case "PostgreSQL":
-                return new PostgresExecutionPlanAnalyzer(dataSourceName, settings, jdbcTemplate);
+                return new PostgresExecutionPlanAnalyzer(dataSourceName, jdbcTemplate);
             default:
                 throw new IllegalArgumentException("Unknown DB product dataSourceName: " + productName);
         }

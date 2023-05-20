@@ -62,12 +62,16 @@ dependencies {
     implementation("org.springframework", "spring-aop")
     implementation("org.springframework", "spring-context")
     implementation("org.springframework", "spring-jdbc")
+    implementation("org.springframework", "spring-test")
 
     runtimeOnly("com.fasterxml.jackson.core", "jackson-databind")
 
     testAnnotationProcessor("org.mapstruct", "mapstruct-processor", versions.mapstruct.get())
 
     testImplementation("ch.qos.logback", "logback-classic")
+    testImplementation("com.google.truth", "truth", versions.truth.get())
+    testImplementation("com.google.truth.extensions", "truth-java8-extension", versions.truth.get())
+    testImplementation("org.junit.jupiter", "junit-jupiter-engine")
     testImplementation("org.junit.platform", "junit-platform-testkit")
     testImplementation("org.mapstruct", "mapstruct", versions.mapstruct.get())
     testImplementation("org.springframework.boot", "spring-boot-starter-data-jpa")

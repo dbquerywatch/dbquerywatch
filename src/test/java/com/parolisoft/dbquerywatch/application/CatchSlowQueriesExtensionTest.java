@@ -1,11 +1,12 @@
 package com.parolisoft.dbquerywatch.application;
 
+import com.google.common.truth.Correspondence;
 import com.parolisoft.dbquerywatch.internal.Issue;
 import com.parolisoft.dbquerywatch.internal.SlowQueriesFoundException;
 import com.parolisoft.dbquerywatch.internal.SlowQueryReport;
-import org.assertj.core.api.Condition;
-import org.assertj.core.api.ObjectAssert;
+import com.parolisoft.dbquerywatch.internal.SqlUtils;
 import org.junit.jupiter.api.Named;
+import org.junit.jupiter.engine.descriptor.ClassTestDescriptor;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.platform.engine.TestExecutionResult;
@@ -14,63 +15,62 @@ import org.junit.platform.testkit.engine.EngineTestKit;
 import org.junit.platform.testkit.engine.Event;
 import org.junit.platform.testkit.engine.EventType;
 
-import javax.annotation.Nonnull;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 
-import static com.parolisoft.dbquerywatch.infra.assertj.ActualReturningAssert.actualReturning;
-import static com.parolisoft.dbquerywatch.internal.SqlUtils.tableNameMatch;
-import static java.util.Collections.singleton;
-import static org.assertj.core.api.Assertions.as;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.InstanceOfAssertFactories.type;
+import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth8.assertThat;
+import static org.junit.platform.engine.TestExecutionResult.Status.FAILED;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
-import static org.junit.platform.testkit.engine.EventConditions.container;
-import static org.junit.platform.testkit.engine.EventConditions.event;
-import static org.junit.platform.testkit.engine.EventConditions.finishedWithFailure;
-import static org.junit.platform.testkit.engine.EventConditions.type;
-import static org.junit.platform.testkit.engine.TestExecutionResultConditions.instanceOf;
 
+@SuppressWarnings("SameParameterValue")
 public class CatchSlowQueriesExtensionTest {
 
     @ParameterizedTest
     @MethodSource("testClassProvider")
-    public void should_catch_slow_queries_for_all_supported_databases(Class<? extends IntegrationTests> testClass) {
-        EngineExecutionResults engineResults = EngineTestKit
-            .engine("junit-jupiter")
-            .configurationParameter("junit.jupiter.conditions.deactivate", "org.junit.*DisabledCondition")
-            .selectors(selectClass(testClass))
-            .execute();
+    public void should_catch_slow_queries_for_all_supported_databases_including_small_tables(Class<? extends IntegrationTests> testClass) {
+        Map<String, String> properties = Map.of(
+            "dbquerywatch.small-tables", ""
+        );
+        List<SlowQueryReport> reports = runIntegrationTests(testClass, properties, 3);
 
-        engineResults
-            .testEvents()
-            .assertStatistics(stats -> stats.started(3).failed(0).succeeded(3));
+        assertThat(reports).hasSize(2);
 
-        Event classFinishedEvent = engineResults
-            .allEvents()
-            .assertThatEvents()
-            .filteredOn(container(testClass))
-            .filteredOn(type(EventType.FINISHED))
-            .singleElement(as(actualReturning(Event.class)))
-            .has(event(finishedWithFailure(instanceOf(SlowQueriesFoundException.class))))
-            .getActual();
+        assertThat(reports.stream().flatMap(rep -> rep.getMethods().stream()))
+            .containsExactly("should_find_article_by_year_range", "should_find_journal_by_publisher");
 
-        ObjectAssert<SlowQueryReport> slowQueryReport =
-            assertThat(classFinishedEvent.getRequiredPayload(TestExecutionResult.class).getThrowable())
-                .get(as(type(SlowQueriesFoundException.class)))
-                .extracting(SlowQueriesFoundException::getSlowQueries)
-                .asList()
-                .singleElement(as(type(SlowQueryReport.class)));
+        List<String> tableNames = reports.stream().flatMap(rep -> rep.getIssues().stream().map(Issue::getObjectName)).toList();
 
-        slowQueryReport
-            .extracting(SlowQueryReport::getMethods)
-            .isEqualTo(singleton("should_find_article_by_year_range"));
+        assertThat(tableNames)
+            .comparingElementsUsing(Correspondence.from(SqlUtils::tableNameMatch, "equivalent table name"))
+            .containsExactly("articles", "journals");
+    }
 
-        slowQueryReport
-            .extracting(SlowQueryReport::getIssues)
-            .asList()
-            .singleElement(as(type(Issue.class)))
-            .extracting(Issue::getObjectName)
-            .is(isTableNameCompatibleCondition("articles"));
+    @ParameterizedTest
+    @MethodSource("testClassProvider")
+    public void should_catch_slow_queries_for_all_supported_databases_excluding_small_tables(Class<? extends IntegrationTests> testClass) {
+        Map<String, String> properties = Map.of(
+            "dbquerywatch.small-tables", "journals"
+        );
+        List<SlowQueryReport> reports = runIntegrationTests(testClass, properties, 3);
+
+        assertThat(reports).hasSize(1);
+
+        SlowQueryReport singleReport = reports.get(0);
+
+        assertThat(singleReport.getMethods())
+            .containsExactly("should_find_article_by_year_range");
+
+        List<String> tableNames = singleReport.getIssues().stream().map(Issue::getObjectName).toList();
+
+        assertThat(tableNames)
+            .hasSize(1);
+
+        assertThat(tableNames)
+            .comparingElementsUsing(Correspondence.from(SqlUtils::tableNameMatch, "equivalent table name"))
+            .containsExactly("articles");
     }
 
     private static Stream<Named<Class<? extends IntegrationTests>>> testClassProvider() {
@@ -83,8 +83,38 @@ public class CatchSlowQueriesExtensionTest {
             .map(cls -> Named.of(cls.getSimpleName(), cls));
     }
 
-    @SuppressWarnings("SameParameterValue")
-    private static Condition<String> isTableNameCompatibleCondition(@Nonnull String targetRef) {
-        return new Condition<>(object -> tableNameMatch(object, targetRef), targetRef);
+    private static List<SlowQueryReport> runIntegrationTests(
+        Class<? extends IntegrationTests> testClass,
+        Map<String, String> properties,
+        int numTests
+    ) {
+        EngineExecutionResults engineResults = EngineTestKit
+            .engine("junit-jupiter")
+            // reactivate @Deactivated classes
+            .configurationParameter("junit.jupiter.conditions.deactivate", "org.junit.*DisabledCondition")
+            .configurationParameters(properties)
+            .selectors(selectClass(testClass))
+            .execute();
+
+        engineResults
+            .testEvents()
+            .assertStatistics(stats -> stats.started(numTests).failed(0).succeeded(numTests));
+
+        List<Event> events = engineResults.containerEvents().stream()
+            .filter(ev -> ev.getTestDescriptor() instanceof ClassTestDescriptor && ev.getType() == EventType.FINISHED)
+            .toList();
+
+        assertThat(events)
+            .hasSize(1);
+
+        Event classFinishedEvent = events.get(0);
+        TestExecutionResult executionResult = classFinishedEvent.getRequiredPayload(TestExecutionResult.class);
+        assertThat(executionResult.getStatus()).isEqualTo(FAILED);
+        Optional<Throwable> throwable = executionResult.getThrowable();
+        assertThat(throwable).isPresent();
+        //noinspection OptionalGetWithoutIsPresent
+        assertThat(throwable.get()).isInstanceOf(SlowQueriesFoundException.class);
+
+        return ((SlowQueriesFoundException) throwable.get()).getSlowQueries();
     }
 }

@@ -6,9 +6,9 @@ import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
-class JsonPathUtils {
+public class JsonPathUtils {
 
-    static final Configuration JSON_PATH_CONFIGURATION = new Configuration.ConfigurationBuilder()
+    public static final Configuration JSON_PATH_CONFIGURATION = new Configuration.ConfigurationBuilder()
             .jsonProvider(new JacksonJsonProvider())
             .mappingProvider(new JacksonMappingProvider())
             .build();

@@ -17,8 +17,8 @@ class H2ExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
     private static final String EXPLAIN_PLAN_QUERY = "EXPLAIN PLAN FOR ";
     private static final Pattern TABLE_SCAN_PATTERN = Pattern.compile("/\\* (.*)\\.tableScan \\*/");
 
-    H2ExecutionPlanAnalyzer(String dataSourceName, AnalyzerSettings settings, JdbcTemplate jdbcTemplate) {
-        super(dataSourceName, settings, jdbcTemplate);
+    H2ExecutionPlanAnalyzer(String dataSourceName, JdbcTemplate jdbcTemplate) {
+        super(dataSourceName, jdbcTemplate);
     }
 
     @Override

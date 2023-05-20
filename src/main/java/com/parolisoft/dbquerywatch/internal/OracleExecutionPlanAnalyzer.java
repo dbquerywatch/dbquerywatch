@@ -18,8 +18,8 @@ class OracleExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
     private static final List<String> OPERATIONS = Arrays.asList("INDEX", "MAT_VIEW REWRITE ACCESS", "TABLE ACCESS");
     private static final List<String> OPTIONS = Arrays.asList("FULL SCAN", "FULL SCAN DESCENDING", "FULL");
 
-    OracleExecutionPlanAnalyzer(String dataSourceName, AnalyzerSettings settings, JdbcTemplate jdbcTemplate) {
-        super(dataSourceName, settings, jdbcTemplate);
+    OracleExecutionPlanAnalyzer(String dataSourceName, JdbcTemplate jdbcTemplate) {
+        super(dataSourceName, jdbcTemplate);
     }
 
     public AnalysisResult analyze(String querySql, List<ParameterSetOperation> operations) {

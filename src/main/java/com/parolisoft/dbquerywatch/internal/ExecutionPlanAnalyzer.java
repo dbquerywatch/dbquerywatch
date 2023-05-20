@@ -8,7 +8,5 @@ interface ExecutionPlanAnalyzer {
 
     String getDataSourceName();
 
-    AnalyzerSettings getSettings();
-
     AnalysisResult analyze(String querySql, List<ParameterSetOperation> operations);
 }

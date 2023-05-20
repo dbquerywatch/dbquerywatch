@@ -27,8 +27,8 @@ class MySQLExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
     );
     private static final JsonPath JSON_PATH = JsonPath.compile("$..table");
 
-    MySQLExecutionPlanAnalyzer(String dataSourceName, AnalyzerSettings settings, JdbcTemplate jdbcTemplate) {
-        super(dataSourceName, settings, jdbcTemplate);
+    MySQLExecutionPlanAnalyzer(String dataSourceName, JdbcTemplate jdbcTemplate) {
+        super(dataSourceName, jdbcTemplate);
     }
 
     @Override

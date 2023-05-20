@@ -54,7 +54,7 @@ public class ExecutionPlanManager {
         });
     }
 
-    public static void verifyAll(Class<?> clazz) {
+    public static void verifyAll(AnalyzerSettings settings, Class<?> clazz) {
         Map<ExecutionPlanAnalyzer, Map<String, QueryUsage>> usagesPerAnalyzer = QUERIES.remove(clazz.getCanonicalName());
         assertNotNull(usagesPerAnalyzer);
         List<SlowQueryReport> slowQueries = new ArrayList<>();
@@ -63,7 +63,7 @@ public class ExecutionPlanManager {
                 AnalysisResult result = analyzer.analyze(querySql, firstOrElse(usages.allOperations, emptyList()));
                 List<Issue> issues = result.getIssues().stream()
                     .filter(issue ->
-                        analyzer.getSettings().getSmallTables().stream()
+                        settings.getSmallTables().stream()
                             .noneMatch(st -> tableNameMatch(st, issue.getObjectName()))
                     )
                     .collect(Collectors.toList());
