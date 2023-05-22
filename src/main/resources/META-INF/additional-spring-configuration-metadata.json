@@ -4,6 +4,11 @@
             "name": "dbquerywatch.small-tables",
             "type": "java.util.List<java.lang.String>",
             "description": "Ignore FULL TABLE scan analysis for these small tables."
+        },
+        {
+            "name": "dbquerywatch.app-base-packages",
+            "type": "java.util.List<java.lang.String>",
+            "description": "Base packages where application-level persistence methods are located."
         }
     ]
 }

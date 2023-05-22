@@ -24,18 +24,17 @@ public class SlowQueriesFoundException extends CleanRuntimeException {
                 .append(heading("Query %d/%d", i + 1, slowQueries.size()))
                 .append("\nSQL:\n    ")
                 .append(slowQuery.getQuerySql());
-            sb.append("\nExecution plan:\n    ")
+            sb.append("\nExecution Plan:\n    ")
                 .append(slowQuery.getExecutionPlan());
             sb.append("\nIssues:");
             for (Issue issue : slowQuery.getIssues()) {
                 sb.append("\n    - ")
                     .append(issue.toString());
             }
-            sb.append("\nTest Methods:");
+            sb.append("\nCaller Methods:");
             for (String methodName : slowQuery.getMethods()) {
                 sb.append("\n    - ")
-                    .append(methodName)
-                    .append("()");
+                    .append(methodName);
             }
             sb.append('\n');
         }
@@ -49,6 +48,6 @@ public class SlowQueriesFoundException extends CleanRuntimeException {
         String title = String.format(fmt, args);
         int padLen = (80 - 7) - title.length();
         //noinspection MalformedFormatString
-        return String.format("~~~~~ %s %." + padLen + "s", title, DASHES);
+        return String.format("%.5s %s %." + padLen + "s", DASHES, title, DASHES);
     }
 }

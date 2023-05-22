@@ -5,6 +5,7 @@ import com.jayway.jsonpath.TypeRef;
 import com.parolisoft.dbquerywatch.internal.AnalyzerSettings;
 import com.parolisoft.dbquerywatch.internal.ExecutionPlanManager;
 import com.parolisoft.dbquerywatch.internal.TestMethodTracker;
+import com.parolisoft.dbquerywatch.internal.spring.AnalyzerSettingsAdapter;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
@@ -55,7 +56,7 @@ class CatchSlowQueriesExtension implements BeforeAllCallback, BeforeEachCallback
     @Override
     public void afterAll(ExtensionContext context) {
         ApplicationContext springContext = SpringExtension.getApplicationContext(context);
-        AnalyzerSettings settings = AnalyzerSettings.from(springContext.getEnvironment());
+        AnalyzerSettings settings = new AnalyzerSettingsAdapter(springContext.getEnvironment());
         ExecutionPlanManager.verifyAll(settings, context.getRequiredTestClass());
     }
 

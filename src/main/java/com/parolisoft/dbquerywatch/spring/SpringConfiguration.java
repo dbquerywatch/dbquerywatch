@@ -1,6 +1,7 @@
 package com.parolisoft.dbquerywatch.spring;
 
 import com.parolisoft.dbquerywatch.internal.QueryExecutionListener;
+import lombok.RequiredArgsConstructor;
 import net.ttddyy.dsproxy.support.ProxyDataSource;
 import net.ttddyy.dsproxy.support.ProxyDataSourceBuilder;
 import org.aopalliance.intercept.MethodInterceptor;
@@ -8,6 +9,7 @@ import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 
@@ -20,7 +22,10 @@ import java.lang.reflect.Method;
 class SpringConfiguration {
 
     @Component
+    @RequiredArgsConstructor
     static class DatasourceProxyBeanPostProcessor implements BeanPostProcessor {
+
+        private final Environment environment;
 
         @Override
         public Object postProcessAfterInitialization(@Nonnull Object bean, @Nonnull String beanName) {
@@ -29,7 +34,7 @@ class SpringConfiguration {
                 // @see https://arnoldgalovics.com/configuring-a-datasource-proxy-in-spring-boot/
                 final ProxyFactory factory = new ProxyFactory(bean);
                 factory.setProxyTargetClass(true);
-                factory.addAdvice(new ProxyDataSourceInterceptor(beanName, (DataSource) bean));
+                factory.addAdvice(new ProxyDataSourceInterceptor(environment, beanName, (DataSource) bean));
                 return factory.getProxy();
             }
             return bean;
@@ -43,9 +48,9 @@ class SpringConfiguration {
         private static class ProxyDataSourceInterceptor implements MethodInterceptor {
             private final DataSource dataSource;
 
-            public ProxyDataSourceInterceptor(String dataSourceName, DataSource dataSource) {
+            private ProxyDataSourceInterceptor(Environment environment, String dataSourceName, DataSource dataSource) {
                 this.dataSource = ProxyDataSourceBuilder.create(dataSourceName + "-proxy", dataSource)
-                    .listener(new QueryExecutionListener(dataSourceName, dataSource))
+                    .listener(new QueryExecutionListener(environment, dataSourceName, dataSource))
                     .build();
             }
 

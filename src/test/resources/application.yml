@@ -1,3 +1,6 @@
+dbquerywatch:
+  app-base-packages: "com.parolisoft.dbquerywatch.adapters.db"
+
 spring:
   flyway:
     placeholders:
