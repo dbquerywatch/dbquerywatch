@@ -1,6 +1,7 @@
 package com.parolisoft.dbquerywatch.internal;
 
 import lombok.Value;
+import lombok.experimental.ExtensionMethod;
 import lombok.extern.slf4j.Slf4j;
 import net.ttddyy.dsproxy.proxy.ParameterSetOperation;
 
@@ -18,6 +19,7 @@ import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @Slf4j
+@ExtensionMethod({String.class, StringUtils.class})
 public class ExecutionPlanManager {
 
     private static final Pattern ANALYZABLE_COMMANDS = Pattern.compile(
@@ -36,6 +38,7 @@ public class ExecutionPlanManager {
 
     public static void afterQuery(
         ExecutionPlanAnalyzer analyzer,
+        AnalyzerSettings settings,
         String querySql,
         List<List<ParameterSetOperation>> parameterSetOperations
     ) {
@@ -48,7 +51,7 @@ public class ExecutionPlanManager {
                 .computeIfAbsent(querySql, k -> new QueryUsage());
             //noinspection SynchronizationOnLocalVariableOrMethodParameter
             synchronized (usages) {
-                usages.methods.add(testMethod.getMethodName());
+                usages.methods.add(findAppCallerMethod(settings.appBasePackages()));
                 usages.allOperations.addAll(parameterSetOperations);
             }
         });
@@ -63,7 +66,7 @@ public class ExecutionPlanManager {
                 AnalysisResult result = analyzer.analyze(querySql, firstOrElse(usages.allOperations, emptyList()));
                 List<Issue> issues = result.getIssues().stream()
                     .filter(issue ->
-                        settings.getSmallTables().stream()
+                        settings.smallTables().stream()
                             .noneMatch(st -> tableNameMatch(st, issue.getObjectName()))
                     )
                     .collect(Collectors.toList());
@@ -81,6 +84,19 @@ public class ExecutionPlanManager {
         if (!slowQueries.isEmpty()) {
             throw new SlowQueriesFoundException(slowQueries);
         }
+    }
+
+    private static String findAppCallerMethod(List<String> basePackages) {
+        StackTraceElement[] stackTraceElements = new RuntimeException().getStackTrace();
+        for (String basePackage : basePackages) {
+            for (int i = stackTraceElements.length - 1; i >= 0; i--) {
+                StackTraceElement st = stackTraceElements[i];
+                if (st.getClassName().prefixedBy(basePackage, '.')) {
+                    return st.getClassName() + "::" + st.getMethodName();
+                }
+            }
+        }
+        return "UNKNOWN";
     }
 
     private static boolean isAnalyzableStatement(String querySql) {

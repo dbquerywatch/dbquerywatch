@@ -39,7 +39,10 @@ public class CatchSlowQueriesExtensionTest {
         assertThat(reports).hasSize(2);
 
         assertThat(reports.stream().flatMap(rep -> rep.getMethods().stream()))
-            .containsExactly("should_find_article_by_year_range", "should_find_journal_by_publisher");
+            .containsExactly(
+                "com.parolisoft.dbquerywatch.adapters.db.DefaultArticleRepository::query",
+                "com.parolisoft.dbquerywatch.adapters.db.DefaultJournalRepository::findByPublisher"
+            );
 
         List<String> tableNames = reports.stream().flatMap(rep -> rep.getIssues().stream().map(Issue::getObjectName)).toList();
 
@@ -61,7 +64,7 @@ public class CatchSlowQueriesExtensionTest {
         SlowQueryReport singleReport = reports.get(0);
 
         assertThat(singleReport.getMethods())
-            .containsExactly("should_find_article_by_year_range");
+            .containsExactly("com.parolisoft.dbquerywatch.adapters.db.DefaultArticleRepository::query");
 
         List<String> tableNames = singleReport.getIssues().stream().map(Issue::getObjectName).toList();
 

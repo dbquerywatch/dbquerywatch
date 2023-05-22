@@ -1,8 +1,10 @@
 package com.parolisoft.dbquerywatch.internal;
 
+import lombok.experimental.ExtensionMethod;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
+@ExtensionMethod({String.class, StringUtils.class})
 public class SqlUtils {
 
     public static boolean tableNameMatch(String targetName, String issueName) {
@@ -13,9 +15,9 @@ public class SqlUtils {
         if (issueNameLen == targetNameLen) {
             return canonicalTargetName.equals(canonicalIssueName);
         } else if (targetNameLen > issueNameLen) {
-            return canonicalTargetName.endsWith("." + canonicalIssueName);
+            return canonicalTargetName.suffixedBy(canonicalIssueName, '.');
         } else {
-            return canonicalIssueName.endsWith("." + canonicalTargetName);
+            return canonicalIssueName.suffixedBy(canonicalTargetName, '.');
         }
     }
 }
