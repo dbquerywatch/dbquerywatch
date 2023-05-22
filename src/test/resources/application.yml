@@ -9,6 +9,9 @@ spring:
     property-naming-strategy: SNAKE_CASE
   jpa:
     generate-ddl: false
+  zipkin:
+    enabled: false
+
 logging:
   level:
     com.parolisoft.dbquerywatch.internal.ExecutionPlanManager: debug

@@ -15,8 +15,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.parolisoft.dbquerywatch.internal.SqlUtils.tableNameMatch;
+import static com.parolisoft.dbquerywatch.internal.ClassHashSupport.classHashId;
 import static java.util.Collections.emptyList;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @Slf4j
 @ExtensionMethod({String.class, StringUtils.class})
@@ -29,7 +29,7 @@ public class ExecutionPlanManager {
 
     // Structured as:
     //
-    // className:
+    // classHashId:
     //   analyzer:
     //     queryDsl:
     //      - operations
@@ -45,8 +45,8 @@ public class ExecutionPlanManager {
         if (!isAnalyzableStatement(querySql)) {
             return;
         }
-        TestMethodTracker.getCurrentTestMethod().ifPresent(testMethod -> {
-            QueryUsage usages = QUERIES.computeIfAbsent(testMethod.getClassName(), k -> new ConcurrentHashMap<>())
+        TraceMdcUtils.getTestClassHashId().ifPresent(classHashId -> {
+            QueryUsage usages = QUERIES.computeIfAbsent(classHashId, k -> new ConcurrentHashMap<>())
                 .computeIfAbsent(analyzer, k -> new ConcurrentHashMap<>())
                 .computeIfAbsent(querySql, k -> new QueryUsage());
             //noinspection SynchronizationOnLocalVariableOrMethodParameter
@@ -58,8 +58,10 @@ public class ExecutionPlanManager {
     }
 
     public static void verifyAll(AnalyzerSettings settings, Class<?> clazz) {
-        Map<ExecutionPlanAnalyzer, Map<String, QueryUsage>> usagesPerAnalyzer = QUERIES.remove(clazz.getCanonicalName());
-        assertNotNull(usagesPerAnalyzer);
+        Map<ExecutionPlanAnalyzer, Map<String, QueryUsage>> usagesPerAnalyzer = QUERIES.remove(classHashId(clazz));
+        if (usagesPerAnalyzer == null) {
+            return;
+        }
         List<SlowQueryReport> slowQueries = new ArrayList<>();
         usagesPerAnalyzer.forEach((analyzer, usagesPerSql) ->
             usagesPerSql.forEach((querySql, usages) -> {
