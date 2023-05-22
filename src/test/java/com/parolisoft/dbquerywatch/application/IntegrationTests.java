@@ -3,6 +3,7 @@ package com.parolisoft.dbquerywatch.application;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import com.parolisoft.dbquerywatch.junit5.CatchSlowQueries;
+import com.parolisoft.dbquerywatch.TestHelpers;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
@@ -11,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
@@ -47,6 +49,7 @@ abstract class IntegrationTests {
                 .content(new JSONObject(Map.of("author_last_name", "Parnas")).toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
+                .headers(buildTraceHeaders())
             )
             .andExpectAll(
                 status().isOk(),
@@ -62,6 +65,7 @@ abstract class IntegrationTests {
                 .content(new JSONObject(Map.of("from_year", 1970, "to_year", 1980)).toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
+                .headers(buildTraceHeaders())
             )
             .andExpectAll(
                 status().isOk(),
@@ -79,6 +83,7 @@ abstract class IntegrationTests {
     void should_find_journal_by_publisher() throws Exception {
         mvc.perform(get("/journals/{publisher}", "ACM")
                 .accept(MediaType.APPLICATION_JSON)
+                .headers(buildTraceHeaders())
             )
             .andExpectAll(
                 status().isOk(),
@@ -86,5 +91,11 @@ abstract class IntegrationTests {
                 jsonPath("$.length()").value(1),
                 jsonPath("$[0].name").value("Communications of the ACM")
             );
+    }
+
+    private HttpHeaders buildTraceHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        TestHelpers.buildTraceHeaders(getClass(), null).forEach(headers::add);
+        return headers;
     }
 }

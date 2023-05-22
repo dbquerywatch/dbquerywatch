@@ -1,7 +1,5 @@
 @file:Suppress("SpellCheckingInspection", "HasPlatformType")
 
-import io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension
-
 plugins {
     `java-library`
     jacoco
@@ -13,10 +11,7 @@ plugins {
     id("io.freefair.lombok") version "8.0.1"
     id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
     id("org.ajoberstar.grgit") version "4.1.1"
-    id("org.springframework.boot") version "2.7.12" apply false
 }
-
-apply(plugin = "io.spring.dependency-management")
 
 group = "com.parolisoft"
 description = "A test lib to help catch slow queries on integration tests"
@@ -38,35 +33,36 @@ repositories {
 
 val versions = libs.versions
 
-the<DependencyManagementExtension>().apply {
-    imports {
-        mavenBom(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES)
-        mavenBom("org.testcontainers:testcontainers-bom:${versions.testcontainers.get()}")
-    }
-}
-
 dependencies {
     modules {
         module("com.vaadin.external.google:android-json") {
-            replacedBy("org.json:json", "JSON-java license now is Public Domain")
+            replacedBy("org.json:json", "JSON-java is now in Public Domain")
         }
     }
 
+    api(platform("org.junit:junit-bom:${versions.junit.get()}"))
+
     api("org.junit.jupiter", "junit-jupiter-api")
 
+    implementation(platform("org.springframework:spring-framework-bom:${versions.spring.get()}"))
+
     implementation("com.google.code.findbugs", "jsr305", versions.findbugs.get())
-    implementation("com.jayway.jsonpath", "json-path")
+    implementation("com.jayway.jsonpath", "json-path", versions.jsonpath.get())
     implementation("net.ttddyy", "datasource-proxy", versions.dsproxy.get())
     implementation("org.json", "json", versions.orgjson.get())
-    implementation("org.slf4j", "slf4j-api")
+    implementation("org.slf4j", "slf4j-api", versions.slf4j.get())
     implementation("org.springframework", "spring-aop")
     implementation("org.springframework", "spring-context")
     implementation("org.springframework", "spring-jdbc")
     implementation("org.springframework", "spring-test")
 
-    runtimeOnly("com.fasterxml.jackson.core", "jackson-databind")
+    runtimeOnly("com.fasterxml.jackson.core", "jackson-databind", versions.jackson.get())
 
     testAnnotationProcessor("org.mapstruct", "mapstruct-processor", versions.mapstruct.get())
+
+    testImplementation(platform("org.springframework.cloud:spring-cloud-sleuth-dependencies:${versions.sleuth.get()}"))
+    testImplementation(platform("org.springframework.boot:spring-boot-dependencies:${versions.boot2.get()}"))
+    testImplementation(platform("org.testcontainers:testcontainers-bom:${versions.testcontainers.get()}"))
 
     testImplementation("ch.qos.logback", "logback-classic")
     testImplementation("com.google.truth", "truth", versions.truth.get())
@@ -87,6 +83,8 @@ dependencies {
     testRuntimeOnly("org.flywaydb", "flyway-core")
     testRuntimeOnly("org.flywaydb", "flyway-mysql")
     testRuntimeOnly("org.postgresql", "postgresql")
+    testRuntimeOnly("org.springframework.cloud", "spring-cloud-starter-sleuth")
+    testRuntimeOnly("org.springframework.cloud", "spring-cloud-sleuth-zipkin")
 }
 
 tasks.withType<JavaCompile> {
