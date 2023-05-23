@@ -1,0 +1,297 @@
+= dbQueryWatch: shift-lefting the detection of slow queries
+:stylesheet: ./golo.css
+:source-highlighter: coderay
+:docinfo: shared
+:icons: font
+:sectnums:
+
+// Variables:
+:gh-org: parolisoft
+:gh-repo: dbquerywatch
+:release-group: com.parolisoft
+:release-module: dbquerywatch
+:release-version: 1.0.0
+
+image:https://img.shields.io/maven-central/v/{release-group}/{release-module}.svg?label=Maven%20Central[Maven Central, link=https://search.maven.org/search?q=g:{release-group}%20AND%20a:{release-module}&core=gav]
+image:https://javadoc.io/badge/{release-group}/{release-module}.svg[Javadocs, link=https://javadoc.io/doc/{release-group}/{release-module}]
+image:https://github.com/{gh-org}/{gh-repo}/actions/workflows/build.yml/badge.svg?branch=master[Build, link=https://github.com/{gh-org}/{gh-repo}/actions/workflows/build.yml]
+
+== What is it?
+
+You may be thinking: _Handling slow queries is straightforward: just utilize a monitoring system to generate alerts whenever a slow query is detected in the database_. Yes, this approach is effective, but at what cost?
+
+Slow system response frustrates users [{counter:ref}], requiring the engineering team to swiftly identify and resolve the problematic query (or queries).
+
+Approximately 50% of SQL performance issues stem from improper utilization of indexes. Fortunately, this kind of problem could be detected in advance by analyzing the execution plan of all database operations executed by the application.
+
+This is where dbQueryWatch comes into play!
+
+== Getting started
+
+=== Prerequisites
+
+* Your application must be based on Spring Boot 2.7 or newer.
+
+* In your integration tests, the persistence layer must be using a database that:
+
+** Is any of the supported databases:
+**** Oracle 9i+
+**** MySQL 5.7+
+**** PostgreSQL 9+
+** Is as production-like as possible;
+** Schema and indexes are in sync with your production environment.
+
+=== Adding the library to your project
+
+The latest version of the library is available from Maven Central repository. Just include it into your *test* scope/configuration as shown below:
+
+For Maven:
+[source,xml,subs="attributes+"]
+.pom.xml
+----
+    <dependency>
+        <groupId>{release-group}</groupId>
+        <artifactId>{release-module}</artifactId>
+        <version>{release-version}</version>
+        <scope>test</scope>
+    </dependency>
+----
+
+For Gradle (Kotlin):
+[source,gradle,subs="attributes+"]
+.build.gradle.kts
+----
+    testImplementation("{release-group}", "{release-module}", "{release-version}")
+----
+
+=== Enabling the detection
+
+At its core, dbQueryWatch needs to link each performed database operation with its respective test class. In typical scenarios, this matching works effortlessly without any additional configuration.
+
+==== Sequential Scenario
+
+Most Spring Boot integration tests are based on MockMvc that operates in a mock servlet environment, allowing test and persistence methods to run on the same thread. In that case, you only need to annotate your integration test classes with https://javadoc.io/doc/{release-group}/{release-module}/latest/com/parolisoft/dbquerywatch/junit5/CatchSlowQueries.html[@CatchSlowQueries] as shown below:
+
+[source,java]
+----
+import com.parolisoft.dbquerywatch.junit5.CatchSlowQueries;
+
+@SpringBootTest
+@CatchSlowQueries  // <1>
+class SomeIntegrationTest {
+
+    // ...
+}
+----
+<1> Enables the slow query detector
+
+==== Concurrent Scenario
+
+Some integration tests uses a real servlet environment that implicitly detaches the execution of test and persistence methods. In such case, dbQueryWatch requires context propagation provided by tracing tools like Spring Sleuth or Micrometer to ensure proper correlation between test classes and database operations. On section <<Appendix-Tracing>> you can find how to easily enable tracing in your project.
+
+[source,java]
+----
+import com.parolisoft.dbquerywatch.junit5.CatchSlowQueries;
+
+import static com.parolisoft.dbquerywatch.spring.SpringTestHelpers.buildTraceHeaders;
+
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
+@CatchSlowQueries  // <1>
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)  // <2>
+class SomeIntegrationTest {
+    @Autowired WebTestClient client;
+
+    @BeforeAll
+    void addTraceHeadersToWebTestClient() {  // <3>
+        this.client = this.client.mutate()
+            .defaultHeaders(headers -> addTraceHeaders(headers, getClass()))
+            .build();
+    }
+
+    // ...
+}
+----
+<1> Enables the slow query detector
+<2> One instance per test class is required
+<3> Includes trace headers on every HTTP request sent by the WebTestClient instance.
+
+=== Understanding the issues report
+
+dbQueryWatch monitors all database operations executed within the scope of a test class. Once all test methods have been executed, dbQueryWatch analyzes the _Execution Plan_ of each operation, and if one or multiple slow operation were detected, the test class fail. It then prints a issues report to the console with the following details:
+
+[cols="1h,4"]
+|===
+|SQL
+|The SQL statement exactly as it was executed by your persistence layer.
+
+|Execution Plan
+|The execution plan as reported by the database.
+
+|Issues
+|A list of issues detected by the analysis.
+
+|Caller Methods
+|A list of application methods which directly or indirectly executed the database operation.
+|===
+
+A sample report taken from an internal test class:
+
+[%noheader,grid=none,cols="1m,1m,97m"]
+|===
+3+|com.parolisoft.dbquerywatch.SlowQueriesFoundException: Potential slow queries were found!
+3+|
+3+l|~~~~~ Query 1/2 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+3+|SQL:
+|
+2+|select jpaarticle0_.id as id1_0_, jpaarticle0_.author_full_name as author_f2_0_, jpaarticle0_.author_last_name as author_l3_0_, jpaarticle0_.journal_id as journal_6_0_, jpaarticle0_.published_at as publishe4_0_, jpaarticle0_.title as title5_0_ from articles jpaarticle0_ where jpaarticle0_.published_at>=? and jpaarticle0_.published_at<=?
+3+|Execution Plan:
+|
+2+|{"query_block":{"cost_info":{"query_cost":"0.35"},"select_id":1,"table":{"attached_condition":"((`test`.`jpaarticle0_`.`published_at` >= DATE'1970-01-01') and (`test`.`jpaarticle0_`.`published_at` <= DATE'1980-12-31'))","access_type":"ALL","rows_produced_per_join":1,"filtered":"100.00","cost_info":{"eval_cost":"0.10","read_cost":"0.25","prefix_cost":"0.35","data_read_per_join":"2K"},"used_columns":["id","published_at","author_full_name","author_last_name","title","journal_id"],"rows_examined_per_scan":1,"table_name":"jpaarticle0_"}}}
+3+|Issues:
+|
+|-
+|[Issue(type=FULL_ACCESS, objectName=articles, predicate=((`test`.`jpaarticle0_`.`published_at` >= DATE'1970-01-01') and (`test`.`jpaarticle0_`.`published_at` <= DATE'1980-12-31')))]
+3+|Caller Methods:
+|
+|-
+|com.parolisoft.dbquerywatch.adapters.db.DefaultArticleRepository::query
+|===
+
+As indicated by the issue's description, there was a _Full Table Scan_ on table `articles` due to a missing index over column `published_at`. Simply adding this index will fix the performance issue for this operation.
+
+=== Configuration
+
+You can tweak the operation of the analyzer through a couple of spring properties.
+
+==== Excluding small tables
+
+Nearly all business domains have one or more tables that are destined to stay small. You can exclude those tables by setting the `dbquerywatch.small-tables` property. Example:
+
+[source,yaml]
+----
+dbquerywatch:
+  small-tables: journals
+----
+
+The tables name are case-insensitive and can include the schema qualifier, in case of ambiguity.
+
+==== Specifying the base packages for your persistent layer methods
+
+dbQueryWatch inspects the stacktrace to identify the application-level methods to be listed under the _Caller Methods_ section of the issues report. The library deduce these base packages from your spring configuration, but you may want to customize them using the `dbquerywatch.app-base-packages` property.
+
+Example: let's say your application adopts the Hexagonal Architecture, and all persistence methods reside on `com.example.application.adapter.db` package. In addition, you want to define the `com.example.application` as a fallback option. Your custom setting would be:
+
+[source,yaml]
+----
+dbquerywatch:
+  app-base-packages: com.example.application.adapters.db,com.example.application
+----
+
+== Acknowledgements
+
+- https://twitter.com/ttddyy[Tadaya Tsuyukubo] for creating https://github.com/jdbc-observations/datasource-proxy[datasource-proxy]
+- https://arnoldgalovics.com[Arnold Galovics], for his article https://arnoldgalovics.com/spring-boot-datasource-proxy/[Configuring A Datasource-Proxy In Spring Boot]
+- https://www.testcontainers.org[Testcontainers]
+
+== Similar projects
+
+- https://github.com/EmbedITCZ/dbadvisor[DBadvisor]
+
+== References
+
+. https://blog.uptrends.com/web-performance/the-psychology-of-web-performance/[The psychology of web performance]
+. https://www.radware.com/blog/applicationdelivery/wpo/2014/11/real-cost-slow-time-vs-downtime-slides/[The Real Cost of Slow Time vs Downtime]
+. https://winand.at/sql-tuning/index-redesign[Not Many Indexes, but the Right Ones]
+. https://use-the-index-luke.com[Use The Index, Luke]
+. https://use-the-index-luke.com/sql/where-clause/functions/over-indexing[Over-Indexing]
+
+[[Appendix-Tracing]]
+[appendix]
+== How to enable tracing
+
+In case tracing is still not enabled for your application, you can just enable it for testing purposes.
+
+TIP: To avoid sending actual spans to a Zipkin server, you can just set the property `spring.zipkin.enabled=true` in your test configuration (at `src/test/resources/application.yml`, for example).
+
+=== Spring Boot 2.7
+
+A minimal configuration would be:
+
+For a Gradle project:
+
+.build.gradle.kts
+[source,kotlin]
+----
+    testImplementation(platform("org.springframework.cloud:spring-cloud-sleuth-dependencies:3.1.8"))
+    testRuntimeOnly("org.springframework.cloud", "spring-cloud-starter-sleuth")
+    testRuntimeOnly("org.springframework.cloud", "spring-cloud-sleuth-zipkin")
+----
+
+For a Maven project:
+
+.pom.xml
+[source,xml]
+----
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-sleuth-dependencies</artifactId>
+            <version>3.1.8</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-sleuth</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-sleuth-zipkin</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+----
+
+For more advanced configurations, please refer to https://docs.spring.io/spring-cloud-sleuth/docs/current/reference/html/howto.html[Spring Sleuth “How-to” Guides].
+
+=== Spring Boot 3+
+
+IMPORTANT: You must set `spring.test.observability.auto-configure=true` in your test configuration in order to enable tracing for all your integration tests.
+
+For a Gradle project:
+
+[source,kotlin]
+.build.gradle.kts
+----
+    testRuntimeOnly("org.springframework.boot", "spring-boot-starter-actuator")  // if it's not already included
+    testRuntimeOnly("io.micrometer", "micrometer-tracing-bridge-brave")
+    testRuntimeOnly("io.zipkin.reporter2", "zipkin-reporter-brave")
+----
+
+For a Maven project:
+
+.pom.xml
+[source,xml]
+----
+    <dependencies>
+        <dependency>
+            <!-- if it's not already included -->
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-tracing-bridge-brave</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.zipkin.reporter2</groupId>
+            <artifactId>zipkin-reporter-brave</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+----
+
+For other possible configurations, see the section https://docs.spring.io/spring-boot/docs/3.0.x/reference/html/actuator.html#actuator.micrometer-tracing.tracer-implementations[Tracer Implementations] on Spring Boot Reference Documentation.
