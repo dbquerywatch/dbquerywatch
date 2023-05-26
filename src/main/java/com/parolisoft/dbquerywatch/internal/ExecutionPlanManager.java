@@ -78,8 +78,8 @@ public class ExecutionPlanManager {
                     log.debug("Issues: {}", issues);
                 }
                 if (!issues.isEmpty()) {
-                    slowQueries.add(new SlowQueryReport(analyzer.getDataSourceName(), querySql,
-                        result.getExecutionPlan(), usages.methods, issues));
+                    slowQueries.add(new SlowQueryReport(analyzer.getDataSourceName(), analyzer.getDataSource(),
+                        querySql, result.getExecutionPlan(), usages.methods, issues));
                 }
             })
         );

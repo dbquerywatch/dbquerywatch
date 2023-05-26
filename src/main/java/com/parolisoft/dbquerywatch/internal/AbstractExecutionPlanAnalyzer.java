@@ -10,6 +10,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.sql.DataSource;
 import java.util.Collection;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -27,6 +28,10 @@ abstract class AbstractExecutionPlanAnalyzer implements ExecutionPlanAnalyzer {
 
     @Nonnull
     protected final JdbcTemplate jdbcTemplate;
+
+    public DataSource getDataSource() {
+        return jdbcTemplate.getDataSource();
+    }
 
     @Nullable
     protected static String getString(Map<String, Object> map, String key) {
