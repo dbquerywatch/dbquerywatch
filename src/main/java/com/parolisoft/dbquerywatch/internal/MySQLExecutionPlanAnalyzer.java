@@ -1,7 +1,6 @@
 package com.parolisoft.dbquerywatch.internal;
 
 import com.jayway.jsonpath.JsonPath;
-import com.jayway.jsonpath.TypeRef;
 import net.ttddyy.dsproxy.proxy.ParameterSetOperation;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -15,7 +14,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.parolisoft.dbquerywatch.internal.JdbcTemplateUtils.queryForString;
-import static com.parolisoft.dbquerywatch.internal.JsonPathUtils.JSON_PATH_CONFIGURATION;
 
 class MySQLExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
 
@@ -36,10 +34,7 @@ class MySQLExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
         Map<String, String> tableAliases = findTableAliases(querySql);
         String planJson = queryForString(jdbcTemplate, EXPLAIN_PLAN_QUERY + querySql, operations)
             .orElseThrow(NoSuchElementException::new);
-        List<Map<String, Object>> plan = JsonPath
-            .parse(planJson, JSON_PATH_CONFIGURATION)
-            .read(JSON_PATH, new TypeRef<List<Map<String, Object>>>() {
-            });
+        List<Map<String, Object>> plan = JsonPath.parse(planJson).read(JSON_PATH);
         List<Issue> issues = plan.stream()
             .filter(p -> "ALL".equals(p.get("access_type")))
             .map(p -> {
