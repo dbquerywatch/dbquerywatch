@@ -1,6 +1,6 @@
 package com.parolisoft.dbquerywatch;
 
-import com.parolisoft.dbquerywatch.internal.ClassHashSupport;
+import com.parolisoft.dbquerywatch.internal.ClassIdSupport;
 import lombok.experimental.UtilityClass;
 
 import javax.annotation.Nullable;
@@ -17,6 +17,16 @@ import java.util.Random;
 public class TestHelpers {
 
     /**
+     * Generate the hash ID for a given test class, compatible with 128 bit traceId.
+     *
+     * @param clazz The wanted test class.
+     * @return The hash ID as a 32-chars hex string.
+     */
+    public static String generateClassId(Class<?> clazz) {
+        return ClassIdSupport.generateClassId(clazz);
+    }
+
+    /**
      * Create additional HTTP headers to enable the matching query/testClass via tracing.
      *
      * @param clazz The test class.
@@ -24,7 +34,7 @@ public class TestHelpers {
      * @return All headers required to support both W3C (OpenTelemetry) and Brave tracers.
      */
     public static Map<String, String> buildTraceHeaders(Class<?> clazz, @Nullable String spanId) {
-        String traceId = ClassHashSupport.classHashId(clazz);
+        String traceId = generateClassId(clazz);
         if (spanId == null) {
             spanId = generateRandomSpanId();
         }
