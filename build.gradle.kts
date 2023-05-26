@@ -14,7 +14,7 @@ plugins {
 }
 
 group = "com.parolisoft"
-description = "A test lib to help catch slow queries on integration tests"
+description = "Shift-lefting the detection of slow queries"
 version = grgit.describe(mapOf(
     "tags" to true,
     "always" to true,

@@ -9,7 +9,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import java.util.Map;
 
 @ActiveProfiles("postgres")
-@Disabled
+@Disabled("Go to junit-platform.properties to re-enable all disabled tests at once.")
 public class PostgresIntegrationTests extends IntegrationTests {
 
     @SuppressWarnings("resource")

@@ -7,7 +7,7 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.OracleContainer;
 
 @ActiveProfiles("oracle")
-@Disabled
+@Disabled("Go to junit-platform.properties to re-enable all disabled tests at once.")
 public class OracleIntegrationTests extends IntegrationTests {
 
     static final OracleContainer oracleContainer = new OracleContainer("gvenzl/oracle-xe:21.3.0-slim-faststart")

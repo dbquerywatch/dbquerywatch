@@ -9,7 +9,7 @@ import org.testcontainers.containers.MySQLContainer;
 import java.util.Map;
 
 @ActiveProfiles("mysql")
-@Disabled
+@Disabled("Go to junit-platform.properties to re-enable all disabled tests at once.")
 public class MySQLIntegrationTests extends IntegrationTests {
 
     @SuppressWarnings("resource")
