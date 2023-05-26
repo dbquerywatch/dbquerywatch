@@ -3,7 +3,6 @@
 boot2 = "2.7.12"
 dsproxy = "1.9"
 findbugs = "3.0.2"
-jackson = "2.13.5"
 jsonpath = "2.7.0"
 junit = "5.8.2"
 mapstruct = "1.5.5.Final"

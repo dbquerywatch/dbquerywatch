@@ -56,8 +56,6 @@ dependencies {
     implementation("org.springframework", "spring-jdbc")
     implementation("org.springframework", "spring-test")
 
-    runtimeOnly("com.fasterxml.jackson.core", "jackson-databind", versions.jackson.get())
-
     testAnnotationProcessor("org.mapstruct", "mapstruct-processor", versions.mapstruct.get())
 
     testImplementation(platform("org.springframework.cloud:spring-cloud-sleuth-dependencies:${versions.sleuth.get()}"))

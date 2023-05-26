@@ -1,7 +1,6 @@
 package com.parolisoft.dbquerywatch.internal;
 
 import com.jayway.jsonpath.JsonPath;
-import com.jayway.jsonpath.TypeRef;
 import net.ttddyy.dsproxy.proxy.ParameterSetOperation;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -13,7 +12,6 @@ import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 import static com.parolisoft.dbquerywatch.internal.JdbcTemplateUtils.queryForString;
-import static com.parolisoft.dbquerywatch.internal.JsonPathUtils.JSON_PATH_CONFIGURATION;
 
 class PostgresExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
 
@@ -38,9 +36,7 @@ class PostgresExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
     public AnalysisResult analyze(String querySql, List<ParameterSetOperation> operations) {
         String planJson = queryForString(jdbcTemplate, EXPLAIN_PLAN_QUERY + querySql, operations)
             .orElseThrow(NoSuchElementException::new);
-        List<Map<String, Object>> plan = JsonPath
-            .parse(planJson, JSON_PATH_CONFIGURATION)
-            .read(JSON_PATH, new TypeRef<List<Map<String, Object>>>() {});
+        List<Map<String, Object>> plan = JsonPath.parse(planJson).read(JSON_PATH);
         List<Issue> issues = plan.stream()
             .map(p -> {
                 String objectName = getString(p, "Relation Name");

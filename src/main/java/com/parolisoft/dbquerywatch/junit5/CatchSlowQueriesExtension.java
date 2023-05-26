@@ -1,7 +1,6 @@
 package com.parolisoft.dbquerywatch.junit5;
 
 import com.jayway.jsonpath.JsonPath;
-import com.jayway.jsonpath.TypeRef;
 import com.parolisoft.dbquerywatch.internal.AnalyzerSettings;
 import com.parolisoft.dbquerywatch.internal.ExecutionPlanManager;
 import com.parolisoft.dbquerywatch.internal.TraceMdcUtils;
@@ -22,8 +21,6 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static com.parolisoft.dbquerywatch.internal.JsonPathUtils.JSON_PATH_CONFIGURATION;
 
 @Slf4j
 class CatchSlowQueriesExtension implements BeforeAllCallback, AfterAllCallback {
@@ -54,8 +51,7 @@ class CatchSlowQueriesExtension implements BeforeAllCallback, AfterAllCallback {
     @SneakyThrows
     private List<String> getPropertyNames() {
         try (InputStream resource = getClass().getResourceAsStream("/META-INF/additional-spring-configuration-metadata.json")) {
-            return JsonPath.parse(resource, JSON_PATH_CONFIGURATION)
-                .read("$.properties[*].name", new TypeRef<List<String>>() {});
+            return JsonPath.parse(resource).read("$.properties[*].name");
         }
     }
 
