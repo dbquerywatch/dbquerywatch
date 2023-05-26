@@ -1,5 +1,5 @@
 dbquerywatch:
-  app-base-packages: "com.parolisoft.dbquerywatch.adapters.db"
+  app-base-packages: "com.parolisoft.dbquerywatch.adapters.db,com.parolisoft.dbquerywatch"
 
 spring:
   flyway:

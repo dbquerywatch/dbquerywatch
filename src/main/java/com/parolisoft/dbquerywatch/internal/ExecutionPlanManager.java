@@ -14,8 +14,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static com.parolisoft.dbquerywatch.internal.ClassIdSupport.generateClassId;
 import static com.parolisoft.dbquerywatch.internal.SqlUtils.tableNameMatch;
-import static com.parolisoft.dbquerywatch.internal.ClassHashSupport.classHashId;
 import static java.util.Collections.emptyList;
 
 @Slf4j
@@ -45,7 +45,7 @@ public class ExecutionPlanManager {
         if (!isAnalyzableStatement(querySql)) {
             return;
         }
-        TraceMdcUtils.getTestClassHashId().ifPresent(classHashId -> {
+        ClassIdRepository.load().ifPresent(classHashId -> {
             QueryUsage usages = QUERIES.computeIfAbsent(classHashId, k -> new ConcurrentHashMap<>())
                 .computeIfAbsent(analyzer, k -> new ConcurrentHashMap<>())
                 .computeIfAbsent(querySql, k -> new QueryUsage());
@@ -58,7 +58,7 @@ public class ExecutionPlanManager {
     }
 
     public static void verifyAll(AnalyzerSettings settings, Class<?> clazz) {
-        Map<ExecutionPlanAnalyzer, Map<String, QueryUsage>> usagesPerAnalyzer = QUERIES.remove(classHashId(clazz));
+        Map<ExecutionPlanAnalyzer, Map<String, QueryUsage>> usagesPerAnalyzer = QUERIES.remove(generateClassId(clazz));
         if (usagesPerAnalyzer == null) {
             return;
         }
@@ -88,11 +88,16 @@ public class ExecutionPlanManager {
         }
     }
 
+    private static final String LIB_PACKAGE = ExecutionPlanManager.class.getPackage().getName();
+
     private static String findAppCallerMethod(List<String> basePackages) {
         StackTraceElement[] stackTraceElements = new RuntimeException().getStackTrace();
         for (String basePackage : basePackages) {
             for (int i = stackTraceElements.length - 1; i >= 0; i--) {
                 StackTraceElement st = stackTraceElements[i];
+                if (st.getClassName().prefixedBy(LIB_PACKAGE, '.')) {
+                    continue;
+                }
                 if (st.getClassName().prefixedBy(basePackage, '.')) {
                     return st.getClassName() + "::" + st.getMethodName();
                 }
