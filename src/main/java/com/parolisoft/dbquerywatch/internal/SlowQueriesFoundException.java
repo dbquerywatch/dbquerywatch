@@ -1,7 +1,9 @@
 package com.parolisoft.dbquerywatch.internal;
 
+import org.springframework.jdbc.support.JdbcUtils;
+
 import javax.sql.DataSource;
-import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -61,10 +63,9 @@ public class SlowQueriesFoundException extends CleanRuntimeException {
 
     private static String getUrl(DataSource ds) {
         try {
-            try (Connection connection = ds.getConnection()) {
-                return connection.getMetaData().getURL();
-            }
-        } catch (Exception ignored) {}
-        return "UNKNOWN URL";
+            return JdbcUtils.extractDatabaseMetaData(ds, DatabaseMetaData::getURL);
+        } catch (Exception ignored) {
+            return "UNKNOWN URL";
+        }
     }
 }

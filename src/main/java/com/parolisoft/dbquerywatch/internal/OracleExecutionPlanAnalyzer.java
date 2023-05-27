@@ -1,15 +1,13 @@
 package com.parolisoft.dbquerywatch.internal;
 
+import com.parolisoft.dbquerywatch.internal.jdbc.JdbcClient;
 import net.ttddyy.dsproxy.proxy.ParameterSetOperation;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
-import static com.parolisoft.dbquerywatch.internal.JdbcTemplateUtils.queryForString;
 
 class OracleExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
 
@@ -18,15 +16,15 @@ class OracleExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
     private static final List<String> OPERATIONS = Arrays.asList("INDEX", "MAT_VIEW REWRITE ACCESS", "TABLE ACCESS");
     private static final List<String> OPTIONS = Arrays.asList("FULL SCAN", "FULL SCAN DESCENDING", "FULL");
 
-    OracleExecutionPlanAnalyzer(String dataSourceName, JdbcTemplate jdbcTemplate) {
-        super(dataSourceName, jdbcTemplate);
+    OracleExecutionPlanAnalyzer(JdbcClient jdbcClient) {
+        super(jdbcClient);
     }
 
     public AnalysisResult analyze(String querySql, List<ParameterSetOperation> operations) {
         String statementId = getStatementID();
         String explainPlanSql = String.format(EXPLAIN_PLAN_QUERY, statementId, querySql);
-        queryForString(jdbcTemplate, explainPlanSql, operations);
-        List<Map<String, Object>> plans = jdbcTemplate.queryForList(GET_PLAN_QUERY, statementId);
+        jdbcClient.queryForString(explainPlanSql, operations);
+        List<Map<String, Object>> plans = jdbcClient.queryForList(GET_PLAN_QUERY, statementId);
         removeNoisyProperties(plans);
         List<Issue> issues = plans.stream()
                 .filter(plan -> OPERATIONS.contains(getString(plan, "OPERATION")) &&

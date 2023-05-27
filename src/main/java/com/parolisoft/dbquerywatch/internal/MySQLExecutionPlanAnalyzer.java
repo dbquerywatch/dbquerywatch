@@ -1,8 +1,8 @@
 package com.parolisoft.dbquerywatch.internal;
 
 import com.jayway.jsonpath.JsonPath;
+import com.parolisoft.dbquerywatch.internal.jdbc.JdbcClient;
 import net.ttddyy.dsproxy.proxy.ParameterSetOperation;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;
@@ -12,8 +12,6 @@ import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import static com.parolisoft.dbquerywatch.internal.JdbcTemplateUtils.queryForString;
 
 class MySQLExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
 
@@ -25,14 +23,14 @@ class MySQLExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
     );
     private static final JsonPath JSON_PATH = JsonPath.compile("$..table");
 
-    MySQLExecutionPlanAnalyzer(String dataSourceName, JdbcTemplate jdbcTemplate) {
-        super(dataSourceName, jdbcTemplate);
+    MySQLExecutionPlanAnalyzer(JdbcClient jdbcClient) {
+        super(jdbcClient);
     }
 
     @Override
     public AnalysisResult analyze(String querySql, List<ParameterSetOperation> operations) {
         Map<String, String> tableAliases = findTableAliases(querySql);
-        String planJson = queryForString(jdbcTemplate, EXPLAIN_PLAN_QUERY + querySql, operations)
+        String planJson = jdbcClient.queryForString(EXPLAIN_PLAN_QUERY + querySql, operations)
             .orElseThrow(NoSuchElementException::new);
         List<Map<String, Object>> plan = JsonPath.parse(planJson).read(JSON_PATH);
         List<Issue> issues = plan.stream()
