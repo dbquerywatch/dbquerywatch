@@ -1,15 +1,13 @@
 package com.parolisoft.dbquerywatch.internal;
 
+import com.parolisoft.dbquerywatch.internal.jdbc.JdbcClient;
 import net.ttddyy.dsproxy.proxy.ParameterSetOperation;
 
-import javax.sql.DataSource;
 import java.util.List;
 
 interface ExecutionPlanAnalyzer {
 
-    DataSource getDataSource();
-
-    String getDataSourceName();
+    JdbcClient getJdbcClient();
 
     AnalysisResult analyze(String querySql, List<ParameterSetOperation> operations);
 }

@@ -1,7 +1,7 @@
 package com.parolisoft.dbquerywatch.internal;
 
+import com.parolisoft.dbquerywatch.internal.jdbc.JdbcClient;
 import net.ttddyy.dsproxy.proxy.ParameterSetOperation;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,7 +9,6 @@ import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.parolisoft.dbquerywatch.internal.JdbcTemplateUtils.queryForString;
 import static java.util.Objects.requireNonNull;
 
 class H2ExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
@@ -17,13 +16,13 @@ class H2ExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
     private static final String EXPLAIN_PLAN_QUERY = "EXPLAIN PLAN FOR ";
     private static final Pattern TABLE_SCAN_PATTERN = Pattern.compile("/\\* (.*)\\.tableScan \\*/");
 
-    H2ExecutionPlanAnalyzer(String dataSourceName, JdbcTemplate jdbcTemplate) {
-        super(dataSourceName, jdbcTemplate);
+    H2ExecutionPlanAnalyzer(JdbcClient jdbcClient) {
+        super(jdbcClient);
     }
 
     @Override
     public AnalysisResult analyze(String querySql, List<ParameterSetOperation> operations) {
-        String commentedPlan = queryForString(jdbcTemplate, EXPLAIN_PLAN_QUERY + querySql, operations)
+        String commentedPlan = jdbcClient.queryForString(EXPLAIN_PLAN_QUERY + querySql, operations)
             .orElseThrow(NoSuchElementException::new);
         Matcher matcher = TABLE_SCAN_PATTERN.matcher(requireNonNull(commentedPlan));
         List<Issue> issues = new ArrayList<>();

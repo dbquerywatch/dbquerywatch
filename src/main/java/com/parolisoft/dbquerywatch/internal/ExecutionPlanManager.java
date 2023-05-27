@@ -1,5 +1,6 @@
 package com.parolisoft.dbquerywatch.internal;
 
+import com.parolisoft.dbquerywatch.internal.jdbc.JdbcClient;
 import lombok.Value;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.slf4j.Slf4j;
@@ -78,7 +79,8 @@ public class ExecutionPlanManager {
                     log.debug("Issues: {}", issues);
                 }
                 if (!issues.isEmpty()) {
-                    slowQueries.add(new SlowQueryReport(analyzer.getDataSourceName(), analyzer.getDataSource(),
+                    JdbcClient jdbcClient = analyzer.getJdbcClient();
+                    slowQueries.add(new SlowQueryReport(jdbcClient.getDataSourceName(), jdbcClient.getDataSource(),
                         querySql, result.getExecutionPlan(), usages.methods, issues));
                 }
             })
