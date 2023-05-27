@@ -4,20 +4,16 @@ import lombok.experimental.ExtensionMethod;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
-@ExtensionMethod({String.class, StringUtils.class})
+@ExtensionMethod({String.class, Strings.class})
 public class SqlUtils {
 
     public static boolean tableNameMatch(String targetName, String issueName) {
-        String canonicalTargetName = targetName.toLowerCase();
-        String canonicalIssueName = issueName.toLowerCase();
-        int issueNameLen = issueName.length();
-        int targetNameLen = targetName.length();
-        if (issueNameLen == targetNameLen) {
-            return canonicalTargetName.equals(canonicalIssueName);
-        } else if (targetNameLen > issueNameLen) {
-            return canonicalTargetName.suffixedBy(canonicalIssueName, '.');
+        if (issueName.length() == targetName.length()) {
+            return targetName.equalsIgnoreCase(issueName);
+        } else if (targetName.length() > issueName.length()) {
+            return targetName.suffixedBy(issueName, true, '.');
         } else {
-            return canonicalIssueName.suffixedBy(canonicalTargetName, '.');
+            return issueName.suffixedBy(targetName, true, '.');
         }
     }
 }
