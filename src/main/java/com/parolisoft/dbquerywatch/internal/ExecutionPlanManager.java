@@ -20,7 +20,7 @@ import static com.parolisoft.dbquerywatch.internal.SqlUtils.tableNameMatch;
 import static java.util.Collections.emptyList;
 
 @Slf4j
-@ExtensionMethod({String.class, StringUtils.class})
+@ExtensionMethod({String.class, Strings.class})
 public class ExecutionPlanManager {
 
     private static final Pattern ANALYZABLE_COMMANDS = Pattern.compile(
@@ -97,10 +97,10 @@ public class ExecutionPlanManager {
         for (String basePackage : basePackages) {
             for (int i = stackTraceElements.length - 1; i >= 0; i--) {
                 StackTraceElement st = stackTraceElements[i];
-                if (st.getClassName().prefixedBy(LIB_PACKAGE, '.')) {
+                if (st.getClassName().prefixedBy(LIB_PACKAGE, false, '.')) {
                     continue;
                 }
-                if (st.getClassName().prefixedBy(basePackage, '.')) {
+                if (st.getClassName().prefixedBy(basePackage, false, '.')) {
                     return st.getClassName() + "::" + st.getMethodName();
                 }
             }
