@@ -26,7 +26,7 @@ import static org.junit.platform.engine.TestExecutionResult.Status.FAILED;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
 
 @SuppressWarnings("SameParameterValue")
-public class CatchSlowQueriesExtensionTest {
+public class CatchSlowQueriesTest {
 
     @ParameterizedTest
     @MethodSource("testClassProvider")
