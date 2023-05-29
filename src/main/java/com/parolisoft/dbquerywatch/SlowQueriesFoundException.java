@@ -1,5 +1,8 @@
-package com.parolisoft.dbquerywatch.internal;
+package com.parolisoft.dbquerywatch;
 
+import com.parolisoft.dbquerywatch.internal.CleanRuntimeException;
+import com.parolisoft.dbquerywatch.internal.Issue;
+import com.parolisoft.dbquerywatch.internal.SlowQueryReport;
 import org.springframework.jdbc.support.JdbcUtils;
 
 import javax.sql.DataSource;
@@ -8,6 +11,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Thrown when one or multiple issues are found on the queries performed by the integration tests.
+ */
 public class SlowQueriesFoundException extends CleanRuntimeException {
 
     private static final String LF_INDENT = "\n    ";

@@ -2,7 +2,7 @@ package com.parolisoft.dbquerywatch.application;
 
 import com.google.common.truth.Correspondence;
 import com.parolisoft.dbquerywatch.internal.Issue;
-import com.parolisoft.dbquerywatch.internal.SlowQueriesFoundException;
+import com.parolisoft.dbquerywatch.SlowQueriesFoundException;
 import com.parolisoft.dbquerywatch.internal.SlowQueryReport;
 import com.parolisoft.dbquerywatch.internal.SqlUtils;
 import org.junit.jupiter.api.Named;
