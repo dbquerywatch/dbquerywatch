@@ -4,6 +4,7 @@ import com.jayway.jsonpath.JsonPath;
 import com.parolisoft.dbquerywatch.internal.AnalyzerSettings;
 import com.parolisoft.dbquerywatch.internal.ClassIdRepository;
 import com.parolisoft.dbquerywatch.internal.ExecutionPlanManager;
+import com.parolisoft.dbquerywatch.SlowQueriesFoundException;
 import com.parolisoft.dbquerywatch.internal.spring.AnalyzerSettingsAdapter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -50,7 +51,7 @@ class CatchSlowQueriesExtension implements BeforeAllCallback, BeforeEachCallback
     }
 
     @Override
-    public void afterAll(ExtensionContext context) {
+    public void afterAll(ExtensionContext context) throws SlowQueriesFoundException {
         ApplicationContext springContext = SpringExtension.getApplicationContext(context);
         AnalyzerSettings settings = new AnalyzerSettingsAdapter(springContext.getEnvironment());
         ExecutionPlanManager.verifyAll(settings, context.getRequiredTestClass());
