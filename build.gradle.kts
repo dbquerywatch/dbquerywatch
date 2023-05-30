@@ -149,6 +149,8 @@ tasks.withType<Javadoc> {
     exclude("**/internal/*")
 }
 
+apply(from = "./gradle/dependencyUpdates.gradle.kts")
+
 val groupId = group.toString()
 val artifactId = name
 
