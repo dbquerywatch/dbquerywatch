@@ -93,10 +93,12 @@ public class ExecutionPlanManager {
     private static final String LIB_PACKAGE = ExecutionPlanManager.class.getPackage().getName();
 
     private static String findAppCallerMethod(List<String> basePackages) {
-        StackTraceElement[] stackTraceElements = new RuntimeException().getStackTrace();
+        StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
         for (String basePackage : basePackages) {
-            for (int i = stackTraceElements.length - 1; i >= 0; i--) {
-                StackTraceElement st = stackTraceElements[i];
+            for (StackTraceElement st : stackTraceElements) {
+                if (isSyntheticClass(st.getClassName())) {
+                    continue;
+                }
                 if (prefixedBy(st.getClassName(), LIB_PACKAGE, false, '.')) {
                     continue;
                 }
@@ -106,6 +108,10 @@ public class ExecutionPlanManager {
             }
         }
         return "UNKNOWN";
+    }
+
+    private static boolean isSyntheticClass(String className) {
+        return className.contains(".$Proxy");
     }
 
     private static boolean isAnalyzableStatement(String querySql) {
