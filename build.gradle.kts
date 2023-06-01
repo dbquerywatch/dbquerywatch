@@ -44,7 +44,7 @@ dependencies {
         }
     }
 
-    api(platform("org.junit:junit-bom:${versions.junit.get()}"))
+    api(platform("org.springframework.boot:spring-boot-dependencies:${versions.boot2.get()}"))
 
     api("org.junit.jupiter", "junit-jupiter-api")
 
@@ -53,23 +53,21 @@ dependencies {
 
     compileOnly("com.google.errorprone", "error_prone_annotations", versions.errorprone.get())
 
-    implementation(platform("org.springframework:spring-framework-bom:${versions.spring.get()}"))
-
     implementation("com.google.code.findbugs", "jsr305", versions.findbugs.get())
-    implementation("com.jayway.jsonpath", "json-path", versions.jsonpath.get())
+    implementation("com.jayway.jsonpath", "json-path")
     implementation("net.ttddyy", "datasource-proxy", versions.dsproxy.get())
     implementation("org.json", "json", versions.orgjson.get())
-    implementation("org.slf4j", "slf4j-api", versions.slf4j.get())
+    implementation("org.slf4j", "slf4j-api")
     implementation("org.springframework", "spring-aop")
     implementation("org.springframework", "spring-context")
     implementation("org.springframework", "spring-jdbc")
     implementation("org.springframework", "spring-test")
     implementation("org.springframework", "spring-web")
+    implementation("org.springframework.boot", "spring-boot")
 
     testAnnotationProcessor("org.mapstruct", "mapstruct-processor", versions.mapstruct.get())
 
     testImplementation(platform("org.springframework.cloud:spring-cloud-sleuth-dependencies:${versions.sleuth.get()}"))
-    testImplementation(platform("org.springframework.boot:spring-boot-dependencies:${versions.boot2.get()}"))
     testImplementation(platform("org.testcontainers:testcontainers-bom:${versions.testcontainers.get()}"))
 
     testImplementation("ch.qos.logback", "logback-classic")

@@ -9,8 +9,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static java.util.Collections.emptyList;
+import java.util.function.Supplier;
 
 @RequiredArgsConstructor
 public class AnalyzerSettingsAdapter implements AnalyzerSettings {
@@ -22,23 +21,24 @@ public class AnalyzerSettingsAdapter implements AnalyzerSettings {
 
     @Override
     public List<String> smallTables() {
-        return getPropertyList("dbquerywatch.small-tables");
+        return getPropertyList("dbquerywatch.small-tables", Collections::emptyList);
     }
 
     @Override
     public List<String> appBasePackages() {
-        return getPropertyList("dbquerywatch.app-base-packages");
+        return getPropertyList("dbquerywatch.app-base-packages", SpringBootApplicationRunListener::getBasePackages);
     }
 
-    private List<String> getPropertyList(String key) {
+    private List<String> getPropertyList(String key, Supplier<List<String>> defaultValue) {
         String newRawValue = environment.getProperty(key, "");
         String oldRawValue = rawValues.put(key, newRawValue);
-        if (!newRawValue.equals(oldRawValue)) {
-            List<String> value = newRawValue.isEmpty()
-                ? emptyList()
-                : Collections.unmodifiableList(Arrays.asList(newRawValue.split(",")));
-            cacheValues.put(key, value);
+        if (newRawValue.equals(oldRawValue)) {
+            return cacheValues.getOrDefault(key, defaultValue.get());
         }
-        return cacheValues.getOrDefault(key, emptyList());
+        List<String> value = newRawValue.isEmpty()
+            ? defaultValue.get()
+            : Collections.unmodifiableList(Arrays.asList(newRawValue.split(",")));
+        cacheValues.put(key, value);
+        return value;
     }
 }
