@@ -1,5 +1,8 @@
 @file:Suppress("SpellCheckingInspection", "HasPlatformType")
 
+import net.ltgt.gradle.errorprone.CheckSeverity
+import net.ltgt.gradle.errorprone.errorprone
+
 plugins {
     `java-library`
     jacoco
@@ -10,6 +13,7 @@ plugins {
     id("com.github.ksoichiro.console.reporter") version "0.6.3"
     id("io.freefair.lombok") version "8.0.1"
     id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
+    id("net.ltgt.errorprone") version "3.1.0"
     id("org.ajoberstar.grgit") version "4.1.1"
 }
 
@@ -43,6 +47,11 @@ dependencies {
     api(platform("org.junit:junit-bom:${versions.junit.get()}"))
 
     api("org.junit.jupiter", "junit-jupiter-api")
+
+    errorprone("com.google.errorprone", "error_prone_core", versions.errorprone.get())
+    annotationProcessor("com.uber.nullaway", "nullaway", versions.nullaway.get())
+
+    compileOnly("com.google.errorprone", "error_prone_annotations", versions.errorprone.get())
 
     implementation(platform("org.springframework:spring-framework-bom:${versions.spring.get()}"))
 
@@ -99,6 +108,10 @@ tasks.compileJava {
     options.compilerArgs.addAll(listOf(
         "--release", "8",
     ))
+    options.errorprone {
+        check("NullAway", CheckSeverity.ERROR)
+        option("NullAway:AnnotatedPackages", "com.parolisoft.dbquerywatch")
+    }
 }
 
 tasks.compileTestJava {

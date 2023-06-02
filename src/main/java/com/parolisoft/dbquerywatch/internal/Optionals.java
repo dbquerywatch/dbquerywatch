@@ -4,16 +4,17 @@ import lombok.experimental.UtilityClass;
 
 import java.util.Optional;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
-@UtilityClass class Optionals {
+@UtilityClass
+class Optionals {
 
-    // Optional.or() was implemented on JDK 9.
-    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-    public static <T> Optional<T> or(Optional<T> optional1, Supplier<Optional<T>> optional2Supplier) {
-        if (optional1.isPresent()) {
-            return optional1;
-        } else {
-            return optional2Supplier.get();
-        }
+    @SafeVarargs
+    public static <T> Optional<T> or(Supplier<Optional<T>>... suppliers) {
+        return Stream.of(suppliers)
+            .map(Supplier::get)
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .findFirst();
     }
 }

@@ -1,18 +1,18 @@
 package com.parolisoft.dbquerywatch.internal;
 
-import lombok.experimental.ExtensionMethod;
 import lombok.experimental.UtilityClass;
 import org.slf4j.MDC;
 
 import java.util.Optional;
 
-@ExtensionMethod({Optional.class, Optionals.class})
 @UtilityClass
 public class ClassIdRepository {
 
     public Optional<String> load() {
-        return ThreadLocalClassIdRepository.load()
-            .or(MdcClassIdRepository::load);
+        return Optionals.or(
+            ThreadLocalClassIdRepository::load,
+            MdcClassIdRepository::load
+        );
     }
 
     public void save(Class<?> clazz) {

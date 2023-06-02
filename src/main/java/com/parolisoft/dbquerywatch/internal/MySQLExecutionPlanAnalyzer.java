@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -39,8 +40,9 @@ class MySQLExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
                 String tableName = getString(p, "table_name");
                 String objectName = tableAliases.getOrDefault(tableName, tableName);
                 String predicate = getString(p, "attached_condition");
-                return new Issue(IssueType.FULL_ACCESS, objectName, predicate);
+                return objectName != null ? new Issue(IssueType.FULL_ACCESS, objectName, predicate) : null;
             })
+            .filter(Objects::nonNull)
             .collect(Collectors.toList());
         return new AnalysisResult(compactJson(planJson), issues);
     }

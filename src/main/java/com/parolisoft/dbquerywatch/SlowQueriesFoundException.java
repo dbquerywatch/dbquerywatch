@@ -1,5 +1,6 @@
 package com.parolisoft.dbquerywatch;
 
+import com.google.errorprone.annotations.FormatMethod;
 import com.parolisoft.dbquerywatch.internal.CleanRuntimeException;
 import com.parolisoft.dbquerywatch.internal.Issue;
 import com.parolisoft.dbquerywatch.internal.SlowQueryReport;
@@ -59,6 +60,7 @@ public class SlowQueriesFoundException extends CleanRuntimeException {
 
     private static final String DASHES = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
 
+    @FormatMethod
     @SuppressWarnings("SameParameterValue")
     private static String heading(String fmt, Object... args) {
         String title = String.format(fmt, args);

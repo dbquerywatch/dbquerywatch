@@ -1,13 +1,12 @@
 package com.parolisoft.dbquerywatch.junit5;
 
 import com.jayway.jsonpath.JsonPath;
+import com.parolisoft.dbquerywatch.SlowQueriesFoundException;
 import com.parolisoft.dbquerywatch.internal.AnalyzerSettings;
 import com.parolisoft.dbquerywatch.internal.ClassIdRepository;
 import com.parolisoft.dbquerywatch.internal.ExecutionPlanManager;
-import com.parolisoft.dbquerywatch.SlowQueriesFoundException;
 import com.parolisoft.dbquerywatch.internal.spring.AnalyzerSettingsAdapter;
 import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
@@ -25,7 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Slf4j
 class CatchSlowQueriesExtension implements BeforeAllCallback, BeforeEachCallback, AfterEachCallback, AfterAllCallback {
 
     private static final String PROPERTY_SOURCE_NAME = "custom.configuration.parameters";

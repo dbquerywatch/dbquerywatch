@@ -30,6 +30,7 @@ public class SpringJdbcClient extends AbstractJdbcClient {
         return jdbcTemplate.queryForList(sql, args);
     }
 
+    @Override
     protected  <T> Optional<T> query(String sql, PreparedStatementSetter pss, ResultSetExtractor<T> rse) {
         return jdbcTemplate.query(sql, pss::setValues, rse::extractData);
     }
