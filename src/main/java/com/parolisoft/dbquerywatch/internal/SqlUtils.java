@@ -1,19 +1,24 @@
 package com.parolisoft.dbquerywatch.internal;
 
-import lombok.experimental.ExtensionMethod;
 import lombok.experimental.UtilityClass;
 
+import javax.annotation.Nullable;
+
+import static com.parolisoft.dbquerywatch.internal.Strings.suffixedBy;
+
 @UtilityClass
-@ExtensionMethod({String.class, Strings.class})
 public class SqlUtils {
 
-    public static boolean tableNameMatch(String targetName, String issueName) {
+    public static boolean tableNameMatch(@Nullable String targetName, @Nullable String issueName) {
+        if (targetName == null || issueName == null) {
+            return false;
+        }
         if (issueName.length() == targetName.length()) {
             return targetName.equalsIgnoreCase(issueName);
-        } else if (targetName.length() > issueName.length()) {
-            return targetName.suffixedBy(issueName, true, '.');
-        } else {
-            return issueName.suffixedBy(targetName, true, '.');
         }
+        if (targetName.length() > issueName.length()) {
+            return suffixedBy(targetName, issueName, true, '.');
+        }
+        return suffixedBy(issueName, targetName, true, '.');
     }
 }

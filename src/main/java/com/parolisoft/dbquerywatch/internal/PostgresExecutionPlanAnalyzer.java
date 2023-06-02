@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
@@ -39,8 +40,9 @@ class PostgresExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
             .map(p -> {
                 String objectName = getString(p, "Relation Name");
                 String predicate = getString(p, "Filter");
-                return new Issue(IssueType.FULL_ACCESS, objectName, predicate);
+                return objectName != null ? new Issue(IssueType.FULL_ACCESS, objectName, predicate) : null;
             })
+            .filter(Objects::nonNull)
             .collect(Collectors.toList());
         return new AnalysisResult(compactJson(planJson), issues);
     }

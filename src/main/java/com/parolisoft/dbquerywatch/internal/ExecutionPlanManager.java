@@ -3,7 +3,6 @@ package com.parolisoft.dbquerywatch.internal;
 import com.parolisoft.dbquerywatch.SlowQueriesFoundException;
 import com.parolisoft.dbquerywatch.internal.jdbc.JdbcClient;
 import lombok.Value;
-import lombok.experimental.ExtensionMethod;
 import lombok.extern.slf4j.Slf4j;
 import net.ttddyy.dsproxy.proxy.ParameterSetOperation;
 
@@ -18,10 +17,10 @@ import java.util.stream.Collectors;
 
 import static com.parolisoft.dbquerywatch.internal.ClassIdSupport.generateClassId;
 import static com.parolisoft.dbquerywatch.internal.SqlUtils.tableNameMatch;
+import static com.parolisoft.dbquerywatch.internal.Strings.prefixedBy;
 import static java.util.Collections.emptyList;
 
 @Slf4j
-@ExtensionMethod({String.class, Strings.class})
 public class ExecutionPlanManager {
 
     private static final Pattern ANALYZABLE_COMMANDS = Pattern.compile(
@@ -98,10 +97,10 @@ public class ExecutionPlanManager {
         for (String basePackage : basePackages) {
             for (int i = stackTraceElements.length - 1; i >= 0; i--) {
                 StackTraceElement st = stackTraceElements[i];
-                if (st.getClassName().prefixedBy(LIB_PACKAGE, false, '.')) {
+                if (prefixedBy(st.getClassName(), LIB_PACKAGE, false, '.')) {
                     continue;
                 }
-                if (st.getClassName().prefixedBy(basePackage, false, '.')) {
+                if (prefixedBy(st.getClassName(), basePackage, false, '.')) {
                     return st.getClassName() + "::" + st.getMethodName();
                 }
             }

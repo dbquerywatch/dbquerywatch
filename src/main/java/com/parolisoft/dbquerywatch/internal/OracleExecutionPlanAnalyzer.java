@@ -6,12 +6,12 @@ import net.ttddyy.dsproxy.proxy.ParameterSetOperation;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 class OracleExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
 
-    private static final String EXPLAIN_PLAN_QUERY = "EXPLAIN PLAN SET STATEMENT_ID = '%s' FOR %s";
     private static final String GET_PLAN_QUERY = "SELECT * FROM plan_table WHERE statement_id = ?";
     private static final List<String> OPERATIONS = Arrays.asList("INDEX", "MAT_VIEW REWRITE ACCESS", "TABLE ACCESS");
     private static final List<String> OPTIONS = Arrays.asList("FULL SCAN", "FULL SCAN DESCENDING", "FULL");
@@ -20,9 +20,10 @@ class OracleExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
         super(jdbcClient);
     }
 
+    @Override
     public AnalysisResult analyze(String querySql, List<ParameterSetOperation> operations) {
         String statementId = getStatementID();
-        String explainPlanSql = String.format(EXPLAIN_PLAN_QUERY, statementId, querySql);
+        String explainPlanSql = String.format("EXPLAIN PLAN SET STATEMENT_ID = '%s' FOR %s", statementId, querySql);
         jdbcClient.queryForString(explainPlanSql, operations);
         List<Map<String, Object>> plans = jdbcClient.queryForList(GET_PLAN_QUERY, statementId);
         removeNoisyProperties(plans);
@@ -32,8 +33,9 @@ class OracleExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
                 .map(plan -> {
                     String objectName = getString(plan, "OBJECT_NAME");
                     String predicate = getString(plan, "FILTER_PREDICATES");
-                    return new Issue(IssueType.FULL_ACCESS, objectName, predicate);
+                    return objectName != null ? new Issue(IssueType.FULL_ACCESS, objectName, predicate) : null;
                 })
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
         return new AnalysisResult(toJson(plans), issues);
     }

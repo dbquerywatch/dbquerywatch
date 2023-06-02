@@ -6,6 +6,8 @@ import lombok.experimental.UtilityClass;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 @UtilityClass
 public class ClassIdSupport {
     private static final char CLASS_HASH_ID_CHAR0 = 'Q'; /* 0x51 */
@@ -15,7 +17,7 @@ public class ClassIdSupport {
     @SneakyThrows
     public static String generateClassId(Class<?> clazz) {
         MessageDigest md = MessageDigest.getInstance("MD5");
-        md.update(clazz.getCanonicalName().getBytes());
+        md.update(clazz.getCanonicalName().getBytes(UTF_8));
         byte[] digest = md.digest();
         digest[0] = CLASS_HASH_ID_CHAR0;
         digest[1] = CLASS_HASH_ID_CHAR1;
