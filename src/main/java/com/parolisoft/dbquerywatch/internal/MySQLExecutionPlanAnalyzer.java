@@ -19,7 +19,7 @@ class MySQLExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
     private static final String EXPLAIN_PLAN_QUERY = "EXPLAIN FORMAT=JSON ";
 
     private static final Pattern TABLE_ALIAS_DEFINITION = Pattern.compile(
-        "\\bfrom\\s+([\\w.]+)\\s+([\\w.]+)\\b",
+        "\\b(?:from|join)\\s+([\\w.]+)\\s+([\\w.]+)\\b",
         Pattern.CASE_INSENSITIVE
     );
     private static final JsonPath JSON_PATH = JsonPath.compile("$..table");
