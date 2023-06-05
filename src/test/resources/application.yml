@@ -8,9 +8,16 @@ spring:
     property-naming-strategy: SNAKE_CASE
   jpa:
     generate-ddl: false
+  test:
+    observability:
+      auto-configure: true   # otherwise "management.tracing.enabled" is set to "false" automatically
   zipkin:
     enabled: false
 
 logging:
   level:
     com.parolisoft.dbquerywatch.internal.ExecutionPlanManager: debug
+
+management:
+  tracing:
+    enabled: true
