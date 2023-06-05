@@ -169,6 +169,14 @@ tasks.check {
 tasks.withType<Javadoc> {
     exclude("**/internal/*")
     (options as StandardJavadocDocletOptions).apply {
+        noTimestamp.value = true
+        docEncoding = "UTF-8"
+        charSet = "UTF-8"
+        encoding = "UTF-8"
+        docTitle = "dbQueryWatch version ${project.version}"
+        windowTitle = "dbQueryWatch ${project.version}"
+        header = "<b>dbQueryWatch</b>"
+        bottom = "Copyright &copy; 2023 Paroli Consulting. All Rights Reserved."
         addBooleanOption("html5", true)
         // See JDK-8200363 (https://bugs.openjdk.java.net/browse/JDK-8200363)
         // for information about the -Xwerror option.
