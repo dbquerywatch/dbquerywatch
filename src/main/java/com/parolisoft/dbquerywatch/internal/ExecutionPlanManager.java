@@ -1,5 +1,6 @@
 package com.parolisoft.dbquerywatch.internal;
 
+import com.parolisoft.dbquerywatch.NoQueriesWereAnalyzed;
 import com.parolisoft.dbquerywatch.SlowQueriesFoundException;
 import com.parolisoft.dbquerywatch.internal.jdbc.JdbcClient;
 import lombok.Value;
@@ -58,10 +59,10 @@ public class ExecutionPlanManager {
         });
     }
 
-    public static void verifyAll(AnalyzerSettings settings, Class<?> clazz) throws SlowQueriesFoundException {
+    public static void verifyAll(AnalyzerSettings settings, Class<?> clazz) throws SlowQueriesFoundException, NoQueriesWereAnalyzed {
         Map<ExecutionPlanAnalyzer, Map<String, QueryUsage>> usagesPerAnalyzer = QUERIES.remove(generateClassId(clazz));
         if (usagesPerAnalyzer == null) {
-            return;
+            throw new NoQueriesWereAnalyzed();
         }
         List<SlowQueryReport> slowQueries = new ArrayList<>();
         usagesPerAnalyzer.forEach((analyzer, usagesPerSql) ->
