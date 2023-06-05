@@ -15,6 +15,7 @@ plugins {
     id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
     id("net.ltgt.errorprone") version "3.1.0"
     id("org.ajoberstar.grgit") version "4.1.1"
+    id("org.openrewrite.rewrite") version("5.40.4")
 }
 
 group = "com.parolisoft"
@@ -31,13 +32,30 @@ java {
     withSourcesJar()
 }
 
+rewrite {
+    activeRecipe("org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta")
+    exclusion("src/main/**")
+}
+
 repositories {
     mavenCentral()
 }
 
 val versions = libs.versions
 
+val testBootVariant: String by project
+
+val testBootVersion = when (testBootVariant) {
+    "2" -> versions.boot2.get()
+    "30", "3.0" -> versions.boot3.get()
+    "31", "3.1" -> versions.boot31.get()
+    else -> throw GradleException("Unknown Spring Boot variant: $testBootVariant")
+}
+println("Spring Boot version: $testBootVersion")
+
 dependencies {
+    rewrite("org.openrewrite.recipe:rewrite-migrate-java:1.21.1")
+
     modules {
         module("com.vaadin.external.google:android-json") {
             replacedBy("org.json:json", "JSON-java is now in Public Domain")
@@ -67,7 +85,7 @@ dependencies {
 
     testAnnotationProcessor("org.mapstruct", "mapstruct-processor", versions.mapstruct.get())
 
-    testImplementation(platform("org.springframework.cloud:spring-cloud-sleuth-dependencies:${versions.sleuth.get()}"))
+    testImplementation(platform("org.springframework.boot:spring-boot-dependencies:$testBootVersion"))
     testImplementation(platform("org.testcontainers:testcontainers-bom:${versions.testcontainers.get()}"))
 
     testImplementation("ch.qos.logback", "logback-classic")
@@ -78,6 +96,7 @@ dependencies {
     testImplementation("org.junit.jupiter", "junit-jupiter-engine")
     testImplementation("org.junit.platform", "junit-platform-testkit")
     testImplementation("org.mapstruct", "mapstruct", versions.mapstruct.get())
+    testImplementation("org.springframework.boot", "spring-boot-starter-actuator")
     testImplementation("org.springframework.boot", "spring-boot-starter-data-jpa")
     testImplementation("org.springframework.boot", "spring-boot-starter-data-rest")
     testImplementation("org.springframework.boot", "spring-boot-starter-test")
@@ -92,8 +111,15 @@ dependencies {
     testRuntimeOnly("org.flywaydb", "flyway-core")
     testRuntimeOnly("org.flywaydb", "flyway-mysql")
     testRuntimeOnly("org.postgresql", "postgresql")
-    testRuntimeOnly("org.springframework.cloud", "spring-cloud-sleuth-zipkin")
-    testRuntimeOnly("org.springframework.cloud", "spring-cloud-starter-sleuth")
+
+    if (testBootVersion.startsWith("2.")) {
+        testImplementation(platform("org.springframework.cloud:spring-cloud-sleuth-dependencies:${versions.sleuth.get()}"))
+        testRuntimeOnly("org.springframework.cloud", "spring-cloud-sleuth-zipkin")
+        testRuntimeOnly("org.springframework.cloud", "spring-cloud-starter-sleuth")
+    } else {
+        testRuntimeOnly("io.micrometer", "micrometer-tracing-bridge-brave")
+        testRuntimeOnly("io.zipkin.reporter2", "zipkin-reporter-brave")
+    }
 }
 
 tasks.withType<JavaCompile> {

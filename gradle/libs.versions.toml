@@ -1,6 +1,8 @@
 [versions]
 
 boot2 = "2.7.12"
+boot3 = "3.0.7"
+boot31 = "3.1.0"
 dsproxy = "1.9"
 errorprone = "2.19.1"
 findbugs = "3.0.2"
