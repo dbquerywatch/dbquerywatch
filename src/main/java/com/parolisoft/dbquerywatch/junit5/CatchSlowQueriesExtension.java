@@ -10,7 +10,7 @@ import lombok.SneakyThrows;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
-import org.junit.jupiter.api.extension.BeforeEachCallback;
+import org.junit.jupiter.api.extension.BeforeTestExecutionCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;
@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-class CatchSlowQueriesExtension implements BeforeAllCallback, BeforeEachCallback, AfterEachCallback, AfterAllCallback {
+class CatchSlowQueriesExtension implements BeforeAllCallback, BeforeTestExecutionCallback, AfterEachCallback, AfterAllCallback {
 
     private static final String PROPERTY_SOURCE_NAME = "custom.configuration.parameters";
 
@@ -39,7 +39,7 @@ class CatchSlowQueriesExtension implements BeforeAllCallback, BeforeEachCallback
     }
 
     @Override
-    public void beforeEach(ExtensionContext context) {
+    public void beforeTestExecution(ExtensionContext context) {
         ClassIdRepository.save(context.getRequiredTestClass());
     }
 
