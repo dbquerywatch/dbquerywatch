@@ -4,14 +4,18 @@ import lombok.experimental.UtilityClass;
 import org.slf4j.MDC;
 
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @UtilityClass
 public class ClassIdRepository {
 
+    private static final AtomicInteger THREAD_LOCAL_HITS = new AtomicInteger();
+    private static final AtomicInteger MDC_HITS = new AtomicInteger();
+
     public Optional<String> load() {
         return Optionals.or(
-            ThreadLocalClassIdRepository::load,
-            MdcClassIdRepository::load
+            () -> meteredOptional(ThreadLocalClassIdRepository.load(), THREAD_LOCAL_HITS),
+            () -> meteredOptional(MdcClassIdRepository.load(), MDC_HITS)
         );
     }
 
@@ -21,6 +25,27 @@ public class ClassIdRepository {
 
     public void clear() {
         ThreadLocalClassIdRepository.clear();
+    }
+
+    public void resetMetrics() {
+        THREAD_LOCAL_HITS.getAndSet(0);
+        MDC_HITS.getAndSet(0);
+    }
+
+    public int getThreadLocalHits() {
+        return THREAD_LOCAL_HITS.get();
+    }
+
+    public int getMdcHits() {
+        return MDC_HITS.get();
+    }
+
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+    private static <T> Optional<T> meteredOptional(Optional<T> optional, AtomicInteger hits) {
+        if (optional.isPresent()) {
+            hits.incrementAndGet();
+        }
+        return optional;
     }
 
     @UtilityClass

@@ -1,24 +1,30 @@
 package com.parolisoft.dbquerywatch.application;
 
 import com.google.common.truth.Correspondence;
-import com.parolisoft.dbquerywatch.internal.Issue;
 import com.parolisoft.dbquerywatch.SlowQueriesFoundException;
+import com.parolisoft.dbquerywatch.internal.Issue;
 import com.parolisoft.dbquerywatch.internal.SlowQueryReport;
 import com.parolisoft.dbquerywatch.internal.SqlUtils;
-import org.junit.jupiter.api.Named;
+import lombok.RequiredArgsConstructor;
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.description.annotation.AnnotationDescription;
 import org.junit.jupiter.engine.descriptor.ClassTestDescriptor;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.testkit.engine.EngineExecutionResults;
 import org.junit.platform.testkit.engine.EngineTestKit;
 import org.junit.platform.testkit.engine.Event;
 import org.junit.platform.testkit.engine.EventType;
+import org.junitpioneer.jupiter.cartesian.CartesianTest;
+import org.springframework.context.ApplicationContextInitializer;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
 
+import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth8.assertThat;
@@ -28,14 +34,39 @@ import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass
 @SuppressWarnings("SameParameterValue")
 public class CatchSlowQueriesTest {
 
-    @ParameterizedTest
-    @MethodSource("testClassProvider")
-    public void should_catch_slow_queries_for_all_supported_databases_including_small_tables(Class<? extends IntegrationTests> testClass) {
+    @RequiredArgsConstructor
+    private enum DatabaseKind {
+        H2(null),
+        MySQL(MySQLDatabaseContainerInitializer.class),
+        Oracle(OracleDatabaseContainerInitializer.class),
+        Postgres(PostgresDatabaseContainerInitializer.class);
+
+        private final @Nullable Class<? extends ApplicationContextInitializer<ConfigurableApplicationContext>> initializer;
+    }
+
+    @RequiredArgsConstructor
+    private enum ClientKind {
+        SameThread(MockMvcIntegrationTests.class),
+        AnotherThread(WebClientIntegrationTests.class);
+
+        private final Class<? extends BaseIntegrationTests> baseClass;
+    }
+
+    @CartesianTest
+    public void should_catch_slow_queries_for_all_supported_databases_including_small_tables(
+        @CartesianTest.Enum DatabaseKind databaseKind,
+        @CartesianTest.Enum ClientKind clientKind
+    ) {
+        // Given
         Map<String, String> properties = Map.of(
             "dbquerywatch.small-tables", ""
         );
+        Class<?> testClass = createTestClass(databaseKind, clientKind);
+
+        // When
         List<SlowQueryReport> reports = runIntegrationTests(testClass, properties, 3);
 
+        // Then
         assertThat(reports).hasSize(2);
 
         assertThat(reports.stream().flatMap(rep -> rep.getMethods().stream()))
@@ -51,14 +82,21 @@ public class CatchSlowQueriesTest {
             .containsExactly("articles", "journals");
     }
 
-    @ParameterizedTest
-    @MethodSource("testClassProvider")
-    public void should_catch_slow_queries_for_all_supported_databases_excluding_small_tables(Class<? extends IntegrationTests> testClass) {
+    @CartesianTest
+    public void should_catch_slow_queries_for_all_supported_databases_excluding_small_tables(
+        @CartesianTest.Enum DatabaseKind databaseKind,
+        @CartesianTest.Enum ClientKind clientKind
+    ) {
+        // Given
         Map<String, String> properties = Map.of(
             "dbquerywatch.small-tables", "journals"
         );
+        Class<?> testClass = createTestClass(databaseKind, clientKind);
+
+        // When
         List<SlowQueryReport> reports = runIntegrationTests(testClass, properties, 3);
 
+        // Then
         assertThat(reports).hasSize(1);
 
         SlowQueryReport singleReport = reports.get(0);
@@ -76,18 +114,30 @@ public class CatchSlowQueriesTest {
             .containsExactly("articles");
     }
 
-    private static Stream<Named<Class<? extends IntegrationTests>>> testClassProvider() {
-        return Stream.of(
-                H2IntegrationTests.class,
-                MySQLIntegrationTests.class,
-                OracleIntegrationTests.class,
-                PostgresIntegrationTests.class
+    @SuppressWarnings("resource")
+    private Class<?> createTestClass(DatabaseKind databaseKind, ClientKind clientKind) {
+        if (databaseKind.initializer == null) {
+            return clientKind.baseClass;
+        }
+        return new ByteBuddy()
+            .subclass(clientKind.baseClass)
+            .annotateType(
+                AnnotationDescription.Builder.ofType(ActiveProfiles.class)
+                    .defineArray("value", databaseKind.toString().toLowerCase(Locale.US))
+                    .build()
             )
-            .map(cls -> Named.of(cls.getSimpleName(), cls));
+            .annotateType(
+                AnnotationDescription.Builder.ofType(ContextConfiguration.class)
+                    .defineTypeArray("initializers", databaseKind.initializer)
+                    .build()
+            )
+            .make()
+            .load(getClass().getClassLoader())
+            .getLoaded();
     }
 
     private static List<SlowQueryReport> runIntegrationTests(
-        Class<? extends IntegrationTests> testClass,
+        Class<?> testClass,
         Map<String, String> properties,
         int numTests
     ) {

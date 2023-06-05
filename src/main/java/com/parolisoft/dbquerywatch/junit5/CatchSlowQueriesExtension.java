@@ -30,12 +30,7 @@ class CatchSlowQueriesExtension implements BeforeAllCallback, BeforeTestExecutio
 
     @Override
     public void beforeAll(ExtensionContext context) {
-        List<String> propertyNames = getPropertyNames();
-        Map<String, Object> parameters = getConfigurationParameters(context, propertyNames);
-        ApplicationContext springContext = SpringExtension.getApplicationContext(context);
-        MutablePropertySources propertySources = ((ConfigurableEnvironment) springContext.getEnvironment()).getPropertySources();
-        PropertySource<?> propertySource = new MapPropertySource(PROPERTY_SOURCE_NAME, parameters);
-        propertySources.addLast(propertySource);  // or replace it
+        exportJUnitConfigurationParametersToSpringProperties(context);
     }
 
     @Override
@@ -53,6 +48,15 @@ class CatchSlowQueriesExtension implements BeforeAllCallback, BeforeTestExecutio
         ApplicationContext springContext = SpringExtension.getApplicationContext(context);
         AnalyzerSettings settings = new AnalyzerSettingsAdapter(springContext.getEnvironment());
         ExecutionPlanManager.verifyAll(settings, context.getRequiredTestClass());
+    }
+
+    private void exportJUnitConfigurationParametersToSpringProperties(ExtensionContext context) {
+        List<String> propertyNames = getPropertyNames();
+        ApplicationContext springContext = SpringExtension.getApplicationContext(context);
+        Map<String, Object> parameters = getConfigurationParameters(context, propertyNames);
+        MutablePropertySources propertySources = ((ConfigurableEnvironment) springContext.getEnvironment()).getPropertySources();
+        PropertySource<?> propertySource = new MapPropertySource(PROPERTY_SOURCE_NAME, parameters);
+        propertySources.addLast(propertySource);  // or replace it
     }
 
     @SneakyThrows

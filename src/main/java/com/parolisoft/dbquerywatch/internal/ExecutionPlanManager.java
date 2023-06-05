@@ -111,6 +111,7 @@ public class ExecutionPlanManager {
     }
 
     private static boolean isSyntheticClass(String className) {
+        // TODO: cover other cases: anonymous, lambda function, ... Validate with Unit Tests
         return className.contains(".$Proxy");
     }
 
