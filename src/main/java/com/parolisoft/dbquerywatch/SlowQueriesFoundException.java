@@ -19,13 +19,26 @@ public class SlowQueriesFoundException extends CleanRuntimeException {
 
     private static final String LF_INDENT = "\n    ";
 
+    /**
+     * Holds the provided SlowQueryReport items.
+     */
     private final List<SlowQueryReport> slowQueries;
 
+    /**
+     * Creates an instance of the exception based on collection of SlowQueryReport items.
+     *
+     * @param slowQueries The SlowQueryReport items.
+     */
     public SlowQueriesFoundException(List<SlowQueryReport> slowQueries) {
         super(describe(slowQueries));
         this.slowQueries = new ArrayList<>(slowQueries);
     }
 
+    /**
+     * Retrieves the SlowQueryReport items.
+     *
+     * @return The SlowQueryReport items.
+     */
     public List<SlowQueryReport> getSlowQueries() {
         return Collections.unmodifiableList(slowQueries);
     }

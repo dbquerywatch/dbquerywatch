@@ -73,12 +73,15 @@ dependencies {
     testImplementation("ch.qos.logback", "logback-classic")
     testImplementation("com.google.truth", "truth", versions.truth.get())
     testImplementation("com.google.truth.extensions", "truth-java8-extension", versions.truth.get())
+    testImplementation("net.bytebuddy", "byte-buddy")
+    testImplementation("org.junit-pioneer", "junit-pioneer", versions.junit.pioneer.get())
     testImplementation("org.junit.jupiter", "junit-jupiter-engine")
     testImplementation("org.junit.platform", "junit-platform-testkit")
     testImplementation("org.mapstruct", "mapstruct", versions.mapstruct.get())
     testImplementation("org.springframework.boot", "spring-boot-starter-data-jpa")
     testImplementation("org.springframework.boot", "spring-boot-starter-data-rest")
     testImplementation("org.springframework.boot", "spring-boot-starter-test")
+    testImplementation("org.springframework.boot", "spring-boot-starter-webflux")
     testImplementation("org.testcontainers", "mysql")
     testImplementation("org.testcontainers", "oracle-xe")
     testImplementation("org.testcontainers", "postgresql")
@@ -89,8 +92,8 @@ dependencies {
     testRuntimeOnly("org.flywaydb", "flyway-core")
     testRuntimeOnly("org.flywaydb", "flyway-mysql")
     testRuntimeOnly("org.postgresql", "postgresql")
-    testRuntimeOnly("org.springframework.cloud", "spring-cloud-starter-sleuth")
     testRuntimeOnly("org.springframework.cloud", "spring-cloud-sleuth-zipkin")
+    testRuntimeOnly("org.springframework.cloud", "spring-cloud-starter-sleuth")
 }
 
 tasks.withType<JavaCompile> {
@@ -145,6 +148,13 @@ tasks.jacocoTestCoverageVerification {
                 minimum = "0.90".toBigDecimal()
             }
         }
+        rule {
+            element = "CLASS"
+            includes = listOf("*ExecutionPlanAnalyzer")
+            limit {
+                minimum = "0.95".toBigDecimal()
+            }
+        }
     }
 }
 
@@ -158,6 +168,12 @@ tasks.check {
 
 tasks.withType<Javadoc> {
     exclude("**/internal/*")
+    (options as StandardJavadocDocletOptions).apply {
+        addBooleanOption("html5", true)
+        // See JDK-8200363 (https://bugs.openjdk.java.net/browse/JDK-8200363)
+        // for information about the -Xwerror option.
+        addBooleanOption("Xwerror", true)
+    }
 }
 
 apply(from = "./gradle/dependencyUpdates.gradle.kts")
