@@ -1,6 +1,7 @@
 package com.parolisoft.dbquerywatch.application;
 
 import com.google.common.truth.Correspondence;
+import com.parolisoft.dbquerywatch.NoQueriesWereAnalyzed;
 import com.parolisoft.dbquerywatch.SlowQueriesFoundException;
 import com.parolisoft.dbquerywatch.internal.Issue;
 import com.parolisoft.dbquerywatch.internal.SlowQueryReport;
@@ -8,6 +9,7 @@ import com.parolisoft.dbquerywatch.internal.SqlUtils;
 import lombok.RequiredArgsConstructor;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.annotation.AnnotationDescription;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.engine.descriptor.ClassTestDescriptor;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.testkit.engine.EngineExecutionResults;
@@ -28,6 +30,7 @@ import java.util.Optional;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth8.assertThat;
+import static java.util.Collections.emptyMap;
 import static org.junit.platform.engine.TestExecutionResult.Status.FAILED;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
 
@@ -64,7 +67,8 @@ public class CatchSlowQueriesTest {
         Class<?> testClass = createTestClass(databaseKind, clientKind);
 
         // When
-        List<SlowQueryReport> reports = runIntegrationTests(testClass, properties, 3);
+        SlowQueriesFoundException ex = runIntegrationTests(testClass, properties, 3, SlowQueriesFoundException.class);
+        List<SlowQueryReport> reports = ex.getSlowQueries();
 
         // Then
         assertThat(reports).hasSize(2);
@@ -94,7 +98,8 @@ public class CatchSlowQueriesTest {
         Class<?> testClass = createTestClass(databaseKind, clientKind);
 
         // When
-        List<SlowQueryReport> reports = runIntegrationTests(testClass, properties, 3);
+        SlowQueriesFoundException ex = runIntegrationTests(testClass, properties, 3, SlowQueriesFoundException.class);
+        List<SlowQueryReport> reports = ex.getSlowQueries();
 
         // Then
         assertThat(reports).hasSize(1);
@@ -112,6 +117,11 @@ public class CatchSlowQueriesTest {
         assertThat(tableNames)
             .comparingElementsUsing(Correspondence.from(SqlUtils::tableNameMatch, "equivalent table name"))
             .containsExactly("articles");
+    }
+
+    @Test
+    public void should_throw_fail_if_no_queries_were_analyzed() {
+        runIntegrationTests(NoQueriesWereAnalyzedTests.class, emptyMap(), 1, NoQueriesWereAnalyzed.class);
     }
 
     @SuppressWarnings("resource")
@@ -136,10 +146,11 @@ public class CatchSlowQueriesTest {
             .getLoaded();
     }
 
-    private static List<SlowQueryReport> runIntegrationTests(
+    private static <T extends RuntimeException> T runIntegrationTests(
         Class<?> testClass,
         Map<String, String> properties,
-        int numTests
+        int numTests,
+        Class<T> clazz
     ) {
         EngineExecutionResults engineResults = EngineTestKit
             .engine("junit-jupiter")
@@ -166,8 +177,8 @@ public class CatchSlowQueriesTest {
         Optional<Throwable> throwable = executionResult.getThrowable();
         assertThat(throwable).isPresent();
         //noinspection OptionalGetWithoutIsPresent
-        assertThat(throwable.get()).isInstanceOf(SlowQueriesFoundException.class);
+        assertThat(throwable.get()).isInstanceOf(clazz);
 
-        return ((SlowQueriesFoundException) throwable.get()).getSlowQueries();
+        return clazz.cast(throwable.get());
     }
 }
