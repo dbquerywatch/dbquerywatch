@@ -31,4 +31,11 @@ jobs:
 
       - name: Test for Spring Boot 3.1
         run: ./gradlew --no-daemon --stacktrace -PtestBootVariant=31 test
+
+      - name: Upload reports
+        if: failure()
+        uses: actions/upload-artifact@master
+        with:
+          name: test-results
+          path: '**/build/reports/**'
 ...
