@@ -14,9 +14,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Map;
 
+import static com.google.common.truth.Truth.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -33,8 +32,8 @@ public class MockMvcIntegrationTests extends BaseIntegrationTests {
 
     @AfterAll
     void verifyMetrics() {
-        assertTrue(ClassIdRepository.getThreadLocalHits() > 0);
-        assertEquals(0, ClassIdRepository.getMdcHits());
+        assertThat(ClassIdRepository.getThreadLocalHits()).isGreaterThan(0);
+        assertThat(ClassIdRepository.getMdcHits()).isEqualTo(0);
     }
 
     @Test
