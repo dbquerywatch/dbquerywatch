@@ -9,5 +9,7 @@ interface ExecutionPlanAnalyzer {
 
     JdbcClient getJdbcClient();
 
+    void checkConfiguration();
+
     AnalysisResult analyze(String querySql, List<ParameterSetOperation> operations);
 }

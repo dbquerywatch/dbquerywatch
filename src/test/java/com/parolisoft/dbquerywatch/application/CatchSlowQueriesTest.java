@@ -1,6 +1,7 @@
 package com.parolisoft.dbquerywatch.application;
 
 import com.google.common.truth.Correspondence;
+import com.parolisoft.dbquerywatch.ExecutionPlanAnalyzerException;
 import com.parolisoft.dbquerywatch.NoQueriesWereAnalyzed;
 import com.parolisoft.dbquerywatch.SlowQueriesFoundException;
 import com.parolisoft.dbquerywatch.internal.Issue;
@@ -64,7 +65,7 @@ public class CatchSlowQueriesTest {
         Map<String, String> properties = Map.of(
             "dbquerywatch.small-tables", ""
         );
-        Class<?> testClass = createTestClass(databaseKind, clientKind);
+        Class<?> testClass = createTestClass(clientKind, databaseKind);
 
         // When
         SlowQueriesFoundException ex = runIntegrationTests(testClass, properties, 3, SlowQueriesFoundException.class);
@@ -95,7 +96,7 @@ public class CatchSlowQueriesTest {
         Map<String, String> properties = Map.of(
             "dbquerywatch.small-tables", "journals"
         );
-        Class<?> testClass = createTestClass(databaseKind, clientKind);
+        Class<?> testClass = createTestClass(clientKind, databaseKind);
 
         // When
         SlowQueriesFoundException ex = runIntegrationTests(testClass, properties, 3, SlowQueriesFoundException.class);
@@ -120,25 +121,41 @@ public class CatchSlowQueriesTest {
     }
 
     @Test
-    public void should_throw_fail_if_no_queries_were_analyzed() {
+    public void should_throw_exception_if_no_queries_were_analyzed() {
         runIntegrationTests(NoQueriesWereAnalyzedTests.class, emptyMap(), 1, NoQueriesWereAnalyzed.class);
     }
 
+    @Test
+    public void should_throw_exception_if_postgres_is_misconfigured() {
+        Class<?> testClass = createTestClass(ClientKind.SameThread, DatabaseKind.Postgres.toString(),
+            PostgresDatabaseMisconfiguredContainerInitializer.class);
+        ExecutionPlanAnalyzerException ex = runIntegrationTests(testClass, emptyMap(), 3, ExecutionPlanAnalyzerException.class);
+        assertThat(ex.getLocalizedMessage()).contains("ENABLE_SEQSCAN");
+    }
+
+    private Class<?> createTestClass(ClientKind clientKind, DatabaseKind databaseKind) {
+        return createTestClass(clientKind, databaseKind.toString(), databaseKind.initializer);
+    }
+
     @SuppressWarnings("resource")
-    private Class<?> createTestClass(DatabaseKind databaseKind, ClientKind clientKind) {
-        if (databaseKind.initializer == null) {
+    private Class<?> createTestClass(
+        ClientKind clientKind,
+        String databaseName,
+        Class<? extends ApplicationContextInitializer<ConfigurableApplicationContext>> initializer
+    ) {
+        if (initializer == null) {
             return clientKind.baseClass;
         }
         return new ByteBuddy()
             .subclass(clientKind.baseClass)
             .annotateType(
                 AnnotationDescription.Builder.ofType(ActiveProfiles.class)
-                    .defineArray("value", databaseKind.toString().toLowerCase(Locale.US))
+                    .defineArray("value", databaseName.toLowerCase(Locale.US))
                     .build()
             )
             .annotateType(
                 AnnotationDescription.Builder.ofType(ContextConfiguration.class)
-                    .defineTypeArray("initializers", databaseKind.initializer)
+                    .defineTypeArray("initializers", initializer)
                     .build()
             )
             .make()

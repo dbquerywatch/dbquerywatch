@@ -1,6 +1,7 @@
 package com.parolisoft.dbquerywatch.internal;
 
 import com.jayway.jsonpath.JsonPath;
+import com.parolisoft.dbquerywatch.ExecutionPlanAnalyzerException;
 import com.parolisoft.dbquerywatch.internal.jdbc.JdbcClient;
 import net.ttddyy.dsproxy.proxy.ParameterSetOperation;
 
@@ -11,6 +12,8 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
+
+import static java.util.Collections.emptyList;
 
 class PostgresExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
 
@@ -29,6 +32,15 @@ class PostgresExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
 
     PostgresExecutionPlanAnalyzer(JdbcClient jdbcClient) {
         super(jdbcClient);
+    }
+
+    @Override
+    public void checkConfiguration() {
+        String state = jdbcClient.queryForString("SHOW ENABLE_SEQSCAN", emptyList())
+            .orElse("");
+        if (!"off".equalsIgnoreCase(state)) {
+            throw new ExecutionPlanAnalyzerException(String.format("ENABLE_SEQSCAN is set to '%s' but expected 'off'", state));
+        }
     }
 
     @Override

@@ -65,26 +65,28 @@ public class ExecutionPlanManager {
             throw new NoQueriesWereAnalyzed();
         }
         List<SlowQueryReport> slowQueries = new ArrayList<>();
-        usagesPerAnalyzer.forEach((analyzer, usagesPerSql) ->
-            usagesPerSql.forEach((querySql, usages) -> {
-                AnalysisResult result = analyzer.analyze(querySql, firstOrElse(usages.allOperations, emptyList()));
-                List<Issue> issues = result.getIssues().stream()
-                    .filter(issue ->
-                        settings.smallTables().stream()
-                            .noneMatch(st -> tableNameMatch(st, issue.getObjectName()))
-                    )
-                    .collect(Collectors.toList());
-                if (log.isDebugEnabled()) {
-                    log.debug("Query SQL: {}", querySql);
-                    log.debug("Execution plan: {}", result.getExecutionPlan());
-                    log.debug("Issues: {}", issues);
-                }
-                if (!issues.isEmpty()) {
-                    JdbcClient jdbcClient = analyzer.getJdbcClient();
-                    slowQueries.add(new SlowQueryReport(jdbcClient.getDataSourceName(), jdbcClient.getDataSource(),
-                        querySql, result.getExecutionPlan(), usages.methods, issues));
-                }
-            })
+        usagesPerAnalyzer.forEach((analyzer, usagesPerSql) -> {
+                analyzer.checkConfiguration();
+                usagesPerSql.forEach((querySql, usages) -> {
+                    AnalysisResult result = analyzer.analyze(querySql, firstOrElse(usages.allOperations, emptyList()));
+                    List<Issue> issues = result.getIssues().stream()
+                        .filter(issue ->
+                            settings.smallTables().stream()
+                                .noneMatch(st -> tableNameMatch(st, issue.getObjectName()))
+                        )
+                        .collect(Collectors.toList());
+                    if (log.isDebugEnabled()) {
+                        log.debug("Query SQL: {}", querySql);
+                        log.debug("Execution plan: {}", result.getExecutionPlan());
+                        log.debug("Issues: {}", issues);
+                    }
+                    if (!issues.isEmpty()) {
+                        JdbcClient jdbcClient = analyzer.getJdbcClient();
+                        slowQueries.add(new SlowQueryReport(jdbcClient.getDataSourceName(), jdbcClient.getDataSource(),
+                            querySql, result.getExecutionPlan(), usages.methods, issues));
+                    }
+                });
+            }
         );
         if (!slowQueries.isEmpty()) {
             throw new SlowQueriesFoundException(slowQueries);
