@@ -31,6 +31,7 @@ fun isNonStable(version: String): Boolean {
 val upgradesToIgnore = listOf(
     "ch.qos.logback:*:>\${currentVersionMajor}.\${currentVersionMinor}",
     "org.flywaydb:*:>\${currentVersionMajor}",
+    "org.openrewrite.recipe:*:>\${currentVersionMajor}",
     "org.slf4j:*:>\${currentVersionMajor}",
     "org.springframework:*:>\${currentVersionMajor}",
     "org.springframework.boot:*:>\${currentVersionMajor}",
