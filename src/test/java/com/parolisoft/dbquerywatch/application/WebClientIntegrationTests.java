@@ -14,9 +14,8 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.util.Map;
 
+import static com.google.common.truth.Truth.assertThat;
 import static com.parolisoft.dbquerywatch.spring.SpringTestHelpers.addTraceHeaders;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @Disabled("Expected to fail. Go to junit-platform.properties to re-enable all disabled tests at once.")
@@ -26,8 +25,8 @@ public class WebClientIntegrationTests extends BaseIntegrationTests {
 
     @AfterAll
     void verifyMetrics() {
-        assertTrue(ClassIdRepository.getMdcHits() > 0);
-        assertEquals(0, ClassIdRepository.getThreadLocalHits());
+        assertThat(ClassIdRepository.getMdcHits()).isGreaterThan(0);
+        assertThat(ClassIdRepository.getThreadLocalHits()).isEqualTo(0);
     }
 
     @BeforeEach
