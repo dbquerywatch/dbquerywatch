@@ -18,6 +18,7 @@ class PostgresDatabaseContainerInitializer extends JdbcDatabaseContainerInitiali
             // Discourages the planner from using sequential scan plan types.
             "-c", "enable_seqscan=off"
         )
+        .withLabel(REUSE_LABEL_ID, reuseLabelValue(PostgreSQLContainer.NAME))
         .withReuse(true);
 
     @Override

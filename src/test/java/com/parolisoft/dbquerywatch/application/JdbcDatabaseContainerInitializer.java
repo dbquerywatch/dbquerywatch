@@ -11,6 +11,12 @@ import java.util.Map;
 abstract class JdbcDatabaseContainerInitializer
     implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
+    protected static final String REUSE_LABEL_ID = "io.dbquerywatch.reuse-id";
+
+    protected static String reuseLabelValue(String databaseName) {
+        return databaseName;
+    }
+
     protected static void initialize(
         @Nonnull ConfigurableApplicationContext applicationContext,
         JdbcDatabaseContainer<?> jdbcDatabaseContainer
