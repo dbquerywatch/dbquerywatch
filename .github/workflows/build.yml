@@ -8,6 +8,8 @@ on:
 jobs:
   ci-build:
     runs-on: ubuntu-latest
+    env:
+      TESTCONTAINERS_REUSE_ENABLE: true
     steps:
       - uses: actions/checkout@v3
         with:
