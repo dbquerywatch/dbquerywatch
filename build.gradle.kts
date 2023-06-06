@@ -54,7 +54,7 @@ val testBootVersion = when (testBootVariant) {
 println("Spring Boot version: $testBootVersion")
 
 dependencies {
-    rewrite("org.openrewrite.recipe:rewrite-migrate-java:1.21.1")
+    rewrite("org.openrewrite.recipe:rewrite-migrate-java:2.0.0")
 
     modules {
         module("com.vaadin.external.google:android-json") {
