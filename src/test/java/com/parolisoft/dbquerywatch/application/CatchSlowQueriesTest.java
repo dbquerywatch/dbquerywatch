@@ -127,27 +127,27 @@ public class CatchSlowQueriesTest {
 
     @Test
     public void should_throw_exception_if_postgres_is_misconfigured() {
-        Class<?> testClass = createTestClass(ClientKind.SameThread, DatabaseKind.Postgres.toString(),
-            PostgresDatabaseMisconfiguredContainerInitializer.class);
+        Class<?> testClass = createTestClass(DatabaseKind.Postgres.toString(),
+            MockMvcIntegrationTests.class, PostgresDatabaseMisconfiguredContainerInitializer.class);
         ExecutionPlanAnalyzerException ex = runIntegrationTests(testClass, emptyMap(), 3, ExecutionPlanAnalyzerException.class);
         assertThat(ex.getLocalizedMessage()).contains("ENABLE_SEQSCAN");
     }
 
     private Class<?> createTestClass(ClientKind clientKind, DatabaseKind databaseKind) {
-        return createTestClass(clientKind, databaseKind.toString(), databaseKind.initializer);
+        return createTestClass(databaseKind.toString(), clientKind.baseClass, databaseKind.initializer);
     }
 
     @SuppressWarnings("resource")
     private Class<?> createTestClass(
-        ClientKind clientKind,
         String databaseName,
+        Class<? extends BaseIntegrationTests> baseClass,
         Class<? extends ApplicationContextInitializer<ConfigurableApplicationContext>> initializer
     ) {
         if (initializer == null) {
-            return clientKind.baseClass;
+            return baseClass;
         }
         return new ByteBuddy()
-            .subclass(clientKind.baseClass)
+            .subclass(baseClass)
             .annotateType(
                 AnnotationDescription.Builder.ofType(ActiveProfiles.class)
                     .defineArray("value", databaseName.toLowerCase(Locale.US))
