@@ -50,8 +50,8 @@ public class CatchSlowQueriesTest {
 
     @RequiredArgsConstructor
     private enum ClientKind {
-        SameThread(MockMvcIntegrationTests.class),
-        AnotherThread(WebClientIntegrationTests.class);
+        Sequential(MockMvcIntegrationTests.class),
+        Concurrent(WebClientIntegrationTests.class);
 
         private final Class<? extends BaseIntegrationTests> baseClass;
     }
