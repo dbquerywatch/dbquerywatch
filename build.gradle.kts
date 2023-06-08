@@ -96,7 +96,6 @@ dependencies {
     testImplementation("org.junit.jupiter", "junit-jupiter-engine")
     testImplementation("org.junit.platform", "junit-platform-testkit")
     testImplementation("org.mapstruct", "mapstruct", versions.mapstruct.get())
-    testImplementation("org.springframework.boot", "spring-boot-starter-actuator")
     testImplementation("org.springframework.boot", "spring-boot-starter-data-jpa")
     testImplementation("org.springframework.boot", "spring-boot-starter-data-rest")
     testImplementation("org.springframework.boot", "spring-boot-starter-test")
@@ -119,6 +118,7 @@ dependencies {
     } else {
         testRuntimeOnly("io.micrometer", "micrometer-tracing-bridge-brave")
         testRuntimeOnly("io.zipkin.reporter2", "zipkin-reporter-brave")
+        testRuntimeOnly("org.springframework.boot", "spring-boot-starter-actuator")
     }
 }
 
