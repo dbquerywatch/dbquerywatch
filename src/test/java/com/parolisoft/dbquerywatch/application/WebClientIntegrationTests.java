@@ -3,7 +3,6 @@ package com.parolisoft.dbquerywatch.application;
 import com.parolisoft.dbquerywatch.internal.ClassIdRepository;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +14,6 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import java.util.Map;
 
 import static com.google.common.truth.Truth.assertThat;
-import static com.parolisoft.dbquerywatch.spring.SpringTestHelpers.addTraceHeaders;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @Disabled("Expected to fail. Go to junit-platform.properties to re-enable all disabled tests at once.")
@@ -27,13 +25,6 @@ public class WebClientIntegrationTests extends BaseIntegrationTests {
     void verifyMetrics() {
         assertThat(ClassIdRepository.getMdcHits()).isGreaterThan(0);
         assertThat(ClassIdRepository.getThreadLocalHits()).isEqualTo(0);
-    }
-
-    @BeforeAll
-    void addTraceHeadersToWebTestClient() {
-        this.client = this.client.mutate()
-            .defaultHeaders(headers -> addTraceHeaders(headers, getClass()))
-            .build();
     }
 
     @Test

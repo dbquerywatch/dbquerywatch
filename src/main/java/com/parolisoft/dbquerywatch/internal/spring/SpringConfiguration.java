@@ -1,4 +1,4 @@
-package com.parolisoft.dbquerywatch.spring;
+package com.parolisoft.dbquerywatch.internal.spring;
 
 import com.parolisoft.dbquerywatch.internal.QueryExecutionListener;
 import com.parolisoft.dbquerywatch.internal.jdbc.JdbcClient;

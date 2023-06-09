@@ -4,13 +4,14 @@
 :docinfo: shared
 :icons: font
 :sectnums:
+:toclevels: 3
 
 // Variables:
 :gh-org: parolisoft
 :gh-repo: dbquerywatch
 :release-group: com.parolisoft
 :release-module: dbquerywatch
-:release-version: 1.0.0
+:release-version: 1.1.0
 
 image:https://img.shields.io/maven-central/v/{release-group}/{release-module}.svg?label=Maven%20Central[Maven Central, link=https://search.maven.org/search?q=g:{release-group}%20AND%20a:{release-module}&core=gav]
 image:https://javadoc.io/badge/{release-group}/{release-module}.svg[Javadocs, link=https://javadoc.io/doc/{release-group}/{release-module}]
@@ -68,7 +69,7 @@ For Gradle (Kotlin):
 
 At its core, dbQueryWatch needs to link each performed database operation with its respective test class. In typical scenarios, this matching works effortlessly without any additional configuration.
 
-==== Sequential Scenario
+==== MockMvc
 
 Most Spring Boot integration tests are based on MockMvc that operates in a mock servlet environment, allowing test and persistence methods to run on the same thread. In that case, you only need to annotate your integration test classes with https://javadoc.io/doc/{release-group}/{release-module}/latest/com/parolisoft/dbquerywatch/junit5/CatchSlowQueries.html[@CatchSlowQueries] as shown below:
 
@@ -77,43 +78,35 @@ Most Spring Boot integration tests are based on MockMvc that operates in a mock 
 import com.parolisoft.dbquerywatch.junit5.CatchSlowQueries;
 
 @SpringBootTest
+@AutoConfigureMockMvc
 @CatchSlowQueries  // <1>
 class SomeIntegrationTest {
+    @Autowired MockMvc mvc;
 
     // ...
 }
 ----
 <1> Enables the slow query detector
 
-==== Concurrent Scenario
+==== Real Servlet Environment
 
 Some integration tests uses a real servlet environment that implicitly detaches the execution of test and persistence methods. In such case, dbQueryWatch requires context propagation provided by tracing tools like Spring Sleuth or Micrometer to ensure proper correlation between test classes and database operations. On section <<Appendix-Tracing>> you can find how to easily enable tracing in your project.
+
+dbQueryWatch automatically customize the autowired WebTestClient to include the HTTP tracing headers, compatible with both W3C/OpenTelemetry and Brave tracers.
 
 [source,java]
 ----
 import com.parolisoft.dbquerywatch.junit5.CatchSlowQueries;
 
-import static com.parolisoft.dbquerywatch.spring.SpringTestHelpers.buildTraceHeaders;
-
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @CatchSlowQueries  // <1>
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)  // <2>
 class SomeIntegrationTest {
     @Autowired WebTestClient client;
-
-    @BeforeAll
-    void addTraceHeadersToWebTestClient() {  // <3>
-        this.client = this.client.mutate()
-            .defaultHeaders(headers -> addTraceHeaders(headers, getClass()))
-            .build();
-    }
 
     // ...
 }
 ----
 <1> Enables the slow query detector
-<2> One instance per test class is required
-<3> Includes trace headers on every HTTP request sent by the WebTestClient instance.
 
 === Understanding the issues report
 

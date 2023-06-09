@@ -17,7 +17,5 @@ spring:
 logging:
   level:
     com.parolisoft.dbquerywatch.internal.ExecutionPlanManager: debug
-
-management:
-  tracing:
-    enabled: true
+  pattern:
+    level: '%clr(%5p) [%X{traceId:-},%X{spanId:-}]'
