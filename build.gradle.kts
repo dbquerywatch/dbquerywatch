@@ -82,6 +82,7 @@ dependencies {
     implementation("org.springframework", "spring-test")
     implementation("org.springframework", "spring-web")
     implementation("org.springframework.boot", "spring-boot")
+    implementation("org.springframework.boot", "spring-boot-test")
 
     testAnnotationProcessor("org.mapstruct", "mapstruct-processor", versions.mapstruct.get())
 

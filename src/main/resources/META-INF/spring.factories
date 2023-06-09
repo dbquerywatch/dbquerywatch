@@ -1,2 +1,3 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.parolisoft.dbquerywatch.spring.SpringConfiguration
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.parolisoft.dbquerywatch.internal.spring.SpringConfiguration
 org.springframework.boot.SpringApplicationRunListener=com.parolisoft.dbquerywatch.internal.spring.SpringBootApplicationRunListener
+org.springframework.test.context.ContextCustomizerFactory=com.parolisoft.dbquerywatch.internal.spring.TestClientTracingContextCustomizerFactory
