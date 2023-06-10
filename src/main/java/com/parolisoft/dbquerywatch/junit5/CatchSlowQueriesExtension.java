@@ -27,7 +27,7 @@ import java.util.Map;
 
 class CatchSlowQueriesExtension implements BeforeAllCallback, BeforeTestExecutionCallback, AfterEachCallback, AfterAllCallback {
 
-    private static final String PROPERTY_SOURCE_NAME = "custom.configuration.parameters";
+    private static final String PROPERTY_SOURCE_NAME = "dbquerywatch.properties";
 
     @Override
     public void beforeAll(ExtensionContext context) throws IOException {

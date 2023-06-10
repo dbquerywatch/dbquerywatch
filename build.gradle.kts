@@ -99,6 +99,7 @@ dependencies {
     testImplementation("com.google.truth", "truth", versions.truth.get())
     testImplementation("com.google.truth.extensions", "truth-java8-extension", versions.truth.get())
     testImplementation("net.bytebuddy", "byte-buddy")
+    testImplementation("org.jetbrains", "annotations", versions.jbannotations.get())
     testImplementation("org.junit-pioneer", "junit-pioneer", versions.junit.pioneer.get())
     testImplementation("org.junit.jupiter", "junit-jupiter-engine")
     testImplementation("org.junit.platform", "junit-platform-testkit")
