@@ -61,8 +61,8 @@ class CatchSlowQueriesExtension implements BeforeAllCallback, BeforeTestExecutio
     }
 
     @SneakyThrows
-    private List<String> getPropertyNames() {
-        try (InputStream resource = getClass().getResourceAsStream("/META-INF/additional-spring-configuration-metadata.json")) {
+    private List<String> getPropertyNames() throws IOException {
+        try (InputStream resource = getClass().getResourceAsStream("/META-INF/dbquerywatch-configuration-metadata.json")) {
             return JsonPath.parse(resource).read("$.properties[*].name");
         }
     }
