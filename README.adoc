@@ -24,6 +24,7 @@ endif::[]
 image:https://img.shields.io/maven-central/v/{release-group}/{release-module}.svg?label=Maven%20Central[Maven Central, link=https://search.maven.org/search?q=g:{release-group}%20AND%20a:{release-module}&core=gav]
 image:https://javadoc.io/badge/{release-group}/{release-module}.svg[Javadocs, link=https://javadoc.io/doc/{release-group}/{release-module}]
 image:https://github.com/{gh-org}/{gh-repo}/actions/workflows/build.yml/badge.svg?branch=master[Build, link=https://github.com/{gh-org}/{gh-repo}/actions/workflows/build.yml]
+image:https://coveralls.io/repos/github/{gh-org}/{gh-repo}/badge.svg?branch=master[Coverage, link="https://coveralls.io/github/{gh-org}/{gh-repo}?branch=master"]
 
 == What is it?
 
