@@ -4,6 +4,7 @@ import com.parolisoft.dbquerywatch.internal.ClassIdRepository;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -52,6 +53,7 @@ public class MockMvcIntegrationTests extends BaseIntegrationTests {
     }
 
     @Test
+    @Tag("slow-query")
     void should_find_article_by_year_range() throws Exception {
         mvc.perform(post("/articles/query")
                 .content(new JSONObject(Map.of("from_year", 1970, "to_year", 1980)).toString())
@@ -71,6 +73,7 @@ public class MockMvcIntegrationTests extends BaseIntegrationTests {
     }
 
     @Test
+    @Tag("slow-query")
     void should_find_journal_by_publisher() throws Exception {
         mvc.perform(get("/journals/{publisher}", "ACM")
                 .accept(MediaType.APPLICATION_JSON)
