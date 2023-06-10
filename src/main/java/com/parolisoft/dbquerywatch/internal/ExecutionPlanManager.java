@@ -4,6 +4,7 @@ import com.parolisoft.dbquerywatch.NoQueriesWereAnalyzed;
 import com.parolisoft.dbquerywatch.SlowQueriesFoundException;
 import com.parolisoft.dbquerywatch.internal.jdbc.JdbcClient;
 import lombok.Value;
+import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import net.ttddyy.dsproxy.proxy.ParameterSetOperation;
 
@@ -21,6 +22,7 @@ import static com.parolisoft.dbquerywatch.internal.SqlUtils.tableNameMatch;
 import static com.parolisoft.dbquerywatch.internal.Strings.prefixedBy;
 import static java.util.Collections.emptyList;
 
+@UtilityClass
 @Slf4j
 public class ExecutionPlanManager {
 

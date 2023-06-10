@@ -7,7 +7,6 @@ import com.parolisoft.dbquerywatch.internal.AnalyzerSettings;
 import com.parolisoft.dbquerywatch.internal.ClassIdRepository;
 import com.parolisoft.dbquerywatch.internal.ExecutionPlanManager;
 import com.parolisoft.dbquerywatch.internal.spring.AnalyzerSettingsAdapter;
-import lombok.SneakyThrows;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
@@ -20,6 +19,7 @@ import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
@@ -30,7 +30,7 @@ class CatchSlowQueriesExtension implements BeforeAllCallback, BeforeTestExecutio
     private static final String PROPERTY_SOURCE_NAME = "custom.configuration.parameters";
 
     @Override
-    public void beforeAll(ExtensionContext context) {
+    public void beforeAll(ExtensionContext context) throws IOException {
         exportJUnitConfigurationParametersToSpringProperties(context);
     }
 
@@ -51,7 +51,7 @@ class CatchSlowQueriesExtension implements BeforeAllCallback, BeforeTestExecutio
         ExecutionPlanManager.verifyAll(settings, context.getRequiredTestClass());
     }
 
-    private void exportJUnitConfigurationParametersToSpringProperties(ExtensionContext context) {
+    private void exportJUnitConfigurationParametersToSpringProperties(ExtensionContext context) throws IOException {
         List<String> propertyNames = getPropertyNames();
         ApplicationContext springContext = SpringExtension.getApplicationContext(context);
         Map<String, Object> parameters = getConfigurationParameters(context, propertyNames);
@@ -60,7 +60,6 @@ class CatchSlowQueriesExtension implements BeforeAllCallback, BeforeTestExecutio
         propertySources.addLast(propertySource);  // or replace it
     }
 
-    @SneakyThrows
     private List<String> getPropertyNames() throws IOException {
         try (InputStream resource = getClass().getResourceAsStream("/META-INF/dbquerywatch-configuration-metadata.json")) {
             return JsonPath.parse(resource).read("$.properties[*].name");
