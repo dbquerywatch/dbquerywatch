@@ -4,6 +4,7 @@ import com.parolisoft.dbquerywatch.internal.ClassIdRepository;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -43,6 +44,7 @@ public class WebClientIntegrationTests extends BaseIntegrationTests {
     }
 
     @Test
+    @Tag("slow-query")
     void should_find_article_by_year_range() {
         client.post()
             .uri("/articles/query")
@@ -60,6 +62,7 @@ public class WebClientIntegrationTests extends BaseIntegrationTests {
     }
 
     @Test
+    @Tag("slow-query")
     void should_find_journal_by_publisher() {
         client.get()
             .uri("/journals/{publisher}", "ACM")

@@ -10,9 +10,12 @@ import com.parolisoft.dbquerywatch.internal.SqlUtils;
 import lombok.RequiredArgsConstructor;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.annotation.AnnotationDescription;
+import org.jetbrains.annotations.Contract;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.engine.descriptor.ClassTestDescriptor;
+import org.junit.platform.engine.Filter;
 import org.junit.platform.engine.TestExecutionResult;
+import org.junit.platform.launcher.TagFilter;
 import org.junit.platform.testkit.engine.EngineExecutionResults;
 import org.junit.platform.testkit.engine.EngineTestKit;
 import org.junit.platform.testkit.engine.Event;
@@ -33,6 +36,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth8.assertThat;
 import static java.util.Collections.emptyMap;
 import static org.junit.platform.engine.TestExecutionResult.Status.FAILED;
+import static org.junit.platform.engine.TestExecutionResult.Status.SUCCESSFUL;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
 
 @SuppressWarnings("SameParameterValue")
@@ -54,6 +58,14 @@ public class CatchSlowQueriesTest {
         Concurrent(WebClientIntegrationTests.class);
 
         private final Class<? extends BaseIntegrationTests> baseClass;
+    }
+
+    @CartesianTest
+    public void should_succeed_if_no_slow_query_was_found(
+        @CartesianTest.Enum ClientKind clientKind
+    ) {
+        Class<?> testClass = createTestClass(clientKind, DatabaseKind.H2);
+        runIntegrationTests(testClass, emptyMap(), 1, null, TagFilter.excludeTags("slow-query"));
     }
 
     @CartesianTest
@@ -163,11 +175,13 @@ public class CatchSlowQueriesTest {
             .getLoaded();
     }
 
+    @Contract("_, _, _, null, _ -> null; _, _, _, !null, _ -> !null")
     private static <T extends RuntimeException> T runIntegrationTests(
         Class<?> testClass,
         Map<String, String> properties,
         int numTests,
-        Class<T> clazz
+        @Nullable Class<T> expectedExceptionClass,
+        Filter<?>... filters
     ) {
         EngineExecutionResults engineResults = EngineTestKit
             .engine("junit-jupiter")
@@ -175,6 +189,7 @@ public class CatchSlowQueriesTest {
             .configurationParameter("junit.jupiter.conditions.deactivate", "org.junit.*DisabledCondition")
             .configurationParameters(properties)
             .selectors(selectClass(testClass))
+            .filters(filters)
             .execute();
 
         engineResults
@@ -190,12 +205,16 @@ public class CatchSlowQueriesTest {
 
         Event classFinishedEvent = events.get(0);
         TestExecutionResult executionResult = classFinishedEvent.getRequiredPayload(TestExecutionResult.class);
+        if (expectedExceptionClass == null) {
+            assertThat(executionResult.getStatus()).isEqualTo(SUCCESSFUL);
+            return null;
+        }
         assertThat(executionResult.getStatus()).isEqualTo(FAILED);
         Optional<Throwable> throwable = executionResult.getThrowable();
         assertThat(throwable).isPresent();
         //noinspection OptionalGetWithoutIsPresent
-        assertThat(throwable.get()).isInstanceOf(clazz);
+        assertThat(throwable.get()).isInstanceOf(expectedExceptionClass);
 
-        return clazz.cast(throwable.get());
+        return expectedExceptionClass.cast(throwable.get());
     }
 }
