@@ -1,10 +1,9 @@
 package com.parolisoft.dbquerywatch.internal;
 
-import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
+import org.springframework.util.DigestUtils;
 
 import java.math.BigInteger;
-import java.security.MessageDigest;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -14,11 +13,8 @@ public class ClassIdSupport {
     private static final char CLASS_HASH_ID_CHAR1 = 'W'; /* 0x57 */
     private static final String CLASS_HASH_ID_PREFIX = "5157";
 
-    @SneakyThrows
     public static String generateClassId(Class<?> clazz) {
-        MessageDigest md = MessageDigest.getInstance("MD5");
-        md.update(clazz.getCanonicalName().getBytes(UTF_8));
-        byte[] digest = md.digest();
+        byte[] digest = DigestUtils.md5Digest(clazz.getCanonicalName().getBytes(UTF_8));
         digest[0] = CLASS_HASH_ID_CHAR0;
         digest[1] = CLASS_HASH_ID_CHAR1;
         return String.format("%032x", new BigInteger(1, digest));
