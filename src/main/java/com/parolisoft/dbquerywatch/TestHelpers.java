@@ -5,6 +5,7 @@ import lombok.experimental.UtilityClass;
 
 import javax.annotation.Nullable;
 import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -15,6 +16,8 @@ import java.util.Random;
  */
 @UtilityClass
 public class TestHelpers {
+
+    private static final Random RND = new SecureRandom();
 
     /**
      * Generate the hash ID for a given test class, compatible with 128 bit traceId.
@@ -51,7 +54,7 @@ public class TestHelpers {
 
     private static String generateRandomSpanId() {
         byte[] spanIdBytes = new byte[8];
-        new Random().nextBytes(spanIdBytes);
+        RND.nextBytes(spanIdBytes);
         return String.format("%016x", new BigInteger(1, spanIdBytes));
     }
 }

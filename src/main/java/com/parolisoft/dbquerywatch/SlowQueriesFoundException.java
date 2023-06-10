@@ -6,6 +6,7 @@ import com.parolisoft.dbquerywatch.internal.Issue;
 import com.parolisoft.dbquerywatch.internal.SlowQueryReport;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -67,14 +68,20 @@ public class SlowQueriesFoundException extends CleanRuntimeException {
         return sb.toString();
     }
 
-    private static final String DASHES = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
-
     @FormatMethod
     @SuppressWarnings("SameParameterValue")
     private static String heading(String fmt, Object... args) {
         String title = String.format(fmt, args);
-        int padLen = (80 - 7) - title.length();
-        //noinspection MalformedFormatString
-        return String.format("%.5s %s %." + padLen + "s", DASHES, title, DASHES);
+        char[] chars = new char[80];
+        Arrays.fill(chars, '-');
+        int index = 5;
+        chars[index++] = '|';
+        chars[index++] = ' ';
+        for (int i = 0; i < title.length(); i++) {
+            chars[index++] = title.charAt(i);
+        }
+        chars[index++] = ' ';
+        chars[index] = '|';
+        return new String(chars);
     }
 }

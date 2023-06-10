@@ -29,19 +29,19 @@ abstract class AbstractExecutionPlanAnalyzer implements ExecutionPlanAnalyzer {
         // everything is okay by default
     }
 
-    // TODO: move to Maps.getAsString
+    // Support Methods
+    // ------------------------------------------------------------------------
+
     @Nullable
-    protected static String getString(Map<String, Object> map, String key) {
-        Object value = map.get(key);
+    protected static <K, V> String getString(Map<K, V> map, K key) {
+        V value = map.get(key);
         return value != null ? value.toString() : null;
     }
 
-    // TODO: move to Json.toJson
     protected static String toJson(Collection<?> array) {
         return new JSONArray(array).toString();
     }
 
-    // TODO: move to Json.compactJson
     protected static String compactJson(String prettyJson) {
         if (IS_JSON_ARRAY.matcher(prettyJson).find()) {
             return new JSONArray(prettyJson).toString();

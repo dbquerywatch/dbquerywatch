@@ -40,7 +40,7 @@ import static org.junit.platform.engine.TestExecutionResult.Status.SUCCESSFUL;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
 
 @SuppressWarnings("SameParameterValue")
-public class CatchSlowQueriesTest {
+class CatchSlowQueriesTest {
 
     @RequiredArgsConstructor
     private enum DatabaseKind {
@@ -61,7 +61,7 @@ public class CatchSlowQueriesTest {
     }
 
     @CartesianTest
-    public void should_succeed_if_no_slow_query_was_found(
+    void should_succeed_if_no_slow_query_was_found(
         @CartesianTest.Enum ClientKind clientKind
     ) {
         Class<?> testClass = createTestClass(clientKind, DatabaseKind.H2);
@@ -69,7 +69,7 @@ public class CatchSlowQueriesTest {
     }
 
     @CartesianTest
-    public void should_catch_slow_queries_for_all_supported_databases_including_small_tables(
+    void should_catch_slow_queries_for_all_supported_databases_including_small_tables(
         @CartesianTest.Enum DatabaseKind databaseKind,
         @CartesianTest.Enum ClientKind clientKind
     ) {
@@ -97,7 +97,7 @@ public class CatchSlowQueriesTest {
     }
 
     @CartesianTest
-    public void should_catch_slow_queries_for_all_supported_databases_excluding_small_tables(
+    void should_catch_slow_queries_for_all_supported_databases_excluding_small_tables(
         @CartesianTest.Enum DatabaseKind databaseKind,
         @CartesianTest.Enum ClientKind clientKind
     ) {
@@ -127,12 +127,12 @@ public class CatchSlowQueriesTest {
     }
 
     @Test
-    public void should_throw_exception_if_no_queries_were_analyzed() {
+    void should_throw_exception_if_no_queries_were_analyzed() {
         runIntegrationTests(NoQueriesWereAnalyzedTests.class, 1, NoQueriesWereAnalyzed.class);
     }
 
     @Test
-    public void should_throw_exception_if_postgres_is_misconfigured() {
+    void should_throw_exception_if_postgres_is_misconfigured() {
         Class<?> testClass = createTestClass(DatabaseKind.Postgres.toString(),
             MockMvcIntegrationTests.class, PostgresDatabaseMisconfiguredContainerInitializer.class);
         ExecutionPlanAnalyzerException ex = runIntegrationTests(testClass, 3, ExecutionPlanAnalyzerException.class);

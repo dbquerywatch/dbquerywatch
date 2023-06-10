@@ -16,6 +16,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @Disabled("Expected to fail. Go to junit-platform.properties to re-enable all disabled tests at once.")
+@SuppressWarnings("java:S5786")  // public required by ByteBuddy
 public class WebClientIntegrationTests extends BaseIntegrationTests {
 
     @Autowired WebTestClient client;

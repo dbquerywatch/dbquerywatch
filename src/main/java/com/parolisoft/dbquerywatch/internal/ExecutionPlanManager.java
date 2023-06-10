@@ -77,11 +77,9 @@ public class ExecutionPlanManager {
                                 .noneMatch(st -> tableNameMatch(st, issue.getObjectName()))
                         )
                         .collect(Collectors.toList());
-                    if (log.isDebugEnabled()) {
-                        log.debug("Query SQL: {}", querySql);
-                        log.debug("Execution plan: {}", result.getExecutionPlan());
-                        log.debug("Issues: {}", issues);
-                    }
+                    log.debug("Query SQL: {}", querySql);
+                    log.debug("Execution plan: {}", result.getExecutionPlan());
+                    log.debug("Issues: {}", issues);
                     if (!issues.isEmpty()) {
                         JdbcClient jdbcClient = analyzer.getJdbcClient();
                         slowQueries.add(new SlowQueryReport(jdbcClient.getNamedDataSource().getName(),
@@ -101,10 +99,8 @@ public class ExecutionPlanManager {
         StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
         for (String basePackage : basePackages) {
             for (StackTraceElement st : stackTraceElements) {
-                if (isSyntheticClass(st.getClassName())) {
-                    continue;
-                }
-                if (prefixedBy(st.getClassName(), LIB_PACKAGE, false, '.')) {
+                if (isSynthetic(st.getClassName(), st.getMethodName())
+                    || prefixedBy(st.getClassName(), LIB_PACKAGE, false, '.')) {
                     continue;
                 }
                 if (prefixedBy(st.getClassName(), basePackage, false, '.')) {
@@ -115,9 +111,12 @@ public class ExecutionPlanManager {
         return "UNKNOWN";
     }
 
-    private static boolean isSyntheticClass(String className) {
-        // TODO: cover other cases: anonymous, lambda function, ... Validate with Unit Tests
-        return className.contains(".$Proxy");
+    private static final Pattern ANONYMOUS_CLASS_SUFFIX = Pattern.compile("\\$\\d+$");
+
+    private static boolean isSynthetic(String className, String methodName) {
+        return className.contains(".$Proxy")
+            || methodName.startsWith("lambda$")
+            || ANONYMOUS_CLASS_SUFFIX.matcher(className).find();
     }
 
     private static boolean isAnalyzableStatement(String querySql) {

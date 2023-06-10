@@ -24,6 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(webEnvironment = WebEnvironment.MOCK)
 @AutoConfigureMockMvc
 @Disabled("Expected to fail. Go to junit-platform.properties to re-enable all disabled tests at once.")
+@SuppressWarnings("java:S5786")  // public required by ByteBuddy
 public class MockMvcIntegrationTests extends BaseIntegrationTests {
 
     @Autowired

@@ -5,6 +5,8 @@ import org.slf4j.MDC;
 
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 @UtilityClass
 public class ClassIdRepository {
@@ -13,7 +15,7 @@ public class ClassIdRepository {
     private static final AtomicInteger MDC_HITS = new AtomicInteger();
 
     public Optional<String> load() {
-        return Optionals.or(
+        return or(
             () -> meteredOptional(ThreadLocalClassIdRepository.load(), THREAD_LOCAL_HITS),
             () -> meteredOptional(MdcClassIdRepository.load(), MDC_HITS)
         );
@@ -74,5 +76,14 @@ public class ClassIdRepository {
             String traceId = MDC.get(MDC_TRACE_ID);
             return ClassIdSupport.isValidClassHashId(traceId) ? Optional.of(traceId) : Optional.empty();
         }
+    }
+
+    @SafeVarargs
+    private static <T> Optional<T> or(Supplier<Optional<T>>... suppliers) {
+        return Stream.of(suppliers)
+            .map(Supplier::get)
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .findFirst();
     }
 }

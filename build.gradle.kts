@@ -22,6 +22,7 @@ plugins {
     id("org.ajoberstar.grgit") version "5.2.0"
     id("org.jetbrains.gradle.plugin.idea-ext") version "1.1.7"
     id("org.openrewrite.rewrite") version "6.1.16"
+    id("org.sonarqube") version "4.3.0.3225"
 
     id("dependencyUpdates")
 }
@@ -200,6 +201,14 @@ tasks.reportCoverage {
 
 tasks.check {
     dependsOn(tasks.jacocoTestCoverageVerification)
+}
+
+sonar {
+    properties {
+        property("sonar.projectKey", "parolisoft_dbquerywatch")
+        property("sonar.organization", "parolisoft")
+        property("sonar.host.url", "https://sonarcloud.io")
+    }
 }
 
 fun IdeaProject.settings(block: ProjectSettings.() -> Unit) =

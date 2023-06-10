@@ -3,16 +3,17 @@ package com.parolisoft.dbquerywatch.internal;
 import com.parolisoft.dbquerywatch.internal.jdbc.JdbcClient;
 import net.ttddyy.dsproxy.ExecutionInfo;
 import net.ttddyy.dsproxy.QueryInfo;
+import net.ttddyy.dsproxy.listener.QueryExecutionListener;
 
 import java.util.List;
 import java.util.function.Supplier;
 
-public class QueryExecutionListener implements net.ttddyy.dsproxy.listener.QueryExecutionListener {
+public class QueryAnalysisExecutionListener implements QueryExecutionListener {
 
     private final ExecutionPlanAnalyzer analyzer;
     private final Supplier<AnalyzerSettings> analyzerSettingsSupplier;
 
-    public QueryExecutionListener(Supplier<AnalyzerSettings> analyzerSettingsSupplier, JdbcClient jdbcClient) {
+    public QueryAnalysisExecutionListener(Supplier<AnalyzerSettings> analyzerSettingsSupplier, JdbcClient jdbcClient) {
         this.analyzerSettingsSupplier = analyzerSettingsSupplier;
         this.analyzer = ExecutionPlanAnalyzerFactory.create(jdbcClient);
     }

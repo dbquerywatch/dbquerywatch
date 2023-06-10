@@ -19,14 +19,19 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: 17
-          cache: 'gradle'
 
       - name: Set artifact version
         run: |
           echo "RELEASE_VERSION=$(echo '${{ github.event.release.tag_name }}' | sed -e s/^v//)" >> $GITHUB_ENV
 
       - name: build publish
-        run: ./gradlew clean build publish closeAndReleaseStagingRepository --no-daemon --info --stacktrace -Pversion="${{ env.RELEASE_VERSION }}"
+        uses: burrunan/gradle-cache-action@v1
+        with:
+          job-id: sb2
+          arguments: --scan build publish closeAndReleaseStagingRepository
+          properties: |
+            testBootVariant=2
+            version=${{ env.RELEASE_VERSION }}
         env:
           ORG_GRADLE_PROJECT_signingKey: ${{ secrets.GPG_SIGNING_KEY }}
           ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.GPG_SIGNING_PASSWORD }}

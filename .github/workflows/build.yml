@@ -4,6 +4,10 @@ name: Build
 on:
   workflow_dispatch:
   push:
+    branches:
+      - master
+  pull_request:
+    types: [ opened, synchronize, reopened ]
 
 jobs:
   ci-build:
@@ -13,26 +17,49 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 1
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
 
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
           java-version: 17
-          cache: 'gradle'
+
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
 
       - name: Build and test for Spring Boot 2
-        run: ./gradlew --no-daemon --stacktrace -PtestBootVariant=2 clean build
+        uses: burrunan/gradle-cache-action@v1
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          job-id: sb2
+          arguments: --scan build sonar
+          properties: |
+            testBootVariant=2
 
       - name: Migrate Test Application to Spring Boot 3
-        run: ./gradlew --no-daemon --stacktrace rewriteRun
+        run: ./gradlew --quiet --stacktrace rewriteRun
 
       - name: Test for Spring Boot 3.0
-        run: ./gradlew --no-daemon --stacktrace -PtestBootVariant=30 test
+        uses: burrunan/gradle-cache-action@v1
+        with:
+          job-id: sb3.0
+          arguments: test
+          properties: |
+            testBootVariant=3.0
 
       - name: Test for Spring Boot 3.1
-        run: ./gradlew --no-daemon --stacktrace -PtestBootVariant=31 test
+        uses: burrunan/gradle-cache-action@v1
+        with:
+          job-id: sb3.1
+          arguments: test
+          properties: |
+            testBootVariant=3.1
 
       - name: Upload reports
         if: failure()

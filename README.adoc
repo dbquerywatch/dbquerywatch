@@ -17,6 +17,7 @@
 image:https://img.shields.io/maven-central/v/{release-group}/{release-module}.svg?label=Maven%20Central[Maven Central, link=https://search.maven.org/search?q=g:{release-group}%20AND%20a:{release-module}&core=gav]
 image:https://javadoc.io/badge/{release-group}/{release-module}.svg[Javadocs, link=https://javadoc.io/doc/{release-group}/{release-module}]
 image:https://github.com/{gh-org}/{gh-repo}/actions/workflows/build.yml/badge.svg?branch=master[Build, link=https://github.com/{gh-org}/{gh-repo}/actions/workflows/build.yml]
+image:https://sonarcloud.io/api/project_badges/measure?project=parolisoft_dbquerywatch&metric=coverage[Coverage, link="https://sonarcloud.io/summary/new_code?id=parolisoft_dbquerywatch"]
 
 == What is it?
 

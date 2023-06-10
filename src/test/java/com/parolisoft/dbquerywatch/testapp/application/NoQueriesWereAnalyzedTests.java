@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 @Disabled("Expected to fail. Go to junit-platform.properties to re-enable all disabled tests at once.")
-public class NoQueriesWereAnalyzedTests extends BaseIntegrationTests {
+class NoQueriesWereAnalyzedTests extends BaseIntegrationTests {
 
     @Test
     void dummy_test() {

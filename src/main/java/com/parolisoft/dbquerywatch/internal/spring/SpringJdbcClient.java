@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class SpringJdbcClient extends AbstractJdbcClient {
+class SpringJdbcClient extends AbstractJdbcClient {
 
     private final JdbcTemplate jdbcTemplate;
 
