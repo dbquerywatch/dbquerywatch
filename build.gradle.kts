@@ -2,6 +2,11 @@
 
 import net.ltgt.gradle.errorprone.CheckSeverity
 import net.ltgt.gradle.errorprone.errorprone
+import org.gradle.plugins.ide.idea.model.IdeaProject
+import org.jetbrains.gradle.ext.Gradle
+import org.jetbrains.gradle.ext.ProjectSettings
+import org.jetbrains.gradle.ext.RunConfiguration
+import org.jetbrains.gradle.ext.RunConfigurationContainer
 
 plugins {
     `java-library`
@@ -15,6 +20,7 @@ plugins {
     id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
     id("net.ltgt.errorprone") version "3.1.0"
     id("org.ajoberstar.grgit") version "4.1.1"
+    id("org.jetbrains.gradle.plugin.idea-ext") version "1.1.7"
     id("org.openrewrite.rewrite") version("5.40.4")
 }
 
@@ -191,6 +197,25 @@ tasks.reportCoverage {
 
 tasks.check {
     dependsOn(tasks.jacocoTestCoverageVerification)
+}
+
+fun IdeaProject.settings(block: ProjectSettings.() -> Unit) =
+    (this@settings as ExtensionAware).extensions.configure("settings", block)
+
+fun ProjectSettings.runConfigurations(block: RunConfigurationContainer.() -> Unit) =
+    (this@runConfigurations as ExtensionAware).extensions.configure("runConfigurations", block)
+
+inline fun <reified T : RunConfiguration> RunConfigurationContainer.defaults(noinline block: T.() -> Unit) =
+    defaults(T::class.java, block)
+
+idea.project {
+    settings {
+        runConfigurations {
+            defaults<Gradle> {
+                envs = mapOf("SPRING_OUTPUT_ANSI_ENABLED" to "always")
+            }
+        }
+    }
 }
 
 tasks.withType<Javadoc> {
