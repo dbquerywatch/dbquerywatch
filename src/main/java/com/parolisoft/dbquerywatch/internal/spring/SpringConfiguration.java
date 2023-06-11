@@ -2,7 +2,6 @@ package com.parolisoft.dbquerywatch.internal.spring;
 
 import com.parolisoft.dbquerywatch.internal.QueryExecutionListener;
 import com.parolisoft.dbquerywatch.internal.jdbc.JdbcClient;
-import com.parolisoft.dbquerywatch.internal.spring.SpringJdbcClient;
 import lombok.RequiredArgsConstructor;
 import net.ttddyy.dsproxy.support.ProxyDataSource;
 import net.ttddyy.dsproxy.support.ProxyDataSourceBuilder;
@@ -51,7 +50,8 @@ class SpringConfiguration {
             private final DataSource dataSource;
 
             private ProxyDataSourceInterceptor(Environment environment, String dataSourceName, DataSource dataSource) {
-                JdbcClient jdbcClient = new SpringJdbcClient(dataSourceName, dataSource);
+                NamedDataSource namedDataSource = new NamedDataSource(dataSourceName, dataSource);
+                JdbcClient jdbcClient = new SpringJdbcClient(namedDataSource);
                 this.dataSource = ProxyDataSourceBuilder.create(dataSourceName + "-proxy", dataSource)
                     .listener(new QueryExecutionListener(environment, jdbcClient))
                     .build();

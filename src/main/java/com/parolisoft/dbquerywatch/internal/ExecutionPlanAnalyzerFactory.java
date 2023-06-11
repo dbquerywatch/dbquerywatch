@@ -12,7 +12,7 @@ class ExecutionPlanAnalyzerFactory {
 
     @SneakyThrows
     ExecutionPlanAnalyzer create(JdbcClient jdbcClient) {
-        String productName = JdbcUtils.extractDatabaseMetaData(jdbcClient.getDataSource(),
+        String productName = JdbcUtils.extractDatabaseMetaData(jdbcClient.getNamedDataSource().getPayload(),
             DatabaseMetaData::getDatabaseProductName);
         switch (productName) {
             case "H2":

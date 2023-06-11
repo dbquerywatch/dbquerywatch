@@ -4,10 +4,7 @@ import com.google.errorprone.annotations.FormatMethod;
 import com.parolisoft.dbquerywatch.internal.CleanRuntimeException;
 import com.parolisoft.dbquerywatch.internal.Issue;
 import com.parolisoft.dbquerywatch.internal.SlowQueryReport;
-import org.springframework.jdbc.support.JdbcUtils;
 
-import javax.sql.DataSource;
-import java.sql.DatabaseMetaData;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -51,7 +48,6 @@ public class SlowQueriesFoundException extends CleanRuntimeException {
                 .append(heading("Query %d/%d", i + 1, slowQueries.size()))
                 .append("\nDataSource:")
                 .append(LF_INDENT).append(slowQuery.getDataSourceName())
-                .append(" (").append(getUrl(slowQuery.getDataSource())).append(')')
                 .append("\nSQL:")
                 .append(LF_INDENT).append(slowQuery.getQuerySql());
             sb.append("\nExecution Plan:")
@@ -80,13 +76,5 @@ public class SlowQueriesFoundException extends CleanRuntimeException {
         int padLen = (80 - 7) - title.length();
         //noinspection MalformedFormatString
         return String.format("%.5s %s %." + padLen + "s", DASHES, title, DASHES);
-    }
-
-    private static String getUrl(DataSource ds) {
-        try {
-            return JdbcUtils.extractDatabaseMetaData(ds, DatabaseMetaData::getURL);
-        } catch (Exception ignored) {
-            return "UNKNOWN URL";
-        }
     }
 }
