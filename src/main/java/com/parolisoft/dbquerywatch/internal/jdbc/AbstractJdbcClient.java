@@ -1,24 +1,21 @@
 package com.parolisoft.dbquerywatch.internal.jdbc;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import net.ttddyy.dsproxy.proxy.ParameterSetOperation;
+import org.junit.jupiter.api.Named;
 
+import javax.sql.DataSource;
 import java.sql.PreparedStatement;
 import java.util.List;
 import java.util.Optional;
 
+@RequiredArgsConstructor
+@Getter(onMethod_ = {@Override})
 public abstract class AbstractJdbcClient implements JdbcClient {
 
-    private final String dataSourceName;
-
-    protected AbstractJdbcClient(String dataSourceName) {
-        this.dataSourceName = dataSourceName;
-    }
-
-    @Override
-    public String getDataSourceName() {
-        return dataSourceName;
-    }
+    private final Named<DataSource> namedDataSource;
 
     @Override
     public Optional<String> queryForString(String querySql, List<ParameterSetOperation> operations) {

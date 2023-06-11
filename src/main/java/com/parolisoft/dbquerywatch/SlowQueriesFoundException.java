@@ -50,8 +50,8 @@ public class SlowQueriesFoundException extends CleanRuntimeException {
             sb.append('\n')
                 .append(heading("Query %d/%d", i + 1, slowQueries.size()))
                 .append("\nDataSource:")
-                .append(LF_INDENT).append(slowQuery.getDataSourceName())
-                .append(" (").append(getUrl(slowQuery.getDataSource())).append(')')
+                .append(LF_INDENT).append(slowQuery.getNamedDataSource().getName())
+                .append(" (").append(getUrl(slowQuery.getNamedDataSource().getPayload())).append(')')
                 .append("\nSQL:")
                 .append(LF_INDENT).append(slowQuery.getQuerySql());
             sb.append("\nExecution Plan:")
