@@ -3,6 +3,7 @@ package com.parolisoft.dbquerywatch.internal.spring;
 import com.parolisoft.dbquerywatch.internal.jdbc.AbstractJdbcClient;
 import com.parolisoft.dbquerywatch.internal.jdbc.PreparedStatementSetter;
 import com.parolisoft.dbquerywatch.internal.jdbc.ResultSetExtractor;
+import org.junit.jupiter.api.Named;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.annotation.Nullable;
@@ -15,14 +16,9 @@ public class SpringJdbcClient extends AbstractJdbcClient {
 
     private final JdbcTemplate jdbcTemplate;
 
-    public SpringJdbcClient(String dataSourceName, DataSource dataSource) {
-        super(dataSourceName);
-        this.jdbcTemplate = new JdbcTemplate(dataSource);
-    }
-
-    @Override
-    public DataSource getDataSource() {
-        return jdbcTemplate.getDataSource();
+    public SpringJdbcClient(Named<DataSource> namedDataSource) {
+        super(namedDataSource);
+        this.jdbcTemplate = new JdbcTemplate(namedDataSource.getPayload());
     }
 
     @Override
