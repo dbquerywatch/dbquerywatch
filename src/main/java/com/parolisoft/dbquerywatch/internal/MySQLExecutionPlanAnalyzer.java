@@ -4,7 +4,6 @@ import com.jayway.jsonpath.JsonPath;
 import com.parolisoft.dbquerywatch.internal.jdbc.JdbcClient;
 import net.ttddyy.dsproxy.proxy.ParameterSetOperation;
 
-import javax.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +46,6 @@ class MySQLExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
         return new AnalysisResult(compactJson(planJson), issues);
     }
 
-    @Nonnull
     private static Map<String, String> findTableAliases(String querySql) {
         Matcher matcher = TABLE_ALIAS_DEFINITION.matcher(querySql);
         Map<String, String> tableAliases = new HashMap<>();
