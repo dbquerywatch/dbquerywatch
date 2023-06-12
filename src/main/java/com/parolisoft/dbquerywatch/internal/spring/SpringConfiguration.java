@@ -14,7 +14,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 
-import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 import java.lang.reflect.Method;
 
@@ -29,7 +28,7 @@ class SpringConfiguration {
         private final Environment environment;
 
         @Override
-        public Object postProcessAfterInitialization(@Nonnull Object bean, @Nonnull String beanName) {
+        public Object postProcessAfterInitialization(Object bean, String beanName) {
             if (bean instanceof DataSource && !(bean instanceof ProxyDataSource)) {
                 // Return an AOP proxy in order to keep the original bean type.
                 // @see https://arnoldgalovics.com/configuring-a-datasource-proxy-in-spring-boot/
@@ -42,7 +41,7 @@ class SpringConfiguration {
         }
 
         @Override
-        public Object postProcessBeforeInitialization(@Nonnull Object bean, @Nonnull String beanName) {
+        public Object postProcessBeforeInitialization(Object bean, String beanName) {
             return bean;
         }
 

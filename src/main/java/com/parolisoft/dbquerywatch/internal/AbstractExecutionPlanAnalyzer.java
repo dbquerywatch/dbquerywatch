@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Map;
@@ -21,7 +20,6 @@ abstract class AbstractExecutionPlanAnalyzer implements ExecutionPlanAnalyzer {
     protected final JdbcClient jdbcClient;
 
     @Override
-    @Nonnull
     public JdbcClient getJdbcClient() {
         return jdbcClient;
     }
