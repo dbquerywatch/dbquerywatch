@@ -156,7 +156,7 @@ A sample report taken from an internal test class:
 3+|Caller Methods:
 |
 |-
-|com.parolisoft.dbquerywatch.adapters.db.DefaultArticleRepository::query
+|com.parolisoft.dbquerywatch.testapp.adapters.db.DefaultArticleRepository::query
 |===
 
 As indicated by the issue's description, there was a _Full Table Scan_ on table `articles` due to a missing index over column `published_at`. Simply adding this index will fix the performance issue for this operation.
