@@ -15,7 +15,6 @@ import org.springframework.test.context.MergedContextConfiguration;
 import org.springframework.test.context.TestContextAnnotationUtils;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 
@@ -26,8 +25,8 @@ class TestClientTracingContextCustomizerFactory implements ContextCustomizerFact
     @Override
     @Nullable
     public ContextCustomizer createContextCustomizer(
-        @Nonnull Class<?> testClass,
-        @Nonnull List<ContextConfigurationAttributes> configAttributes
+        Class<?> testClass,
+        List<ContextConfigurationAttributes> configAttributes
     ) {
         CatchSlowQueries annotation = TestContextAnnotationUtils.findMergedAnnotation(testClass, CatchSlowQueries.class);
         if (annotation == null) {
@@ -46,7 +45,7 @@ class TestClientTracingContextCustomizerFactory implements ContextCustomizerFact
         @Override
         public void customizeContext(
             ConfigurableApplicationContext context,
-            @Nonnull MergedContextConfiguration mergedConfig
+            MergedContextConfiguration mergedConfig
         ) {
             ((BeanDefinitionRegistry) context.getBeanFactory())
                 .registerBeanDefinition(uncapitalize(WebTestClientTracingCustomizer.class.getSimpleName()),
