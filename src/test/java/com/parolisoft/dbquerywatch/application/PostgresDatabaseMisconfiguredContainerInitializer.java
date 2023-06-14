@@ -11,7 +11,6 @@ class PostgresDatabaseMisconfiguredContainerInitializer extends JdbcDatabaseCont
     @SuppressWarnings("resource")
     static final PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer<>("postgres:15.3-alpine")
         .withTmpFs(Map.of("/var/lib/postgresql/data", "rw"))
-        .withCommand("postgres", "-c", "fsync=off")
         .withLabel(REUSE_LABEL_ID, reuseLabelValue(PostgreSQLContainer.NAME))
         .withReuse(true);
 
