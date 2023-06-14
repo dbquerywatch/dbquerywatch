@@ -3,6 +3,10 @@
 :source-highlighter: coderay
 :docinfo: shared
 :icons: font
+:imagesdir: images
+:experimental:
+:toc: preamble
+:toc-title: pass:[<h3>Contents</h3>]
 :sectnums:
 :toclevels: 3
 
@@ -40,16 +44,38 @@ This is where dbQueryWatch comes into play!
 
 === Prerequisites
 
-* Your application must be based on Spring Boot 2.7 or newer.
+:sectnums!:
+==== Application Framework
 
-* In your integration tests, the persistence layer must be using a database that:
+image:https://img.shields.io/badge/Spring_Boot-2.7%2b-%236db33f.svg?style=plastic&labelColor=%236db33f&color=black&logo=springboot&logoColor=white[Spring Boot]
 
-** Is any of the supported databases:
-**** Oracle 9i+
-**** MySQL 5.7+
-**** PostgreSQL 9+
-** Is as production-like as possible;
-** Schema and indexes are in sync with your production environment.
+Your application must be based on Spring Boot 2.7 or newer.
+
+==== Persistence Framework / Library
+
+image:https://img.shields.io/badge/Hibernate-59666C?style=plastic&logo=Hibernate&logoColor=white[Hibernate]
+
+dbQueryWatch supports #any# persistence layer that uses Spring-managed datasources including, but not limited to:
+
+- Hibernate/JPA
+- jOOQ
+- MyBatis
+
+==== Database
+
+image:https://img.shields.io/badge/oracle-9i-%23f80000?style=plastic&labelColor=%23ee3537&logo=oracle&logoColor=white[] image:https://img.shields.io/badge/MySQL-5.7%2b-%23e48e00.svg?style=plastic&labelColor=%2300618a&logo=mysql&logoColor=white[] image:https://img.shields.io/badge/PostgreSQL-9%2b-%23316192.svg?style=plastic&labelColor=%23336294&color=black&logo=postgresql&label=PostgreSQL&logoColor=white[]
+
+To get more tenable results from the query execution plan analysis, your integration tests should be using a database as production-like as possible. dbQueryWatch supports the most popular relational databases:
+
+* Oracle 9i+
+* MySQL 5.7+
+* PostgreSQL 9+
+
+==== Database Schema & Indexes
+
+Schema and indexes should be in sync with your production environment.
+
+:sectnums:
 
 === Adding the library to your project
 
@@ -138,7 +164,7 @@ dbQueryWatch monitors all database operations executed within the scope of a tes
 
 A sample report taken from an internal test class:
 
-[%noheader,grid=none,cols="1m,1m,97m"]
+[%noheader,frame="topbot",grid="none",cols="1m,1m,40m"]
 |===
 3+|com.parolisoft.dbquerywatch.SlowQueriesFoundException: Potential slow queries were found!
 3+|
