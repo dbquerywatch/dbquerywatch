@@ -22,7 +22,7 @@ plugins {
     id("net.ltgt.errorprone") version "3.1.0"
     id("org.ajoberstar.grgit") version "4.1.1"
     id("org.jetbrains.gradle.plugin.idea-ext") version "1.1.7"
-    id("org.openrewrite.rewrite") version("5.40.4")
+    id("org.openrewrite.rewrite") version "6.1.16"
 }
 
 group = "com.parolisoft"
@@ -61,7 +61,7 @@ val testBootVersion = when (testBootVariant) {
 println("Spring Boot version: $testBootVersion")
 
 dependencies {
-    rewrite("org.openrewrite.recipe:rewrite-migrate-java:1.21.1")
+    rewrite("org.openrewrite.recipe:rewrite-migrate-java:2.0.6")
 
     modules {
         module("com.vaadin.external.google:android-json") {
