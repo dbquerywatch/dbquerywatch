@@ -23,21 +23,21 @@ jobs:
           cache: 'gradle'
 
       - name: Build and test for Spring Boot 2
-        run: ./gradlew --no-daemon --stacktrace -PtestBootVariant=2 clean build
+        run: ./gradlew --stacktrace -PtestBootVariant=2 clean build
 
       - name: Coveralls
-        run: ./gradlew --no-daemon --stacktrace  coverallsJacoco
+        run: ./gradlew --stacktrace coverallsJacoco
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
 
       - name: Migrate Test Application to Spring Boot 3
-        run: ./gradlew --no-daemon --stacktrace rewriteRun
+        run: ./gradlew --quiet --stacktrace rewriteRun
 
       - name: Test for Spring Boot 3.0
-        run: ./gradlew --no-daemon --stacktrace -PtestBootVariant=30 test
+        run: ./gradlew --stacktrace -PtestBootVariant=30 test
 
       - name: Test for Spring Boot 3.1
-        run: ./gradlew --no-daemon --stacktrace -PtestBootVariant=31 test
+        run: ./gradlew --stacktrace -PtestBootVariant=31 test
 
       - name: Upload reports
         if: failure()
