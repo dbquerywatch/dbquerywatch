@@ -3,7 +3,6 @@ package com.parolisoft.dbquerywatch.testapp.adapters.api;
 import com.parolisoft.dbquerywatch.testapp.application.service.ArticleService;
 import com.parolisoft.dbquerywatch.testapp.domain.Article;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,7 +28,6 @@ class ArticleController {
 
     @PostMapping("/query")
     public List<Article> query(@RequestBody ArticleQueryModel queryModel) {
-        Pageable pageable = Pageable.unpaged();
-        return articleService.query(queryMapper.fromModel(queryModel), pageable);
+        return articleService.query(queryMapper.fromModel(queryModel));
     }
 }

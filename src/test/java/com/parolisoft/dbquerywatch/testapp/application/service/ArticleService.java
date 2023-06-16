@@ -3,7 +3,6 @@ package com.parolisoft.dbquerywatch.testapp.application.service;
 import com.parolisoft.dbquerywatch.testapp.application.out.ArticleRepository;
 import com.parolisoft.dbquerywatch.testapp.domain.Article;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,7 +18,7 @@ public class ArticleService {
         return repository.findById(id);
     }
 
-    public List<Article> query(ArticleQuery query, Pageable pageable) {
-        return repository.query(query, pageable);
+    public List<Article> query(ArticleQuery query) {
+        return repository.query(query);
     }
 }
