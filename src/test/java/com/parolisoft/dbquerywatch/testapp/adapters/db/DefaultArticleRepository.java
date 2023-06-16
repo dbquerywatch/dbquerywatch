@@ -4,7 +4,6 @@ import com.parolisoft.dbquerywatch.testapp.application.out.ArticleRepository;
 import com.parolisoft.dbquerywatch.testapp.application.service.ArticleQuery;
 import com.parolisoft.dbquerywatch.testapp.domain.Article;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
@@ -35,12 +34,12 @@ class DefaultArticleRepository implements ArticleRepository {
     }
 
     @Override
-    public List<Article> query(ArticleQuery query, Pageable pageable) {
+    public List<Article> query(ArticleQuery query) {
         Specification<JpaArticleEntity> spec = Specification.where(authorLastName(query.getAuthorLastName()))
                 .and(fromYear(query.getFromYear()))
                 .and(toYear(query.getToYear()))
                 .and(journalName(query.getJournalName()));
-        return jpaRepository.findAll(spec, pageable).stream()
+        return jpaRepository.findAll(spec).stream()
                 .map(entityMapper::fromJpa)
                 .collect(Collectors.toList());
     }
