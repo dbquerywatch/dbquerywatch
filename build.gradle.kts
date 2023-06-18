@@ -22,7 +22,7 @@ plugins {
     id("net.ltgt.errorprone") version "3.1.0"
     id("org.ajoberstar.grgit") version "4.1.1"
     id("org.jetbrains.gradle.plugin.idea-ext") version "1.1.7"
-    id("org.openrewrite.rewrite") version("6.1.2")
+    id("org.openrewrite.rewrite") version "6.1.3"
 }
 
 group = "com.parolisoft"
