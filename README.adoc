@@ -162,28 +162,24 @@ dbQueryWatch monitors all database operations executed within the scope of a tes
 |A list of application methods which directly or indirectly executed the database operation.
 |===
 
-A sample report taken from an internal test class:
+A sample report taken from the sample application test class:
 
-[%noheader,frame="topbot",grid="none",cols="1m,1m,40m"]
-|===
-3+|com.parolisoft.dbquerywatch.SlowQueriesFoundException: Potential slow queries were found!
-3+|
-3+l|~~~~~ Query 1/2 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-3+|SQL:
-|
-2+|select jpaarticle0_.id as id1_0_, jpaarticle0_.author_full_name as author_f2_0_, jpaarticle0_.author_last_name as author_l3_0_, jpaarticle0_.journal_id as journal_6_0_, jpaarticle0_.published_at as publishe4_0_, jpaarticle0_.title as title5_0_ from articles jpaarticle0_ where jpaarticle0_.published_at>=? and jpaarticle0_.published_at<=?
-3+|Execution Plan:
-|
-2+|{"query_block":{"cost_info":{"query_cost":"0.35"},"select_id":1,"table":{"attached_condition":"((`test`.`jpaarticle0_`.`published_at` >= DATE'1970-01-01') and (`test`.`jpaarticle0_`.`published_at` <= DATE'1980-12-31'))","access_type":"ALL","rows_produced_per_join":1,"filtered":"100.00","cost_info":{"eval_cost":"0.10","read_cost":"0.25","prefix_cost":"0.35","data_read_per_join":"2K"},"used_columns":["id","published_at","author_full_name","author_last_name","title","journal_id"],"rows_examined_per_scan":1,"table_name":"jpaarticle0_"}}}
-3+|Issues:
-|
-|-
-|[Issue(type=FULL_ACCESS, objectName=articles, predicate=((`test`.`jpaarticle0_`.`published_at` >= DATE'1970-01-01') and (`test`.`jpaarticle0_`.`published_at` <= DATE'1980-12-31')))]
-3+|Caller Methods:
-|
-|-
-|com.parolisoft.dbquerywatch.testapp.adapters.db.DefaultArticleRepository::query
-|===
+....
+
+com.parolisoft.dbquerywatch.SlowQueriesFoundException: Potential slow queries were found!
+
+~~~~~ Query 1/1 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+DataSource:
+    dataSource (jdbc:postgresql://localhost:32920/test?loggerLevel=OFF)
+SQL:
+    select "public"."articles"."id", "public"."articles"."published_at", "public"."articles"."author_full_name", "public"."articles"."author_last_name", "public"."articles"."title", "public"."articles"."doi", "public"."articles"."journal_id" from "public"."articles" where ("public"."articles"."published_at" >= cast(? as date) and "public"."articles"."published_at" <= cast(? as date))
+Execution Plan:
+    [{"JIT":{"Options":{"Expressions":true,"Optimization":true,"Deforming":true,"Inlining":true},"Functions":2},"Plan":{"Total Cost":10000000011.05,"Relation Name":"articles","Parallel Aware":false,"Filter":"((published_at >= '1970-01-01'::date) AND (published_at <= '1980-12-31'::date))","Alias":"articles","Node Type":"Seq Scan","Plan Width":1116,"Startup Cost":10000000000,"Async Capable":false,"Plan Rows":1}}]
+Issues:
+    - Issue(type=FULL_ACCESS, objectName=articles, predicate=((published_at >= '1970-01-01'::date) AND (published_at <= '1980-12-31'::date)))
+Caller Methods:
+    - com.parolisoft.dbquerywatch.sample.adapters.db.JooqArticleRepository::query
+....
 
 As indicated by the issue's description, there was a _Full Table Scan_ on table `articles` due to a missing index over column `published_at`. Simply adding this index will fix the performance issue for this operation.
 
