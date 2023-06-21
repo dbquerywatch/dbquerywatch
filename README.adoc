@@ -67,7 +67,7 @@ image:https://img.shields.io/badge/oracle-9i-%23f80000?style=plastic&labelColor=
 
 To get more tenable results from the query execution plan analysis, your integration tests should be using a database as production-like as possible. dbQueryWatch supports the most popular relational databases:
 
-* Oracle 9i+
+* Oracle 10g+
 * MySQL 5.7+
 * PostgreSQL 9+
 
