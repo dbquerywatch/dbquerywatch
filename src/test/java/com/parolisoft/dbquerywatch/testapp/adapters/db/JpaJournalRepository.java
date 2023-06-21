@@ -1,11 +1,11 @@
 package com.parolisoft.dbquerywatch.testapp.adapters.db;
 
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-@Component
+@Repository
 interface JpaJournalRepository extends CrudRepository<JpaJournalEntity, Long> {
 
     List<JpaJournalEntity> findByPublisher(String publisher);

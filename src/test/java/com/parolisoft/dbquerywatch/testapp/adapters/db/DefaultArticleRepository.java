@@ -5,7 +5,7 @@ import com.parolisoft.dbquerywatch.testapp.application.service.ArticleQuery;
 import com.parolisoft.dbquerywatch.testapp.domain.Article;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import javax.persistence.criteria.Join;
@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Component
+@Repository
 @RequiredArgsConstructor
 class DefaultArticleRepository implements ArticleRepository {
 
