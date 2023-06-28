@@ -10,7 +10,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath("com.github.ben-manes", "gradle-versions-plugin", "0.46.0")
+        classpath("com.github.ben-manes", "gradle-versions-plugin", "0.47.0")
         classpath("com.github.gundy", "semver4j", "0.16.4")
         classpath("org.apache.commons", "commons-text", "1.10.0")
     }
@@ -29,12 +29,11 @@ fun isNonStable(version: String): Boolean {
 // SemVer Ranges:
 // https://devhints.io/semver#:~:text=are%20not%20matched.-,Ranges,-~1.2.3
 val upgradesToIgnore = listOf(
-    "ch.qos.logback:*:>\${currentVersionMajor}.\${currentVersionMinor}",
-    "org.flywaydb:*:>\${currentVersionMajor}",
-    "org.openrewrite.recipe:*:>\${currentVersionMajor}",
-    "org.slf4j:*:>\${currentVersionMajor}",
-    "org.springframework:*:>\${currentVersionMajor}",
-    "org.springframework.boot:*:>\${currentVersionMajor}",
+    "com.jayway.jsonpath:*:>\${major}.\${minor}",
+    "org.junit.jupiter:*:>\${major}.\${minor}",
+    "org.slf4j:*:>\${major}",
+    "org.springframework:*:>\${major}",
+    "org.springframework.boot:*:>\${major}",
 )
 
 fun moduleMatcher(moduleSpec: String, currentVersion: String): (ModuleComponentIdentifier) -> Boolean {
@@ -45,9 +44,9 @@ fun moduleMatcher(moduleSpec: String, currentVersion: String): (ModuleComponentI
             StringSubstitutor.replace(
                 version,
                 mapOf(
-                    "currentVersionMajor" to versionElements.major,
-                    "currentVersionMinor" to versionElements.minor,
-                    "currentVersionPatch" to versionElements.patch,
+                    "major" to versionElements.major,
+                    "minor" to versionElements.minor,
+                    "patch" to versionElements.patch,
                 )
             )
         }
@@ -61,6 +60,7 @@ fun moduleMatcher(moduleSpec: String, currentVersion: String): (ModuleComponentI
 }
 
 tasks.withType<DependencyUpdatesTask> {
+    filterConfigurations = Spec { !it.name.startsWith("test") }
     rejectVersionIf {
         isNonStable(candidate.version) || upgradesToIgnore.any { moduleMatcher(it, currentVersion)(candidate) }
     }
