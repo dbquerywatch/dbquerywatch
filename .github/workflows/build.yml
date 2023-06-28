@@ -27,6 +27,7 @@ jobs:
 
       - name: Coveralls
         run: ./gradlew --stacktrace coverallsJacoco
+        if: env.COVERALLS_REPO_TOKEN != null
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
 
