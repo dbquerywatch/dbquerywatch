@@ -20,7 +20,7 @@ plugins {
     id("io.freefair.lombok") version "8.0.1"
     id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
     id("net.ltgt.errorprone") version "3.1.0"
-    id("org.ajoberstar.grgit") version "4.1.1"
+    id("org.ajoberstar.grgit") version "5.2.0"
     id("org.jetbrains.gradle.plugin.idea-ext") version "1.1.7"
     id("org.openrewrite.rewrite") version "6.1.16"
 }
