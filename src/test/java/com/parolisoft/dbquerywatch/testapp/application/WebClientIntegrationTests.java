@@ -12,8 +12,6 @@ import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
-import java.util.Map;
-
 import static com.google.common.truth.Truth.assertThat;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
@@ -34,7 +32,7 @@ public class WebClientIntegrationTests extends BaseIntegrationTests {
             .uri("/articles/query")
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(new JSONObject(Map.of("author_last_name", "Parnas")).toString())
+            .bodyValue(new JSONObject().put("author_last_name", "Parnas").toString())
             .exchange()
             .expectStatus().isOk()
             .expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)
@@ -50,7 +48,7 @@ public class WebClientIntegrationTests extends BaseIntegrationTests {
             .uri("/articles/query")
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(new JSONObject(Map.of("from_year", 1970, "to_year", 1980)).toString())
+            .bodyValue(new JSONObject().put("from_year", 1970).put("to_year", 1980).toString())
             .exchange()
             .expectStatus().isOk()
             .expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)
