@@ -22,6 +22,8 @@ plugins {
     id("org.ajoberstar.grgit") version "5.2.0"
     id("org.jetbrains.gradle.plugin.idea-ext") version "1.1.7"
     id("org.openrewrite.rewrite") version "6.1.16"
+
+    id("dependencyUpdates")
 }
 
 group = "com.parolisoft"
@@ -236,8 +238,6 @@ tasks.withType<Javadoc> {
         addBooleanOption("Xwerror", true)
     }
 }
-
-apply(from = "./gradle/dependencyUpdates.gradle.kts")
 
 val groupId = group.toString()
 val artifactId = name
