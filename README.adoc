@@ -40,6 +40,8 @@ Approximately 50% of SQL performance issues stem from improper utilization of in
 
 This is where dbQueryWatch comes into play!
 
+image:https://github.com/parolisoft/dbquerywatch/assets/1125375/94d8648b-215c-4386-a7bc-13747c225e41[dbQuery in action, link=https://youtu.be/VCx6K3YhfqY]
+
 == Getting started
 
 === Prerequisites
