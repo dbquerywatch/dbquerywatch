@@ -1,25 +1,20 @@
-import com.github.benmanes.gradle.versions.VersionsPlugin
+@file:Suppress("SpellCheckingInspection")
+
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
+import com.github.gundy.semver4j.SemVer
 import com.github.gundy.semver4j.model.Version
 import org.apache.commons.text.StringSubstitutor
 
-buildscript {
-    repositories {
-        maven {
-            url = uri("https://plugins.gradle.org/m2/")
-        }
-    }
-    dependencies {
-        classpath("com.github.ben-manes", "gradle-versions-plugin", "0.47.0")
-        classpath("com.github.gundy", "semver4j", "0.16.4")
-        classpath("org.apache.commons", "commons-text", "1.10.0")
-    }
+plugins {
+    id("com.github.ben-manes.versions")
 }
 
-apply<VersionsPlugin>()
+repositories {
+    mavenCentral()
+}
 
 val nonStableRegex by lazy {
-    "([\\.-](alpha|beta|ea|m|preview|rc)[\\.-]?\\d*|-b\\d+\\.\\d+)$".toRegex(RegexOption.IGNORE_CASE)
+    "([.-](alpha|beta|ea|m|preview|rc)[.-]?\\d*|-b\\d+\\.\\d+)$".toRegex(RegexOption.IGNORE_CASE)
 }
 
 fun isNonStable(version: String): Boolean {
@@ -40,22 +35,15 @@ fun moduleMatcher(moduleSpec: String, currentVersion: String): (ModuleComponentI
     val (group, module, version) = moduleSpec.split(':')
 
     val currentVersionRange by lazy {
-        Version.fromString(currentVersion).let { versionElements ->
-            StringSubstitutor.replace(
-                version,
-                mapOf(
-                    "major" to versionElements.major,
-                    "minor" to versionElements.minor,
-                    "patch" to versionElements.patch,
-                )
-            )
+        Version.fromString(currentVersion).let {
+            StringSubstitutor.replace(version, mapOf("major" to it.major, "minor" to it.minor, "patch" to it.patch))
         }
     }
 
     return {
         (it.group == group)
             && ((module == "*") || (it.module == module))
-            && com.github.gundy.semver4j.SemVer.satisfies(it.version, currentVersionRange)
+            && SemVer.satisfies(it.version, currentVersionRange)
     }
 }
 
