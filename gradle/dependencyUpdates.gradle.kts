@@ -1,6 +1,7 @@
 import com.github.benmanes.gradle.versions.VersionsPlugin
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 import com.github.gundy.semver4j.model.Version
+import com.github.gundy.semver4j.SemVer
 import org.apache.commons.text.StringSubstitutor
 
 buildscript {
@@ -40,22 +41,15 @@ fun moduleMatcher(moduleSpec: String, currentVersion: String): (ModuleComponentI
     val (group, module, version) = moduleSpec.split(':')
 
     val currentVersionRange by lazy {
-        Version.fromString(currentVersion).let { versionElements ->
-            StringSubstitutor.replace(
-                version,
-                mapOf(
-                    "major" to versionElements.major,
-                    "minor" to versionElements.minor,
-                    "patch" to versionElements.patch,
-                )
-            )
+        Version.fromString(currentVersion).let {
+            StringSubstitutor.replace(version, mapOf("major" to it.major, "minor" to it.minor, "patch" to it.patch))
         }
     }
 
     return {
         (it.group == group)
             && ((module == "*") || (it.module == module))
-            && com.github.gundy.semver4j.SemVer.satisfies(it.version, currentVersionRange)
+            && SemVer.satisfies(it.version, currentVersionRange)
     }
 }
 
