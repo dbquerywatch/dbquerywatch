@@ -5,7 +5,7 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class Strings {
 
-    public static boolean prefixedBy(String str, String prefix, boolean ignoreCase, Character separator) {
+    public static boolean prefixedBy(String str, String prefix, boolean ignoreCase, char separator) {
         if (prefix.length() > str.length()) {
             return false;
         }
@@ -16,7 +16,7 @@ public class Strings {
             str.charAt(prefix.length()) == separator;
     }
 
-    public static boolean suffixedBy(String str, String suffix, boolean ignoreCase, Character separator) {
+    public static boolean suffixedBy(String str, String suffix, boolean ignoreCase, char separator) {
         if (suffix.length() > str.length()) {
             return false;
         }
