@@ -4,6 +4,6 @@ import java.util.List;
 
 public interface AnalyzerSettings {
 
-    List<String> smallTables();
-    List<String> appBasePackages();
+    List<String> getSmallTables();
+    List<String> getAppBasePackages();
 }

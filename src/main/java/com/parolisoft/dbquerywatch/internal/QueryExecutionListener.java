@@ -1,20 +1,19 @@
 package com.parolisoft.dbquerywatch.internal;
 
 import com.parolisoft.dbquerywatch.internal.jdbc.JdbcClient;
-import com.parolisoft.dbquerywatch.internal.spring.AnalyzerSettingsAdapter;
 import net.ttddyy.dsproxy.ExecutionInfo;
 import net.ttddyy.dsproxy.QueryInfo;
-import org.springframework.core.env.Environment;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 public class QueryExecutionListener implements net.ttddyy.dsproxy.listener.QueryExecutionListener {
 
     private final ExecutionPlanAnalyzer analyzer;
-    private final AnalyzerSettingsAdapter analyzerSettings;
+    private final Supplier<AnalyzerSettings> analyzerSettingsSupplier;
 
-    public QueryExecutionListener(Environment environment, JdbcClient jdbcClient) {
-        this.analyzerSettings = new AnalyzerSettingsAdapter(environment);
+    public QueryExecutionListener(Supplier<AnalyzerSettings> analyzerSettingsSupplier, JdbcClient jdbcClient) {
+        this.analyzerSettingsSupplier = analyzerSettingsSupplier;
         this.analyzer = ExecutionPlanAnalyzerFactory.create(jdbcClient);
     }
 
@@ -25,7 +24,8 @@ public class QueryExecutionListener implements net.ttddyy.dsproxy.listener.Query
     public void afterQuery(ExecutionInfo execInfo, List<QueryInfo> queryInfoList) {
         for (QueryInfo queryInfo : queryInfoList) {
             String querySql = queryInfo.getQuery();
-            ExecutionPlanManager.afterQuery(analyzer, analyzerSettings, querySql, queryInfo.getParametersList());
+            ExecutionPlanManager.afterQuery(analyzer, analyzerSettingsSupplier.get(), querySql,
+                queryInfo.getParametersList());
         }
     }
 }

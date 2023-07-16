@@ -55,7 +55,7 @@ public class ExecutionPlanManager {
                 .computeIfAbsent(querySql, k -> new QueryUsage());
             //noinspection SynchronizationOnLocalVariableOrMethodParameter
             synchronized (usages) {
-                usages.methods.add(findAppCallerMethod(settings.appBasePackages()));
+                usages.methods.add(findAppCallerMethod(settings.getAppBasePackages()));
                 usages.allOperations.addAll(parameterSetOperations);
             }
         });
@@ -73,7 +73,7 @@ public class ExecutionPlanManager {
                     AnalysisResult result = analyzer.analyze(querySql, firstOrElse(usages.allOperations, emptyList()));
                     List<Issue> issues = result.getIssues().stream()
                         .filter(issue ->
-                            settings.smallTables().stream()
+                            settings.getSmallTables().stream()
                                 .noneMatch(st -> tableNameMatch(st, issue.getObjectName()))
                         )
                         .collect(Collectors.toList());
