@@ -25,16 +25,16 @@ import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Optional;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth8.assertThat;
-import static java.util.Collections.emptyMap;
 import static org.junit.platform.engine.TestExecutionResult.Status.FAILED;
 import static org.junit.platform.engine.TestExecutionResult.Status.SUCCESSFUL;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
@@ -65,7 +65,7 @@ public class CatchSlowQueriesTest {
         @CartesianTest.Enum ClientKind clientKind
     ) {
         Class<?> testClass = createTestClass(clientKind, DatabaseKind.H2);
-        runIntegrationTests(testClass, emptyMap(), 1, null, TagFilter.excludeTags("slow-query"));
+        runIntegrationTests(testClass, 1, null, TagFilter.excludeTags("slow-query"));
     }
 
     @CartesianTest
@@ -74,13 +74,10 @@ public class CatchSlowQueriesTest {
         @CartesianTest.Enum ClientKind clientKind
     ) {
         // Given
-        Map<String, String> properties = Map.of(
-            "dbquerywatch.small-tables", ""
-        );
         Class<?> testClass = createTestClass(clientKind, databaseKind);
 
         // When
-        SlowQueriesFoundException ex = runIntegrationTests(testClass, properties, 3, SlowQueriesFoundException.class);
+        SlowQueriesFoundException ex = runIntegrationTests(testClass, 3, SlowQueriesFoundException.class);
         List<SlowQueryReport> reports = ex.getSlowQueries();
 
         // Then
@@ -105,13 +102,10 @@ public class CatchSlowQueriesTest {
         @CartesianTest.Enum ClientKind clientKind
     ) {
         // Given
-        Map<String, String> properties = Map.of(
-            "dbquerywatch.small-tables", "journals"
-        );
-        Class<?> testClass = createTestClass(clientKind, databaseKind);
+        Class<?> testClass = createTestClass(clientKind, databaseKind, "dbquerywatch.small-tables=journals");
 
         // When
-        SlowQueriesFoundException ex = runIntegrationTests(testClass, properties, 3, SlowQueriesFoundException.class);
+        SlowQueriesFoundException ex = runIntegrationTests(testClass, 3, SlowQueriesFoundException.class);
         List<SlowQueryReport> reports = ex.getSlowQueries();
 
         // Then
@@ -134,51 +128,59 @@ public class CatchSlowQueriesTest {
 
     @Test
     public void should_throw_exception_if_no_queries_were_analyzed() {
-        runIntegrationTests(NoQueriesWereAnalyzedTests.class, emptyMap(), 1, NoQueriesWereAnalyzed.class);
+        runIntegrationTests(NoQueriesWereAnalyzedTests.class, 1, NoQueriesWereAnalyzed.class);
     }
 
     @Test
     public void should_throw_exception_if_postgres_is_misconfigured() {
         Class<?> testClass = createTestClass(DatabaseKind.Postgres.toString(),
             MockMvcIntegrationTests.class, PostgresDatabaseMisconfiguredContainerInitializer.class);
-        ExecutionPlanAnalyzerException ex = runIntegrationTests(testClass, emptyMap(), 3, ExecutionPlanAnalyzerException.class);
+        ExecutionPlanAnalyzerException ex = runIntegrationTests(testClass, 3, ExecutionPlanAnalyzerException.class);
         assertThat(ex.getLocalizedMessage()).contains("ENABLE_SEQSCAN");
     }
 
-    private Class<?> createTestClass(ClientKind clientKind, DatabaseKind databaseKind) {
-        return createTestClass(databaseKind.toString(), clientKind.baseClass, databaseKind.initializer);
+    private Class<?> createTestClass(ClientKind clientKind, DatabaseKind databaseKind, String... properties) {
+        return createTestClass(databaseKind.toString(), clientKind.baseClass, databaseKind.initializer, properties);
     }
 
     @SuppressWarnings("resource")
     private Class<?> createTestClass(
         String databaseName,
         Class<? extends BaseIntegrationTests> baseClass,
-        Class<? extends ApplicationContextInitializer<ConfigurableApplicationContext>> initializer
+        Class<? extends ApplicationContextInitializer<ConfigurableApplicationContext>> initializer,
+        String... properties
     ) {
-        if (initializer == null) {
-            return baseClass;
-        }
-        return new ByteBuddy()
-            .subclass(baseClass)
-            .annotateType(
-                AnnotationDescription.Builder.ofType(ActiveProfiles.class)
-                    .defineArray("value", databaseName.toLowerCase(Locale.US))
-                    .build()
-            )
-            .annotateType(
+        List<AnnotationDescription> annotations = new ArrayList<>();
+        annotations.add(
+            AnnotationDescription.Builder.ofType(ActiveProfiles.class)
+                .defineArray("value", databaseName.toLowerCase(Locale.US))
+                .build()
+        );
+        if (initializer != null) {
+            annotations.add(
                 AnnotationDescription.Builder.ofType(ContextConfiguration.class)
                     .defineTypeArray("initializers", initializer)
                     .build()
-            )
+            );
+        }
+        if (properties.length > 0) {
+            annotations.add(
+                AnnotationDescription.Builder.ofType(TestPropertySource.class)
+                    .defineArray("properties", properties)
+                    .build()
+            );
+        }
+        return new ByteBuddy()
+            .subclass(baseClass)
+            .annotateType(annotations)
             .make()
             .load(getClass().getClassLoader())
             .getLoaded();
     }
 
-    @Contract("_, _, _, null, _ -> null; _, _, _, !null, _ -> !null")
+    @Contract("_, _, null, _ -> null; _, _, !null, _ -> !null")
     private static <T extends RuntimeException> T runIntegrationTests(
         Class<?> testClass,
-        Map<String, String> properties,
         int numTests,
         @Nullable Class<T> expectedExceptionClass,
         Filter<?>... filters
@@ -187,7 +189,6 @@ public class CatchSlowQueriesTest {
             .engine("junit-jupiter")
             // reactivate @Deactivated classes
             .configurationParameter("junit.jupiter.conditions.deactivate", "org.junit.*DisabledCondition")
-            .configurationParameters(properties)
             .selectors(selectClass(testClass))
             .filters(filters)
             .execute();

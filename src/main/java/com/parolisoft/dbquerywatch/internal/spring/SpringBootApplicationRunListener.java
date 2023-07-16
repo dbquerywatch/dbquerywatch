@@ -11,33 +11,22 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.Collections.singletonMap;
+
 /**
  * Used to collect some useful information from the SpringBootApplication object.
  */
 class SpringBootApplicationRunListener implements SpringApplicationRunListener, Ordered {
-
-    private static final List<String> basePackages = new ArrayList<>();
 
     @Override
     public int getOrder() {
         return Ordered.HIGHEST_PRECEDENCE;
     }
 
-    // Retrieve the main class from the SpringApplication
-    public static List<String> getBasePackages() {
-        return basePackages;
-    }
-
-    // Set the main class from the SpringApplication
-    private static void setBasePackages(List<String> basePackages) {
-        SpringBootApplicationRunListener.basePackages.clear();
-        SpringBootApplicationRunListener.basePackages.addAll(basePackages);
-    }
-
     // Constructor for initializing the run listener with the SpringApplication
     @SuppressWarnings("unused")
     public SpringBootApplicationRunListener(SpringApplication application, String[] args) {
-        setBasePackages(getBasePackages(application));
+        application.setDefaultProperties(singletonMap("dbquerywatch.app-base-packages", getBasePackages(application)));
     }
 
     private static List<String> getBasePackages(SpringApplication application) {
