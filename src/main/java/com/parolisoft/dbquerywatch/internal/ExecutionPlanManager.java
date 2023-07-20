@@ -3,8 +3,8 @@ package com.parolisoft.dbquerywatch.internal;
 import com.parolisoft.dbquerywatch.NoQueriesWereAnalyzed;
 import com.parolisoft.dbquerywatch.SlowQueriesFoundException;
 import com.parolisoft.dbquerywatch.internal.jdbc.JdbcClient;
+import lombok.RequiredArgsConstructor;
 import lombok.Value;
-import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import net.ttddyy.dsproxy.proxy.ParameterSetOperation;
 
@@ -22,7 +22,7 @@ import static com.parolisoft.dbquerywatch.internal.SqlUtils.tableNameMatch;
 import static com.parolisoft.dbquerywatch.internal.Strings.prefixedBy;
 import static java.util.Collections.emptyList;
 
-@UtilityClass
+@RequiredArgsConstructor
 @Slf4j
 public class ExecutionPlanManager {
 
@@ -40,9 +40,10 @@ public class ExecutionPlanManager {
     //      - methods
     private static final Map<String, Map<ExecutionPlanAnalyzer, Map<String, QueryUsage>>> QUERIES = new ConcurrentHashMap<>();
 
-    public static void afterQuery(
+    private final AnalyzerSettings settings;
+
+    public void afterQuery(
         ExecutionPlanAnalyzer analyzer,
-        AnalyzerSettings settings,
         String querySql,
         List<List<ParameterSetOperation>> parameterSetOperations
     ) {
@@ -61,7 +62,7 @@ public class ExecutionPlanManager {
         });
     }
 
-    public static void verifyAll(AnalyzerSettings settings, Class<?> clazz) throws SlowQueriesFoundException, NoQueriesWereAnalyzed {
+    public void verifyAll(Class<?> clazz) throws SlowQueriesFoundException, NoQueriesWereAnalyzed {
         Map<ExecutionPlanAnalyzer, Map<String, QueryUsage>> usagesPerAnalyzer = QUERIES.remove(generateClassId(clazz));
         if (usagesPerAnalyzer == null) {
             throw new NoQueriesWereAnalyzed();

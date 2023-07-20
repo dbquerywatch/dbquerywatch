@@ -5,14 +5,25 @@ import com.parolisoft.dbquerywatch.SlowQueriesFoundException;
 import com.parolisoft.dbquerywatch.internal.AnalyzerSettings;
 import com.parolisoft.dbquerywatch.internal.ClassIdRepository;
 import com.parolisoft.dbquerywatch.internal.ExecutionPlanManager;
+import lombok.val;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
+import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.BeforeTestExecutionCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
-import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-class CatchSlowQueriesExtension implements BeforeTestExecutionCallback, AfterEachCallback, AfterAllCallback {
+import static java.util.Objects.requireNonNull;
+
+class CatchSlowQueriesExtension implements BeforeAllCallback, BeforeTestExecutionCallback, AfterEachCallback, AfterAllCallback {
+
+    @Override
+    public void beforeAll(ExtensionContext context) {
+        val springContext = (GenericApplicationContext) SpringExtension.getApplicationContext(context);
+        val settings = springContext.getBean(AnalyzerSettings.class);
+        springContext.registerBean(ExecutionPlanManager.class, settings);
+    }
 
     @Override
     public void beforeTestExecution(ExtensionContext context) {
@@ -26,8 +37,8 @@ class CatchSlowQueriesExtension implements BeforeTestExecutionCallback, AfterEac
 
     @Override
     public void afterAll(ExtensionContext context) throws SlowQueriesFoundException, NoQueriesWereAnalyzed {
-        ApplicationContext springContext = SpringExtension.getApplicationContext(context);
-        AnalyzerSettings settings = springContext.getBean(AnalyzerSettings.class);
-        ExecutionPlanManager.verifyAll(settings, context.getRequiredTestClass());
+        val springContext = SpringExtension.getApplicationContext(context);
+        val executionPlanManager = requireNonNull(springContext.getBean(ExecutionPlanManager.class));
+        executionPlanManager.verifyAll(context.getRequiredTestClass());
     }
 }

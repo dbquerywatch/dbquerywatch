@@ -5,7 +5,7 @@ import net.ttddyy.dsproxy.proxy.ParameterSetOperation;
 
 import java.util.List;
 
-interface ExecutionPlanAnalyzer {
+public interface ExecutionPlanAnalyzer {
 
     JdbcClient getJdbcClient();
 

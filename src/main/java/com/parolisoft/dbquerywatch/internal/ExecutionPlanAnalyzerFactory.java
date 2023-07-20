@@ -5,15 +5,16 @@ import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import org.springframework.jdbc.support.JdbcUtils;
 
+import javax.sql.DataSource;
 import java.sql.DatabaseMetaData;
 
 @UtilityClass
-class ExecutionPlanAnalyzerFactory {
+public class ExecutionPlanAnalyzerFactory {
 
     @SneakyThrows
-    ExecutionPlanAnalyzer create(JdbcClient jdbcClient) {
-        String productName = JdbcUtils.extractDatabaseMetaData(jdbcClient.getNamedDataSource().getPayload(),
-            DatabaseMetaData::getDatabaseProductName);
+    public ExecutionPlanAnalyzer create(JdbcClient jdbcClient) {
+        DataSource dataSource = jdbcClient.getNamedDataSource().getPayload();
+        String productName = JdbcUtils.extractDatabaseMetaData(dataSource, DatabaseMetaData::getDatabaseProductName);
         switch (productName) {
             case "H2":
                 return new H2ExecutionPlanAnalyzer(jdbcClient);
