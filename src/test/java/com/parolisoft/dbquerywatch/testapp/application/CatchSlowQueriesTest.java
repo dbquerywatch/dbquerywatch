@@ -11,8 +11,11 @@ import lombok.RequiredArgsConstructor;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.annotation.AnnotationDescription;
 import org.jetbrains.annotations.Contract;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.engine.descriptor.ClassTestDescriptor;
+import org.junit.platform.commons.util.ReflectionUtils;
 import org.junit.platform.engine.Filter;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.launcher.TagFilter;
@@ -29,8 +32,10 @@ import org.springframework.test.context.TestPropertySource;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -40,6 +45,7 @@ import static org.junit.platform.engine.TestExecutionResult.Status.SUCCESSFUL;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
 
 @SuppressWarnings("SameParameterValue")
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CatchSlowQueriesTest {
 
     @RequiredArgsConstructor
@@ -58,6 +64,18 @@ class CatchSlowQueriesTest {
         Concurrent(WebClientIntegrationTests.class);
 
         private final Class<? extends BaseIntegrationTests> baseClass;
+    }
+
+    @BeforeAll
+    void asyncStartAllContainers() {
+        Arrays.stream(DatabaseKind.values())
+            .map(db -> db.initializer)
+            .filter(Objects::nonNull)
+            .flatMap(initClass -> Arrays.stream(initClass.getDeclaredFields()))
+            .filter(field -> JdbcDatabaseContainerInitializer.class.isAssignableFrom(field.getType())
+                && ReflectionUtils.isStatic(field))
+            // Force class initialization. @see https://docs.oracle.com/javase/specs/jls/se8/html/jls-12.html#jls-12.4.1
+            .forEach(ReflectionUtils::tryToReadFieldValue);
     }
 
     @CartesianTest

@@ -1,27 +1,30 @@
 package com.parolisoft.dbquerywatch.testapp.application;
 
 import org.springframework.boot.test.util.TestPropertyValues;
-import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.testcontainers.containers.JdbcDatabaseContainer;
+import org.testcontainers.lifecycle.Startables;
 
 import javax.annotation.Nonnull;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
-abstract class JdbcDatabaseContainerInitializer
-    implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+class JdbcDatabaseContainerInitializer {
 
-    protected static final String REUSE_LABEL_ID = "io.dbquerywatch.reuse-id";
+    private static final String REUSE_LABEL_ID = "io.dbquerywatch.reuse-id";
 
-    protected static String reuseLabelValue(String databaseName) {
-        return databaseName;
+    private final JdbcDatabaseContainer<?> jdbcDatabaseContainer;
+    private final CompletableFuture<Void> startFuture;
+
+    JdbcDatabaseContainerInitializer(String name, JdbcDatabaseContainer<?> jdbcDatabaseContainer) {
+        this.jdbcDatabaseContainer = jdbcDatabaseContainer
+            .withLabel(REUSE_LABEL_ID, name)
+            .withReuse(true);
+        this.startFuture = Startables.deepStart(this.jdbcDatabaseContainer);
     }
 
-    protected static void initialize(
-        @Nonnull ConfigurableApplicationContext applicationContext,
-        JdbcDatabaseContainer<?> jdbcDatabaseContainer
-    ) {
-        jdbcDatabaseContainer.start();
+    public void initialize(@Nonnull ConfigurableApplicationContext applicationContext) {
+        startFuture.join();
         TestPropertyValues.of(
             Map.of(
                 "spring.datasource.driver-class-name", jdbcDatabaseContainer.getDriverClassName(),
