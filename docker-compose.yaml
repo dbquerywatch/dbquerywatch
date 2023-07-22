@@ -1,0 +1,28 @@
+version: '3'
+
+services:
+  mysql:
+    image: mysql:8.0.33
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: test
+      MYSQL_PASSWORD: test
+      MYSQL_USER: test
+      MYSQL_ROOT_PASSWORD: test
+  oracle:
+    image: gvenzl/oracle-xe:21.3.0-slim-faststart
+    ports:
+      - "1521:1521"
+    environment:
+      ORACLE_PASSWORD: test
+      APP_USER: test
+      APP_USER_PASSWORD: test
+  postgres:
+    image: postgres:15.3-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: test
