@@ -45,9 +45,6 @@ jobs:
           properties: |
             testBootVariant=2
 
-      - name: Migrate Test Application to Spring Boot 3
-        run: ./gradlew --quiet --stacktrace rewriteRun
-
       - name: Test for Spring Boot 3.0
         uses: burrunan/gradle-cache-action@v1
         with:

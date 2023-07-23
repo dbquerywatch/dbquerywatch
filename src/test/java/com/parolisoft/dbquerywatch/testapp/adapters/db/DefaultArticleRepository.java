@@ -3,81 +3,78 @@ package com.parolisoft.dbquerywatch.testapp.adapters.db;
 import com.parolisoft.dbquerywatch.testapp.application.out.ArticleRepository;
 import com.parolisoft.dbquerywatch.testapp.application.service.ArticleQuery;
 import com.parolisoft.dbquerywatch.testapp.domain.Article;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.jpa.domain.Specification;
+import com.parolisoft.dbquerywatch.testapp.infra.jdbi.Condition;
+import com.parolisoft.dbquerywatch.testapp.infra.jdbi.Conditions;
+import org.jdbi.v3.core.Jdbi;
+import org.jdbi.v3.core.mapper.reflect.BeanMapper;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
-import javax.persistence.criteria.Join;
+import javax.sql.DataSource;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Repository
-@RequiredArgsConstructor
 class DefaultArticleRepository implements ArticleRepository {
 
-    private final JpaArticleRepository jpaRepository;
-    private final ArticleEntityMapper entityMapper;
+    private final Jdbi jdbi;
 
-    @Override
-    public void save(Article article) {
-        jpaRepository.save(entityMapper.toJpa(article));
+    public DefaultArticleRepository(DataSource datasource) {
+        this.jdbi = Jdbi.create(datasource)
+            .registerRowMapper(BeanMapper.factory(Article.class));
     }
 
     @Override
     public Optional<Article> findById(long id) {
-        return jpaRepository.findById(id)
-                .map(entityMapper::fromJpa);
+        return jdbi.withHandle(handle -> {
+            String sql = "SELECT id, published_at, author_full_name, author_last_name, title " +
+                "FROM articles WHERE id = :id";
+            return handle.createQuery(sql)
+                .bind("id", id)
+                .mapTo(Article.class)
+                .findFirst();
+        });
     }
 
     @Override
     public List<Article> query(ArticleQuery query) {
-        Specification<JpaArticleEntity> spec = Specification.where(authorLastName(query.getAuthorLastName()))
-                .and(fromYear(query.getFromYear()))
-                .and(toYear(query.getToYear()))
-                .and(journalName(query.getJournalName()));
-        return jpaRepository.findAll(spec).stream()
-                .map(entityMapper::fromJpa)
-                .collect(Collectors.toList());
+        List<Condition> conditions = Conditions.of(
+            authorLastName(query.getAuthorLastName()),
+            fromYear(query.getFromYear()),
+            toYear(query.getToYear())
+        );
+
+        return jdbi.withHandle(handle -> {
+            String sql = "SELECT id, published_at, author_full_name, author_last_name, title " +
+                "FROM articles " + Conditions.whereClause(conditions);
+            return Conditions.customize(handle.createQuery(sql), conditions)
+                .mapTo(Article.class)
+                .list();
+        });
     }
 
-    private static @Nullable Specification<JpaArticleEntity> authorLastName(@Nullable String str) {
+    private static @Nullable Condition authorLastName(@Nullable String str) {
         if (str == null) {
             return null;
         }
-        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("authorLastName"), str);
+        return new Condition("author_last_name = :authorLastName", query -> query.bind("authorLastName", str));
     }
 
-    private static @Nullable Specification<JpaArticleEntity> fromYear(@Nullable Integer year) {
+    private static @Nullable Condition fromYear(@Nullable Integer year) {
         if (year == null) {
             return null;
         }
-        return (root, query, criteriaBuilder) -> criteriaBuilder.greaterThanOrEqualTo(
-                root.get("publishedAt"),
-                LocalDate.of(year, Month.JANUARY, 1)
-        );
+        return new Condition("published_at >= :fromYear",
+            query -> query.bind("fromYear", LocalDate.of(year, Month.JANUARY, 1)));
     }
 
-    private static @Nullable Specification<JpaArticleEntity> toYear(@Nullable Integer year) {
+    private static @Nullable Condition toYear(@Nullable Integer year) {
         if (year == null) {
             return null;
         }
-        return (root, query, criteriaBuilder) -> criteriaBuilder.lessThanOrEqualTo(
-                root.get("publishedAt"),
-                LocalDate.of(year, Month.DECEMBER, 31)
-        );
-    }
-
-    private static @Nullable Specification<JpaArticleEntity> journalName(@Nullable String name) {
-        if (name == null) {
-            return null;
-        }
-        return (root, query, criteriaBuilder) -> {
-            Join<JpaArticleEntity, JpaJournalEntity> journal = root.join("journal");
-            return criteriaBuilder.equal(journal.get("name"), name);
-        };
+        return new Condition("published_at <= :toYear",
+            query -> query.bind("toYear", LocalDate.of(year, Month.DECEMBER, 31)));
     }
 }

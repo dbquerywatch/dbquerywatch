@@ -21,7 +21,6 @@ plugins {
     id("net.ltgt.errorprone") version "3.1.0"
     id("org.ajoberstar.grgit") version "5.2.0"
     id("org.jetbrains.gradle.plugin.idea-ext") version "1.1.7"
-    id("org.openrewrite.rewrite") version "6.1.16"
     id("org.sonarqube") version "4.3.0.3225"
 
     id("dependencyUpdates")
@@ -41,11 +40,6 @@ java {
     withSourcesJar()
 }
 
-rewrite {
-    activeRecipe("org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta")
-    exclusion("src/main/**")
-}
-
 repositories {
     mavenCentral()
 }
@@ -63,8 +57,6 @@ val testBootVersion = when (testBootVariant) {
 println("Spring Boot version: $testBootVersion")
 
 dependencies {
-    rewrite("org.openrewrite.recipe:rewrite-migrate-java:2.0.7")
-
     modules {
         module("com.vaadin.external.google:android-json") {
             replacedBy("org.json:json", "JSON-java is now in Public Domain")
@@ -102,12 +94,12 @@ dependencies {
     testImplementation("com.google.truth", "truth", versions.truth.get())
     testImplementation("com.google.truth.extensions", "truth-java8-extension", versions.truth.get())
     testImplementation("net.bytebuddy", "byte-buddy")
+    testImplementation("org.jdbi", "jdbi3-core", versions.jdbi.get())
     testImplementation("org.jetbrains", "annotations", versions.jbannotations.get())
     testImplementation("org.junit-pioneer", "junit-pioneer", versions.junit.pioneer.get())
     testImplementation("org.junit.jupiter", "junit-jupiter-engine")
     testImplementation("org.junit.platform", "junit-platform-testkit")
     testImplementation("org.mapstruct", "mapstruct", versions.mapstruct.get())
-    testImplementation("org.springframework.boot", "spring-boot-starter-data-jpa")
     testImplementation("org.springframework.boot", "spring-boot-starter-data-rest")
     testImplementation("org.springframework.boot", "spring-boot-starter-test")
     testImplementation("org.springframework.boot", "spring-boot-starter-webflux")
@@ -118,6 +110,7 @@ dependencies {
     testRuntimeOnly("com.h2database", "h2")
     testRuntimeOnly("com.mysql", "mysql-connector-j")
     testRuntimeOnly("com.oracle.database.jdbc", "ojdbc11")
+    testRuntimeOnly("com.zaxxer", "HikariCP")
     testRuntimeOnly("org.flywaydb", "flyway-core")
     testRuntimeOnly("org.flywaydb", "flyway-mysql")
     testRuntimeOnly("org.postgresql", "postgresql")

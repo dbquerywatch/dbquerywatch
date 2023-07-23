@@ -62,6 +62,7 @@ dbQueryWatch supports #any# persistence layer that uses Spring-managed datasourc
 
 - Hibernate/JPA
 - jOOQ
+- Jdbi
 - MyBatis
 
 ==== Database
