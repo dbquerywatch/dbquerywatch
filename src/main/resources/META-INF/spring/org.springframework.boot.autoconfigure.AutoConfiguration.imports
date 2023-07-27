@@ -1,1 +1,1 @@
-com.parolisoft.dbquerywatch.internal.spring.SpringConfiguration
+org.dbquerywatch.internal.spring.SpringConfiguration

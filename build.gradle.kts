@@ -26,7 +26,7 @@ plugins {
     id("dependencyUpdates")
 }
 
-group = "com.parolisoft"
+group = "org.dbquerywatch"
 description = "Shift-lefting the detection of slow queries"
 version = grgit.describe(mapOf(
     "tags" to true,
@@ -141,7 +141,7 @@ tasks.compileJava {
     ))
     options.errorprone {
         check("NullAway", CheckSeverity.ERROR)
-        option("NullAway:AnnotatedPackages", "com.parolisoft.dbquerywatch")
+        option("NullAway:AnnotatedPackages", "org.dbquerywatch")
     }
 }
 
@@ -198,8 +198,8 @@ tasks.check {
 
 sonar {
     properties {
-        property("sonar.projectKey", "parolisoft_dbquerywatch")
-        property("sonar.organization", "parolisoft")
+        property("sonar.projectKey", "dbquerywatch_dbquerywatch")
+        property("sonar.organization", "dbquerywatch")
         property("sonar.host.url", "https://sonarcloud.io")
     }
 }
@@ -233,7 +233,7 @@ tasks.withType<Javadoc> {
         docTitle = "dbQueryWatch version ${project.version}"
         windowTitle = "dbQueryWatch ${project.version}"
         header = "<b>dbQueryWatch</b>"
-        bottom = "Copyright &copy; 2023 Paroli Consulting. All Rights Reserved."
+        bottom = "Copyright &copy; 2023 Eliezio Oliveira. All Rights Reserved."
         addBooleanOption("html5", true)
         // See JDK-8200363 (https://bugs.openjdk.java.net/browse/JDK-8200363)
         // for information about the -Xwerror option.
@@ -244,7 +244,7 @@ tasks.withType<Javadoc> {
 val groupId = group.toString()
 val artifactId = name
 
-val ghOrg = "parolisoft"
+val ghOrg = "dbquerywatch"
 val ghRepo = name
 val ghHostAndPath = "github.com/${ghOrg}/${ghRepo}.git"
 
@@ -267,7 +267,7 @@ publishing {
                     developer {
                         id.set("ebo")
                         name.set("Eliezio Oliveira")
-                        email.set("eliezio@parolisoft.com")
+                        email.set("eliezio@pm.me")
                     }
                 }
                 scm {

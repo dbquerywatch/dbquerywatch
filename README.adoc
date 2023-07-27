@@ -19,17 +19,17 @@ ifdef::env-github[]
 endif::[]
 
 // Variables:
-:gh-org: parolisoft
+:gh-org: dbquerywatch
 :gh-repo: dbquerywatch
-:release-group: com.parolisoft
+:release-group: org.dbquerywatch
 :release-module: dbquerywatch
-:release-version: 1.1.0
+:release-version: 1.0.0
 :sleuth-version: 3.1.9
 
 image:https://img.shields.io/maven-central/v/{release-group}/{release-module}.svg?label=Maven%20Central[Maven Central, link=https://search.maven.org/search?q=g:{release-group}%20AND%20a:{release-module}&core=gav]
 image:https://javadoc.io/badge/{release-group}/{release-module}.svg[Javadocs, link=https://javadoc.io/doc/{release-group}/{release-module}]
 image:https://github.com/{gh-org}/{gh-repo}/actions/workflows/build.yml/badge.svg?branch=master[Build, link=https://github.com/{gh-org}/{gh-repo}/actions/workflows/build.yml]
-image:https://sonarcloud.io/api/project_badges/measure?project=parolisoft_dbquerywatch&metric=coverage[Coverage, link="https://sonarcloud.io/summary/new_code?id=parolisoft_dbquerywatch"]
+image:https://sonarcloud.io/api/project_badges/measure?project=dbquerywatch_dbquerywatch&metric=coverage[Coverage, link="https://sonarcloud.io/summary/new_code?id=dbquerywatch_dbquerywatch"]
 
 == What is it?
 
@@ -110,11 +110,11 @@ At its core, dbQueryWatch needs to link each performed database operation with i
 
 ==== MockMvc
 
-Most Spring Boot integration tests are based on MockMvc that operates in a mock servlet environment, allowing test and persistence methods to run on the same thread. In that case, you only need to annotate your integration test classes with https://javadoc.io/doc/{release-group}/{release-module}/latest/com/parolisoft/dbquerywatch/junit5/CatchSlowQueries.html[@CatchSlowQueries] as shown below:
+Most Spring Boot integration tests are based on MockMvc that operates in a mock servlet environment, allowing test and persistence methods to run on the same thread. In that case, you only need to annotate your integration test classes with https://javadoc.io/doc/{release-group}/{release-module}/latest/org/dbquerywatch/spring/junit5/CatchSlowQueries.html[@CatchSlowQueries] as shown below:
 
 [source,java]
 ----
-import com.parolisoft.dbquerywatch.junit5.CatchSlowQueries;
+import org.dbquerywatch.junit5.CatchSlowQueries;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -135,7 +135,7 @@ dbQueryWatch automatically customize the autowired WebTestClient to include the 
 
 [source,java]
 ----
-import com.parolisoft.dbquerywatch.junit5.CatchSlowQueries;
+import org.dbquerywatch.junit5.CatchSlowQueries;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @CatchSlowQueries  // <1>
@@ -170,7 +170,7 @@ A sample report taken from the sample application test class:
 
 ....
 
-com.parolisoft.dbquerywatch.SlowQueriesFoundException: Potential slow queries were found!
+org.dbquerywatch.SlowQueriesFoundException: Potential slow queries were found!
 
 ~~~~~ Query 1/1 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 DataSource:
@@ -182,7 +182,7 @@ Execution Plan:
 Issues:
     - Issue(type=FULL_ACCESS, objectName=articles, predicate=((published_at >= '1970-01-01'::date) AND (published_at <= '1980-12-31'::date)))
 Caller Methods:
-    - com.parolisoft.dbquerywatch.sample.adapters.db.JooqArticleRepository::query
+    - org.dbquerywatch.sample.adapters.db.JooqArticleRepository::query
 ....
 
 As indicated by the issue's description, there was a _Full Table Scan_ on table `articles` due to a missing index over column `published_at`. Simply adding this index will fix the performance issue for this operation.
