@@ -9,7 +9,7 @@ import java.util.Set;
 @Value
 @SuppressWarnings("java:S1948")  // we are only using serializable implementations of Set/List for these fields
 public class SlowQueryReport implements Serializable {
-    String dataSourceName;
+    NamedDataSource namedDataSource;
     String querySql;
     String executionPlan;
     Set<String> methods;

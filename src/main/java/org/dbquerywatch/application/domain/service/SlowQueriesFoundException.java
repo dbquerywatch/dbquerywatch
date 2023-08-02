@@ -2,6 +2,7 @@ package org.dbquerywatch.application.domain.service;
 
 import com.google.errorprone.annotations.FormatMethod;
 import org.dbquerywatch.application.domain.model.Issue;
+import org.dbquerywatch.application.domain.model.NamedDataSource;
 import org.dbquerywatch.application.domain.model.SlowQueryReport;
 import org.dbquerywatch.common.CleanRuntimeException;
 
@@ -45,10 +46,12 @@ public class SlowQueriesFoundException extends CleanRuntimeException {
         StringBuilder sb = new StringBuilder("Potential slow queries were found!\n");
         for (int i = 0; i < slowQueries.size(); i++) {
             SlowQueryReport slowQuery = slowQueries.get(i);
+            NamedDataSource namedDataSource = slowQuery.getNamedDataSource();
             sb.append('\n')
                 .append(heading("Query %d/%d", i + 1, slowQueries.size()))
                 .append("\nDataSource:")
-                .append(LF_INDENT).append(slowQuery.getDataSourceName())
+                .append(LF_INDENT).append(namedDataSource.getName())
+                .append(" (").append(namedDataSource.getProductName()).append(')')
                 .append("\nSQL:")
                 .append(LF_INDENT).append(slowQuery.getQuerySql());
             sb.append("\nExecution Plan:")

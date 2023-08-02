@@ -84,7 +84,7 @@ public class ExecutionPlanManager {
                     log.debug("Issues: {}", issues);
                     if (!issues.isEmpty()) {
                         JdbcClient jdbcClient = analyzer.getJdbcClient();
-                        slowQueries.add(new SlowQueryReport(jdbcClient.getNamedDataSource().getName(),
+                        slowQueries.add(new SlowQueryReport(jdbcClient.getNamedDataSource(),
                             querySql, result.getExecutionPlan(), usages.methods, issues));
                     }
                 });
