@@ -114,7 +114,7 @@ Most Spring Boot integration tests are based on MockMvc that operates in a mock 
 
 [source,java]
 ----
-import org.dbquerywatch.junit5.CatchSlowQueries;
+import org.dbquerywatch.api.spring.junit5.CatchSlowQueries;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -135,7 +135,7 @@ dbQueryWatch automatically customize the autowired WebTestClient to include the 
 
 [source,java]
 ----
-import org.dbquerywatch.junit5.CatchSlowQueries;
+import org.dbquerywatch.api.spring.junit5.CatchSlowQueries;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @CatchSlowQueries  // <1>
@@ -170,7 +170,7 @@ A sample report taken from the sample application test class:
 
 ....
 
-org.dbquerywatch.SlowQueriesFoundException: Potential slow queries were found!
+org.dbquerywatch.application.domain.service.SlowQueriesFoundException: Potential slow queries were found!
 
 ~~~~~ Query 1/1 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 DataSource:

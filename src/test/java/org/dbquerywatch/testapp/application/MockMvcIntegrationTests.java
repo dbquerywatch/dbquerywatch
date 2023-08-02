@@ -1,6 +1,6 @@
 package org.dbquerywatch.testapp.application;
 
-import org.dbquerywatch.internal.ClassIdRepository;
+import org.dbquerywatch.application.domain.service.ClassIdRepository;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Disabled;

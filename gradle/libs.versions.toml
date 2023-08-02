@@ -2,6 +2,8 @@
 boot2 = "2.7.14"
 boot3 = "3.0.9"
 boot31 = "3.1.2"
+
+archunit = "1.0.1"
 dsproxy = "1.9"
 errorprone = "2.20.0"
 findbugs = "3.0.2"

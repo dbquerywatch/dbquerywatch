@@ -40,7 +40,7 @@ class OptionalResponseControllerAdvice implements ResponseBodyAdvice<Object> {
     }
 
     static class ResourceNotFoundException extends RuntimeException {
-        public ResourceNotFoundException(String message) {
+        ResourceNotFoundException(String message) {
             super(message);
         }
     }

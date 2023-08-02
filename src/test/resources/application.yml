@@ -14,6 +14,6 @@ spring:
 
 logging:
   level:
-    org.dbquerywatch.internal.ExecutionPlanManager: debug
+    org.dbquerywatch.application.domain.service: debug
   pattern:
     level: '%clr(%5p) [%X{traceId:-},%X{spanId:-}]'

@@ -2,8 +2,8 @@ package org.dbquerywatch.testapp.application;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
-import org.dbquerywatch.internal.ClassIdRepository;
-import org.dbquerywatch.junit5.CatchSlowQueries;
+import org.dbquerywatch.api.spring.junit5.CatchSlowQueries;
+import org.dbquerywatch.application.domain.service.ClassIdRepository;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;

@@ -93,6 +93,7 @@ dependencies {
     testImplementation("ch.qos.logback", "logback-classic")
     testImplementation("com.google.truth", "truth", versions.truth.get())
     testImplementation("com.google.truth.extensions", "truth-java8-extension", versions.truth.get())
+    testImplementation("com.tngtech.archunit", "archunit-junit5", versions.archunit.get())
     testImplementation("net.bytebuddy", "byte-buddy")
     testImplementation("org.jdbi", "jdbi3-core", versions.jdbi.get())
     testImplementation("org.jetbrains", "annotations", versions.jbannotations.get())
@@ -116,6 +117,12 @@ dependencies {
     testRuntimeOnly("org.postgresql", "postgresql")
 
     if (testBootVersion.startsWith("2.")) {
+        // prevent upgrade to 2.0 from archunit (transitively)
+        testImplementation("org.slf4j:slf4j-api") {
+            version {
+                strictly("[1.7, 1.8[")
+            }
+        }
         testImplementation(platform("org.springframework.cloud:spring-cloud-sleuth-dependencies:${versions.sleuth.get()}"))
         testRuntimeOnly("org.springframework.cloud", "spring-cloud-sleuth-zipkin")
         testRuntimeOnly("org.springframework.cloud", "spring-cloud-starter-sleuth")
@@ -224,7 +231,7 @@ idea.project {
 }
 
 tasks.withType<Javadoc> {
-    exclude("**/internal/*")
+    include("**/api/**")
     (options as StandardJavadocDocletOptions).apply {
         noTimestamp.value = true
         docEncoding = "UTF-8"
