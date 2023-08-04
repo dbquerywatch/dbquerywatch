@@ -19,10 +19,7 @@ import org.junit.platform.commons.util.ReflectionUtils;
 import org.junit.platform.engine.Filter;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.launcher.TagFilter;
-import org.junit.platform.testkit.engine.EngineExecutionResults;
-import org.junit.platform.testkit.engine.EngineTestKit;
-import org.junit.platform.testkit.engine.Event;
-import org.junit.platform.testkit.engine.EventType;
+import org.junit.platform.testkit.engine.*;
 import org.junitpioneer.jupiter.cartesian.CartesianTest;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -31,15 +28,12 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.Optional;
+import java.lang.annotation.Annotation;
+import java.util.*;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth8.assertThat;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.platform.engine.TestExecutionResult.Status.FAILED;
 import static org.junit.platform.engine.TestExecutionResult.Status.SUCCESSFUL;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
@@ -48,17 +42,21 @@ import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CatchSlowQueriesTest {
 
+
     @RequiredArgsConstructor
     private enum DatabaseKind {
-        H2(null),
-        MySQL(MySQLDatabaseContainerInitializer.class),
-        Oracle(OracleDatabaseContainerInitializer.class),
-        Postgres(PostgresDatabaseContainerInitializer.class);
+        H2(null, null),
+        MySQL(MySQLDatabaseContainerInitializer.class, null),
+        Oracle(OracleDatabaseContainerInitializer.class, DisabledOnMacM1.class),
+        Postgres(PostgresDatabaseContainerInitializer.class, null);
 
         private final @Nullable Class<? extends ApplicationContextInitializer<ConfigurableApplicationContext>> initializer;
+        @Nullable
+        private final Class<? extends Annotation> extraAnnotation;
     }
 
     @RequiredArgsConstructor
+    @SuppressWarnings("unused")
     private enum ClientKind {
         Sequential(MockMvcIntegrationTests.class),
         Concurrent(WebClientIntegrationTests.class);
@@ -158,13 +156,14 @@ class CatchSlowQueriesTest {
     @Test
     void should_throw_exception_if_postgres_is_misconfigured() {
         Class<?> testClass = createTestClass(DatabaseKind.Postgres.toString(),
-            MockMvcIntegrationTests.class, PostgresDatabaseMisconfiguredContainerInitializer.class);
+            MockMvcIntegrationTests.class, PostgresDatabaseMisconfiguredContainerInitializer.class, null);
         ExecutionPlanAnalyzerException ex = runIntegrationTests(testClass, 3, ExecutionPlanAnalyzerException.class);
         assertThat(ex.getLocalizedMessage()).contains("ENABLE_SEQSCAN");
     }
 
     private Class<?> createTestClass(ClientKind clientKind, DatabaseKind databaseKind, String... properties) {
-        return createTestClass(databaseKind.toString(), clientKind.baseClass, databaseKind.initializer, properties);
+        return createTestClass(databaseKind.toString(), clientKind.baseClass, databaseKind.initializer,
+                databaseKind.extraAnnotation, properties);
     }
 
     @SuppressWarnings("resource")
@@ -172,6 +171,7 @@ class CatchSlowQueriesTest {
         String databaseName,
         Class<? extends BaseIntegrationTests> baseClass,
         Class<? extends ApplicationContextInitializer<ConfigurableApplicationContext>> initializer,
+        @Nullable Class<? extends Annotation> extraAnnotation,
         String... properties
     ) {
         List<AnnotationDescription> annotations = new ArrayList<>();
@@ -193,6 +193,9 @@ class CatchSlowQueriesTest {
                     .defineArray("properties", properties)
                     .build()
             );
+        }
+        if (extraAnnotation != null) {
+            annotations.add(AnnotationDescription.Builder.ofType(extraAnnotation).build());
         }
         return new ByteBuddy()
             .subclass(baseClass)
@@ -216,6 +219,9 @@ class CatchSlowQueriesTest {
             .selectors(selectClass(testClass))
             .filters(filters)
             .execute();
+
+        Events containerEvents = engineResults.containerEvents();
+        assumeTrue(containerEvents.skipped().count() < containerEvents.started().stream().count());
 
         engineResults
             .testEvents()

@@ -89,6 +89,7 @@ dependencies {
 
     testImplementation(platform("org.springframework.boot:spring-boot-dependencies:$testBootVersion"))
     testImplementation(platform("org.testcontainers:testcontainers-bom:${versions.testcontainers.get()}"))
+    testImplementation(platform("org.junit:junit-bom:${versions.junit.bom.get()}"))
 
     testImplementation("ch.qos.logback", "logback-classic")
     testImplementation("com.google.truth", "truth", versions.truth.get())
@@ -167,7 +168,7 @@ tasks.withType<Test> {
 }
 
 testlogger {
-    showSkipped = false
+    showSkipped = true
 }
 
 tasks.jacocoTestReport {
