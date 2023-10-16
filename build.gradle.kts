@@ -14,7 +14,7 @@ plugins {
     `maven-publish`
     signing
 
-    id("com.adarshr.test-logger") version "3.2.0"
+    id("com.adarshr.test-logger") version "4.0.0"
     id("com.github.ksoichiro.console.reporter") version "0.6.3"
     id("io.freefair.lombok") version "8.1.0"
     id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
