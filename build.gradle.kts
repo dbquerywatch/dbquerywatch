@@ -32,7 +32,7 @@ version = grgit.describe(mapOf(
     "tags" to true,
     "always" to true,
 )).removePrefix("v")
-println("version: $version")
+println("Version: $version")
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
