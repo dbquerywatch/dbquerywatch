@@ -1,5 +1,6 @@
 @file:Suppress("SpellCheckingInspection", "HasPlatformType")
 
+import com.github.gundy.semver4j.model.Version
 import net.ltgt.gradle.errorprone.CheckSeverity
 import net.ltgt.gradle.errorprone.errorprone
 import org.gradle.plugins.ide.idea.model.IdeaProject
@@ -7,6 +8,12 @@ import org.jetbrains.gradle.ext.Gradle
 import org.jetbrains.gradle.ext.ProjectSettings
 import org.jetbrains.gradle.ext.RunConfiguration
 import org.jetbrains.gradle.ext.RunConfigurationContainer
+
+buildscript {
+    dependencies {
+        classpath("com.github.gundy", "semver4j", "0.16.4")
+    }
+}
 
 plugins {
     `java-library`
@@ -47,11 +54,13 @@ repositories {
 val versions = libs.versions
 
 val testBootVariant: String by project
+val testBootVersionSpec = Version.fromString(testBootVariant)
 
 val testBootVersion = when (testBootVariant) {
-    "2" -> versions.boot2.get()
-    "30", "3.0" -> versions.boot3.get()
-    "31", "3.1" -> versions.boot31.get()
+    "2", "2.7" -> versions.boot2.get()
+    "3.0" -> versions.boot3.get()
+    "3.1" -> versions.boot31.get()
+    "3.2" -> versions.boot32.get()
     else -> throw GradleException("Unknown Spring Boot variant: $testBootVariant")
 }
 println("Spring Boot version: $testBootVersion")
@@ -117,7 +126,7 @@ dependencies {
     testRuntimeOnly("org.flywaydb", "flyway-mysql")
     testRuntimeOnly("org.postgresql", "postgresql")
 
-    if (testBootVersion.startsWith("2.")) {
+    if (testBootVersionSpec.satisfies("2")) {
         // prevent upgrade to 2.0 from archunit (transitively)
         testImplementation("org.slf4j:slf4j-api") {
             version {
@@ -131,6 +140,9 @@ dependencies {
         testRuntimeOnly("io.micrometer", "micrometer-tracing-bridge-brave")
         testRuntimeOnly("io.zipkin.reporter2", "zipkin-reporter-brave")
         testRuntimeOnly("org.springframework.boot", "spring-boot-starter-actuator")
+        if (testBootVersionSpec.satisfies(">=3.2")) {
+            testRuntimeOnly("org.flywaydb", "flyway-database-oracle")
+        }
     }
 }
 
