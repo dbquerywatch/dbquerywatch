@@ -22,7 +22,7 @@ class ArticleController {
     private final ArticleQueryMapper queryMapper;
 
     @GetMapping("/{id}")
-    public Optional<Article> getArticle(@PathVariable long id) {
+    public Optional<Article> getArticle(@PathVariable("id") long id) {
         return articleService.findById(id);
     }
 
