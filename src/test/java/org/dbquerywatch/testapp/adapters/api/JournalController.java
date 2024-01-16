@@ -18,7 +18,7 @@ class JournalController {
     private final JournalService journalService;
 
     @GetMapping("/{publisher}")
-    public List<Journal> getJournal(@PathVariable String publisher) {
+    public List<Journal> getJournal(@PathVariable("publisher") String publisher) {
         return journalService.findByPublisher(publisher);
     }
 }
