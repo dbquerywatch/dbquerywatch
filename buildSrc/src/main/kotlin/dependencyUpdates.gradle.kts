@@ -26,6 +26,7 @@ fun isNonStable(version: String): Boolean {
 // SemVer Ranges:
 // https://devhints.io/semver#:~:text=are%20not%20matched.-,Ranges,-~1.2.3
 val upgradesToIgnore = listOf(
+    "net.ttddyy:datasource-proxy:>\${major}.\${minor}",
     "org.springframework.boot:*:>\${major}",
 )
 
