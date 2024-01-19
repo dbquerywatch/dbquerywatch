@@ -1,8 +1,8 @@
 [versions]
 boot2 = "2.7.18"
 boot3 = "3.0.13"
-boot31 = "3.1.7"
-boot32 = "3.2.1"
+boot31 = "3.1.9"
+boot32 = "3.2.3"
 
 archunit = "1.2.1"
 dsproxy = "1.9"
