@@ -1,5 +1,5 @@
 plugins {
-    `gradle-enterprise`
+    id("com.gradle.develocity") version "3.17.5"
 }
 
 rootProject.name = "dbquerywatch"
@@ -7,10 +7,10 @@ rootProject.name = "dbquerywatch"
 val isCiServer = System.getenv().containsKey("CI")
 
 if (isCiServer) {
-    gradleEnterprise {
+    develocity {
         buildScan {
-            termsOfServiceUrl = "https://gradle.com/terms-of-service"
-            termsOfServiceAgree = "yes"
+            termsOfUseUrl = "https://gradle.com/help/legal-terms-of-use"
+            termsOfUseAgree = "yes"
             tag("CI")
         }
     }
