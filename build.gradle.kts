@@ -26,7 +26,7 @@ plugins {
     id("io.freefair.lombok") version "8.4"
     id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
     id("net.ltgt.errorprone") version "3.1.0"
-    id("org.ajoberstar.grgit") version "5.2.1"
+    id("org.ajoberstar.grgit") version "5.2.2"
     id("org.jetbrains.gradle.plugin.idea-ext") version "1.1.7"
     id("org.sonarqube") version "4.4.1.3373"
 
