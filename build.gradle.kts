@@ -27,7 +27,7 @@ plugins {
     id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
     id("net.ltgt.errorprone") version "3.1.0"
     id("org.ajoberstar.grgit") version "5.2.1"
-    id("org.jetbrains.gradle.plugin.idea-ext") version "1.1.7"
+    id("org.jetbrains.gradle.plugin.idea-ext") version "1.1.8"
     id("org.sonarqube") version "4.4.1.3373"
 
     id("dependencyUpdates")
