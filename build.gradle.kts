@@ -28,7 +28,7 @@ plugins {
     id("net.ltgt.errorprone") version "3.1.0"
     id("org.ajoberstar.grgit") version "5.2.1"
     id("org.jetbrains.gradle.plugin.idea-ext") version "1.1.7"
-    id("org.sonarqube") version "4.4.1.3373"
+    id("org.sonarqube") version "5.0.0.4638"
 
     id("dependencyUpdates")
 }
