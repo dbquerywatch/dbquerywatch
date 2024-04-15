@@ -4,7 +4,7 @@ boot3 = "3.0.13"
 boot31 = "3.1.11"
 boot32 = "3.2.5"
 
-archunit = "1.2.1"
+archunit = "1.3.0"
 dsproxy = "1.9"
 errorprone = "2.26.1"
 findbugs = "3.0.2"
