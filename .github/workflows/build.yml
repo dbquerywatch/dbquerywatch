@@ -69,6 +69,14 @@ jobs:
           properties: |
             testBootVariant=3.2
 
+      - name: Test for Spring Boot 3.3
+        uses: burrunan/gradle-cache-action@v1
+        with:
+          job-id: sb3.3
+          arguments: test
+          properties: |
+            testBootVariant=3.3
+
       - name: Upload reports
         if: failure()
         uses: actions/upload-artifact@master
