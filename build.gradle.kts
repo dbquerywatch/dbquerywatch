@@ -61,6 +61,7 @@ val testBootVersion = when (testBootVariant) {
     "3.0" -> versions.boot3.get()
     "3.1" -> versions.boot31.get()
     "3.2" -> versions.boot32.get()
+    "3.3" -> versions.boot33.get()
     else -> throw GradleException("Unknown Spring Boot variant: $testBootVariant")
 }
 println("Spring Boot version: $testBootVersion")
@@ -142,6 +143,9 @@ dependencies {
         testRuntimeOnly("org.springframework.boot", "spring-boot-starter-actuator")
         if (testBootVersionSpec.satisfies(">=3.2")) {
             testRuntimeOnly("org.flywaydb", "flyway-database-oracle")
+        }
+        if (testBootVersionSpec.satisfies(">=3.3")) {
+            testRuntimeOnly("org.flywaydb", "flyway-database-postgresql")
         }
     }
 }
