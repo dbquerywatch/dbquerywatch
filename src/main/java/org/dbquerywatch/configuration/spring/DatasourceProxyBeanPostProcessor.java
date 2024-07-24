@@ -41,6 +41,7 @@ class DatasourceProxyBeanPostProcessor implements BeanPostProcessor {
             ProxyDataSource proxyDataSource = ProxyDataSourceBuilder.create(dataSource)
                 .logQueryBySlf4j(SLF4JLogLevel.INFO, ProxyDataSource.class.getName())
                 .listener(listener)
+                .countQuery()
                 .build();
             return createAopProxy(dataSource, proxyDataSource);
         }
