@@ -9,5 +9,5 @@ import org.springframework.context.annotation.Import;
         AnalyzerProperties.class,
         DatasourceProxyBeanPostProcessor.class,
 })
-class SpringConfiguration {
+public class DbQueryWatchConfiguration {
 }
