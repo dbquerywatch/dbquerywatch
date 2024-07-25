@@ -16,6 +16,7 @@ import org.dbquerywatch.configuration.common.ExecutionPlanAnalyzerFactory;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
 import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
@@ -32,7 +33,7 @@ class DatasourceProxyBeanPostProcessor implements BeanPostProcessor {
 
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) {
-        if (bean instanceof DataSource && !(bean instanceof ProxyDataSource)) {
+        if (bean instanceof DataSource && !(bean instanceof ProxyDataSource) && !(bean instanceof AbstractRoutingDataSource)) {
             val dataSource = (DataSource) bean;
             val namedDataSource = new NamedDataSource(beanName, extractProductName(dataSource), dataSource);
             JdbcClient jdbcClient = new SpringJdbcClient(namedDataSource);
