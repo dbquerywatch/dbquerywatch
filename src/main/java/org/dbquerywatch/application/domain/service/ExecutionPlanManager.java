@@ -63,10 +63,11 @@ public class ExecutionPlanManager {
         });
     }
 
-    public void verifyAll(Class<?> clazz) throws SlowQueriesFoundException, NoQueriesWereAnalyzed {
+    public void verifyAll(Class<?> clazz) throws SlowQueriesFoundException {
         Map<ExecutionPlanAnalyzer, Map<String, QueryUsage>> usagesPerAnalyzer = QUERIES.remove(generateClassId(clazz));
         if (usagesPerAnalyzer == null) {
-            throw new NoQueriesWereAnalyzed();
+            log.warn("No query data found for class {}", clazz.getName());
+            return;
         }
         List<SlowQueryReport> slowQueries = new ArrayList<>();
         usagesPerAnalyzer.forEach((analyzer, usagesPerSql) -> {
