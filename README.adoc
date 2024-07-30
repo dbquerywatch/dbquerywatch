@@ -23,7 +23,7 @@ endif::[]
 :gh-repo: dbquerywatch
 :release-group: org.dbquerywatch
 :release-module: dbquerywatch
-:release-version: 1.2.0
+:release-version: 1.3.2
 :sleuth-version: 3.1.11
 
 image:https://img.shields.io/maven-central/v/{release-group}/{release-module}.svg?label=Maven%20Central[Maven Central, link=https://search.maven.org/search?q=g:{release-group}%20AND%20a:{release-module}&core=gav]
