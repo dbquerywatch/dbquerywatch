@@ -7,7 +7,6 @@ import net.bytebuddy.description.annotation.AnnotationDescription;
 import org.dbquerywatch.application.domain.model.Issue;
 import org.dbquerywatch.application.domain.model.SlowQueryReport;
 import org.dbquerywatch.application.domain.service.ExecutionPlanAnalyzerException;
-import org.dbquerywatch.application.domain.service.NoQueriesWereAnalyzed;
 import org.dbquerywatch.application.domain.service.SlowQueriesFoundException;
 import org.dbquerywatch.common.SqlUtils;
 import org.jetbrains.annotations.Contract;
@@ -19,7 +18,11 @@ import org.junit.platform.commons.util.ReflectionUtils;
 import org.junit.platform.engine.Filter;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.launcher.TagFilter;
-import org.junit.platform.testkit.engine.*;
+import org.junit.platform.testkit.engine.EngineExecutionResults;
+import org.junit.platform.testkit.engine.EngineTestKit;
+import org.junit.platform.testkit.engine.Event;
+import org.junit.platform.testkit.engine.EventType;
+import org.junit.platform.testkit.engine.Events;
 import org.junitpioneer.jupiter.cartesian.CartesianTest;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -29,7 +32,12 @@ import org.springframework.test.context.TestPropertySource;
 
 import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.Optional;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -148,8 +156,9 @@ class CatchSlowQueriesTest {
     }
 
     @Test
-    void should_throw_exception_if_no_queries_were_analyzed() {
-        runIntegrationTests(NoQueriesWereAnalyzedTests.class, 1, NoQueriesWereAnalyzed.class);
+    void should_warn_if_no_queries_were_analyzed() {
+        runIntegrationTests(NoQueriesWereAnalyzedTests.class, 1, null);
+        // ODOT: should check if log message was issued...
     }
 
     @Test
