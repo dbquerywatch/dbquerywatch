@@ -49,7 +49,6 @@ import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CatchSlowQueriesTest {
 
-
     @RequiredArgsConstructor
     private enum DatabaseKind {
         H2(null, null),
@@ -153,12 +152,6 @@ class CatchSlowQueriesTest {
         assertThat(tableNames)
             .comparingElementsUsing(Correspondence.from(SqlUtils::tableNameMatch, "equivalent table name"))
             .containsExactly("articles");
-    }
-
-    @Test
-    void should_warn_if_no_queries_were_analyzed() {
-        runIntegrationTests(NoQueriesWereAnalyzedTests.class, 1, null);
-        // ODOT: should check if log message was issued...
     }
 
     @Test

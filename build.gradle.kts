@@ -105,6 +105,7 @@ dependencies {
     testImplementation("com.google.truth", "truth", versions.truth.get())
     testImplementation("com.google.truth.extensions", "truth-java8-extension", versions.truth.get())
     testImplementation("com.tngtech.archunit", "archunit-junit5", versions.archunit.get())
+    testImplementation("io.github.hakky54", "logcaptor", versions.logcaptor.get())
     testImplementation("net.bytebuddy", "byte-buddy")
     testImplementation("org.jdbi", "jdbi3-core", versions.jdbi.get())
     testImplementation("org.jetbrains", "annotations", versions.jbannotations.get())
@@ -132,6 +133,11 @@ dependencies {
         testImplementation("org.slf4j:slf4j-api") {
             version {
                 strictly("[1.7, 1.8[")
+            }
+        }
+        testImplementation("ch.qos.logback:logback-classic") {
+            version {
+                strictly("[1.2, 1.3[")
             }
         }
         testImplementation(platform("org.springframework.cloud:spring-cloud-sleuth-dependencies:${versions.sleuth.get()}"))
