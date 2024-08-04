@@ -1,24 +1,24 @@
 package org.dbquerywatch.adapters.out.analyzers;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import org.dbquerywatch.application.port.out.ExecutionPlanAnalyzer;
 import org.dbquerywatch.application.port.out.JdbcClient;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.jspecify.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-@RequiredArgsConstructor
-@Getter
 abstract class AbstractExecutionPlanAnalyzer implements ExecutionPlanAnalyzer {
 
     private static final Pattern IS_JSON_ARRAY = Pattern.compile("^\\s*\\[");
 
     protected final JdbcClient jdbcClient;
+
+    public AbstractExecutionPlanAnalyzer(JdbcClient jdbcClient) {
+        this.jdbcClient = jdbcClient;
+    }
 
     @Override
     public JdbcClient getJdbcClient() {

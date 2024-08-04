@@ -1,13 +1,12 @@
 package org.dbquerywatch.common;
 
-import lombok.experimental.UtilityClass;
-
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import static org.dbquerywatch.common.Strings.suffixedBy;
 
-@UtilityClass
-public class SqlUtils {
+public final class SqlUtils {
+    private SqlUtils() {
+    }
 
     public static boolean tableNameMatch(@Nullable String targetName, @Nullable String issueName) {
         if (targetName == null || issueName == null) {

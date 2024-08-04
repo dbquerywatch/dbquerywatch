@@ -1,13 +1,13 @@
 package org.dbquerywatch.api.helpers;
 
-import lombok.experimental.UtilityClass;
 import org.springframework.http.HttpHeaders;
 
 /**
  * Spring-specific utility methods to simplify the eventual changes on user's integration tests.
  */
-@UtilityClass
-public class SpringTestHelpers {
+public final class SpringTestHelpers {
+    private SpringTestHelpers() {
+    }
 
     /**
      * Generate the HTTP tracing headers for a given test class and add them to an existing HttpHeaders object.
@@ -15,7 +15,7 @@ public class SpringTestHelpers {
      * @param headers The target HttpHeaders object.
      * @param clazz The test class from which the headers will be generated.
      */
-    public void addTraceHeaders(HttpHeaders headers, Class<?> clazz) {
+    public static void addTraceHeaders(HttpHeaders headers, Class<?> clazz) {
         TestHelpers.buildTraceHeaders(clazz, null).forEach(headers::add);
     }
 }

@@ -1,6 +1,5 @@
 package org.dbquerywatch.application.domain.service;
 
-import lombok.experimental.UtilityClass;
 import org.slf4j.MDC;
 
 import java.util.Optional;
@@ -8,37 +7,39 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-@UtilityClass
-public class ClassIdRepository {
+public final class ClassIdRepository {
 
     private static final AtomicInteger THREAD_LOCAL_HITS = new AtomicInteger();
     private static final AtomicInteger MDC_HITS = new AtomicInteger();
 
-    Optional<String> load() {
+    private ClassIdRepository() {
+    }
+
+    static Optional<String> load() {
         return or(
             () -> meteredOptional(ThreadLocalClassIdRepository.load(), THREAD_LOCAL_HITS),
             () -> meteredOptional(MdcClassIdRepository.load(), MDC_HITS)
         );
     }
 
-    public void save(Class<?> clazz) {
+    public static void save(Class<?> clazz) {
         ThreadLocalClassIdRepository.save(clazz);
     }
 
-    public void clear() {
+    public static void clear() {
         ThreadLocalClassIdRepository.clear();
     }
 
-    public void resetMetrics() {
+    public static void resetMetrics() {
         THREAD_LOCAL_HITS.getAndSet(0);
         MDC_HITS.getAndSet(0);
     }
 
-    public int getThreadLocalHits() {
+    public static int getThreadLocalHits() {
         return THREAD_LOCAL_HITS.get();
     }
 
-    public int getMdcHits() {
+    public static int getMdcHits() {
         return MDC_HITS.get();
     }
 
@@ -50,29 +51,33 @@ public class ClassIdRepository {
         return optional;
     }
 
-    @UtilityClass
     private static final class ThreadLocalClassIdRepository {
 
         private static final ThreadLocal<String> CLASS_ID = new ThreadLocal<>();
 
-        private  Optional<String> load() {
+        private ThreadLocalClassIdRepository() {
+        }
+
+        private static Optional<String> load() {
             return Optional.ofNullable(CLASS_ID.get());
         }
 
-        private  void save(Class<?> clazz) {
+        private static void save(Class<?> clazz) {
             CLASS_ID.set(ClassIdSupport.generateClassId(clazz));
         }
 
-        private  void clear() {
+        private static void clear() {
             CLASS_ID.remove();
         }
     }
 
-    @UtilityClass
-    private static class MdcClassIdRepository {
+    private static final class MdcClassIdRepository {
         private static final String MDC_TRACE_ID = "traceId";
 
-        private Optional<String> load() {
+        private MdcClassIdRepository() {
+        }
+
+        private static Optional<String> load() {
             String traceId = MDC.get(MDC_TRACE_ID);
             return ClassIdSupport.isValidClassHashId(traceId) ? Optional.of(traceId) : Optional.empty();
         }

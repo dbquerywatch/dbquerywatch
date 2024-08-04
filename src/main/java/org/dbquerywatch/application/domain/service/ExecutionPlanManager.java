@@ -1,7 +1,7 @@
 package org.dbquerywatch.application.domain.service;
 
-import lombok.Value;
 import net.ttddyy.dsproxy.proxy.ParameterSetOperation;
+import org.dbquerywatch.application.domain.model.ImmutableSlowQueryReport;
 import org.dbquerywatch.application.domain.model.Issue;
 import org.dbquerywatch.application.domain.model.SlowQueryReport;
 import org.dbquerywatch.application.port.out.AnalysisResult;
@@ -88,8 +88,13 @@ public class ExecutionPlanManager {
                     log.debug("Issues: {}", issues);
                     if (!issues.isEmpty()) {
                         JdbcClient jdbcClient = analyzer.getJdbcClient();
-                        slowQueries.add(new SlowQueryReport(jdbcClient.getNamedDataSource(),
-                            querySql, result.getExecutionPlan(), usages.methods, issues));
+                        slowQueries.add(ImmutableSlowQueryReport.builder()
+                            .namedDataSource(jdbcClient.getNamedDataSource())
+                            .querySql(querySql)
+                            .executionPlan(result.getExecutionPlan())
+                            .methods(usages.methods)
+                            .issues(issues)
+                            .build());
                     }
                 });
             }
@@ -131,7 +136,6 @@ public class ExecutionPlanManager {
         return list.isEmpty() ? defaultValue : list.get(0);
     }
 
-    @Value
     private static class QueryUsage {
         // we are storing ALL sets of ParameterSetOperation although only the first set is used for the analysis.
         List<List<ParameterSetOperation>> allOperations = new ArrayList<>();

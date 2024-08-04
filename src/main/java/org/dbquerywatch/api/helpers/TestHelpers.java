@@ -1,9 +1,8 @@
 package org.dbquerywatch.api.helpers;
 
-import lombok.experimental.UtilityClass;
 import org.dbquerywatch.application.domain.service.ClassIdSupport;
+import org.jspecify.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.HashMap;
@@ -14,10 +13,12 @@ import java.util.Random;
 /**
  * Utility methods to simplify the eventual changes on user's integration tests.
  */
-@UtilityClass
-public class TestHelpers {
+public final class TestHelpers {
 
     private static final Random RND = new SecureRandom();
+
+    private TestHelpers() {
+    }
 
     /**
      * Generate the hash ID for a given test class, compatible with 128 bit traceId.

@@ -1,7 +1,6 @@
 package org.dbquerywatch.testapp.application;
 
 import com.google.common.truth.Correspondence;
-import lombok.RequiredArgsConstructor;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.annotation.AnnotationDescription;
 import org.dbquerywatch.application.domain.model.Issue;
@@ -10,6 +9,7 @@ import org.dbquerywatch.application.domain.service.ExecutionPlanAnalyzerExceptio
 import org.dbquerywatch.application.domain.service.SlowQueriesFoundException;
 import org.dbquerywatch.common.SqlUtils;
 import org.jetbrains.annotations.Contract;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -30,7 +30,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
-import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,7 +48,6 @@ import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CatchSlowQueriesTest {
 
-    @RequiredArgsConstructor
     private enum DatabaseKind {
         H2(null, null),
         MySQL(MySQLDatabaseContainerInitializer.class, null),
@@ -59,15 +57,23 @@ class CatchSlowQueriesTest {
         private final @Nullable Class<? extends ApplicationContextInitializer<ConfigurableApplicationContext>> initializer;
         @Nullable
         private final Class<? extends Annotation> extraAnnotation;
+
+        DatabaseKind(@Nullable Class<? extends ApplicationContextInitializer<ConfigurableApplicationContext>> initializer, @Nullable Class<? extends Annotation> extraAnnotation) {
+            this.initializer = initializer;
+            this.extraAnnotation = extraAnnotation;
+        }
     }
 
-    @RequiredArgsConstructor
     @SuppressWarnings("unused")
     private enum ClientKind {
         Sequential(MockMvcIntegrationTests.class),
         Concurrent(WebClientIntegrationTests.class);
 
         private final Class<? extends BaseIntegrationTests> baseClass;
+
+        ClientKind(Class<? extends BaseIntegrationTests> baseClass) {
+            this.baseClass = baseClass;
+        }
     }
 
     @BeforeAll
@@ -244,7 +250,6 @@ class CatchSlowQueriesTest {
         assertThat(executionResult.getStatus()).isEqualTo(FAILED);
         Optional<Throwable> throwable = executionResult.getThrowable();
         assertThat(throwable).isPresent();
-        //noinspection OptionalGetWithoutIsPresent
         assertThat(throwable.get()).isInstanceOf(expectedExceptionClass);
 
         return expectedExceptionClass.cast(throwable.get());

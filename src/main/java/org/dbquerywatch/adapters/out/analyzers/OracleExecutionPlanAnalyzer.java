@@ -1,9 +1,11 @@
 package org.dbquerywatch.adapters.out.analyzers;
 
 import net.ttddyy.dsproxy.proxy.ParameterSetOperation;
+import org.dbquerywatch.application.domain.model.ImmutableIssue;
 import org.dbquerywatch.application.domain.model.Issue;
 import org.dbquerywatch.application.domain.model.IssueType;
 import org.dbquerywatch.application.port.out.AnalysisResult;
+import org.dbquerywatch.application.port.out.ImmutableAnalysisResult;
 import org.dbquerywatch.application.port.out.JdbcClient;
 
 import java.util.Arrays;
@@ -36,11 +38,11 @@ public class OracleExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
                 .map(plan -> {
                     String objectName = getString(plan, "OBJECT_NAME");
                     String predicate = getString(plan, "FILTER_PREDICATES");
-                    return objectName != null ? new Issue(IssueType.FULL_ACCESS, objectName, predicate) : null;
+                    return objectName != null ? ImmutableIssue.of(IssueType.FULL_ACCESS, objectName, predicate) : null;
                 })
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
-        return new AnalysisResult(toJson(plans), issues);
+        return ImmutableAnalysisResult.of(toJson(plans), issues);
     }
 
     private static String getStatementID() {

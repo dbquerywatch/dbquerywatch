@@ -1,7 +1,5 @@
 package org.dbquerywatch.configuration.common;
 
-import lombok.SneakyThrows;
-import lombok.experimental.UtilityClass;
 import org.dbquerywatch.adapters.out.analyzers.H2ExecutionPlanAnalyzer;
 import org.dbquerywatch.adapters.out.analyzers.MySQLExecutionPlanAnalyzer;
 import org.dbquerywatch.adapters.out.analyzers.OracleExecutionPlanAnalyzer;
@@ -9,11 +7,11 @@ import org.dbquerywatch.adapters.out.analyzers.PostgresExecutionPlanAnalyzer;
 import org.dbquerywatch.application.port.out.ExecutionPlanAnalyzer;
 import org.dbquerywatch.application.port.out.JdbcClient;
 
-@UtilityClass
-public class ExecutionPlanAnalyzerFactory {
+public final class ExecutionPlanAnalyzerFactory {
+    private ExecutionPlanAnalyzerFactory() {
+    }
 
-    @SneakyThrows
-    public ExecutionPlanAnalyzer create(JdbcClient jdbcClient) {
+    public static ExecutionPlanAnalyzer create(JdbcClient jdbcClient) {
         String productName = jdbcClient.getNamedDataSource().getProductName();
         switch (productName) {
             case "H2":

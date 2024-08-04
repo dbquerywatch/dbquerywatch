@@ -1,12 +1,13 @@
 package org.dbquerywatch.application.domain.model;
 
-import lombok.Value;
+import org.immutables.value.Value;
 
 import javax.sql.DataSource;
 
-@Value
-public class NamedDataSource {
-    String name;
-    String productName;
-    DataSource dataSource;
+@Value.Immutable
+@Value.Style(allParameters = true)
+public interface NamedDataSource {
+    String getName();
+    String getProductName();
+    DataSource getDataSource();
 }

@@ -1,21 +1,21 @@
 package org.dbquerywatch.application.domain.service;
 
-import lombok.Generated;
-import lombok.SneakyThrows;
-import lombok.experimental.UtilityClass;
+import org.jspecify.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.math.BigInteger;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-@UtilityClass
-public class ClassIdSupport {
+public final class ClassIdSupport {
     private static final char CLASS_HASH_ID_CHAR0 = 'Q'; /* 0x51 */
     private static final char CLASS_HASH_ID_CHAR1 = 'W'; /* 0x57 */
     private static final String CLASS_HASH_ID_PREFIX = "5157";
+
+    private ClassIdSupport() {
+    }
 
     public static String generateClassId(Class<?> clazz) {
         byte[] digest = Arrays.copyOf(messageDigest(clazz.getCanonicalName().getBytes(UTF_8)), 16);
@@ -29,9 +29,11 @@ public class ClassIdSupport {
             traceId.startsWith(CLASS_HASH_ID_PREFIX);
     }
 
-    @Generated
-    @SneakyThrows
     private static byte[] messageDigest(byte[] bytes) {
-        return MessageDigest.getInstance("SHA-256").digest(bytes);
+        try {
+            return MessageDigest.getInstance("SHA-256").digest(bytes);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

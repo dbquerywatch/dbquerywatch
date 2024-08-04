@@ -1,9 +1,11 @@
 package org.dbquerywatch.adapters.out.analyzers;
 
 import net.ttddyy.dsproxy.proxy.ParameterSetOperation;
+import org.dbquerywatch.application.domain.model.ImmutableIssue;
 import org.dbquerywatch.application.domain.model.Issue;
 import org.dbquerywatch.application.domain.model.IssueType;
 import org.dbquerywatch.application.port.out.AnalysisResult;
+import org.dbquerywatch.application.port.out.ImmutableAnalysisResult;
 import org.dbquerywatch.application.port.out.JdbcClient;
 
 import java.util.ArrayList;
@@ -30,8 +32,8 @@ public class H2ExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
         Matcher matcher = TABLE_SCAN_PATTERN.matcher(requireNonNull(commentedPlan));
         List<Issue> issues = new ArrayList<>();
         while (matcher.find()) {
-            issues.add(new Issue(IssueType.FULL_ACCESS, matcher.group(1), null));
+            issues.add(ImmutableIssue.of(IssueType.FULL_ACCESS, matcher.group(1), null));
         }
-        return new AnalysisResult(commentedPlan, issues);
+        return ImmutableAnalysisResult.of(commentedPlan, issues);
     }
 }

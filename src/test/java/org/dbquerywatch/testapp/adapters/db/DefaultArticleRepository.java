@@ -5,11 +5,12 @@ import org.dbquerywatch.testapp.application.service.ArticleQuery;
 import org.dbquerywatch.testapp.domain.Article;
 import org.dbquerywatch.testapp.infra.jdbi.Condition;
 import org.dbquerywatch.testapp.infra.jdbi.Conditions;
+import org.dbquerywatch.testapp.infra.jdbi.ImmutableCondition;
 import org.jdbi.v3.core.Jdbi;
-import org.jdbi.v3.core.mapper.reflect.BeanMapper;
+import org.jdbi.v3.core.mapper.immutables.JdbiImmutables;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Repository;
 
-import javax.annotation.Nullable;
 import javax.sql.DataSource;
 import java.time.LocalDate;
 import java.time.Month;
@@ -22,8 +23,9 @@ class DefaultArticleRepository implements ArticleRepository {
     private final Jdbi jdbi;
 
     public DefaultArticleRepository(DataSource datasource) {
-        this.jdbi = Jdbi.create(datasource)
-            .registerRowMapper(BeanMapper.factory(Article.class));
+        this.jdbi = Jdbi.create(datasource);
+        this.jdbi.getConfig(JdbiImmutables.class)
+            .registerImmutable(Article.class);
     }
 
     @Override
@@ -59,14 +61,14 @@ class DefaultArticleRepository implements ArticleRepository {
         if (str == null) {
             return null;
         }
-        return new Condition("author_last_name = :authorLastName", query -> query.bind("authorLastName", str));
+        return ImmutableCondition.of("author_last_name = :authorLastName", query -> query.bind("authorLastName", str));
     }
 
     private static @Nullable Condition fromYear(@Nullable Integer year) {
         if (year == null) {
             return null;
         }
-        return new Condition("published_at >= :fromYear",
+        return ImmutableCondition.of("published_at >= :fromYear",
             query -> query.bind("fromYear", LocalDate.of(year, Month.JANUARY, 1)));
     }
 
@@ -74,7 +76,7 @@ class DefaultArticleRepository implements ArticleRepository {
         if (year == null) {
             return null;
         }
-        return new Condition("published_at <= :toYear",
+        return ImmutableCondition.of("published_at <= :toYear",
             query -> query.bind("toYear", LocalDate.of(year, Month.DECEMBER, 31)));
     }
 }

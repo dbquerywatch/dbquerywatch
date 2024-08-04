@@ -1,6 +1,5 @@
 package org.dbquerywatch.configuration.spring;
 
-import lombok.RequiredArgsConstructor;
 import net.ttddyy.dsproxy.ExecutionInfo;
 import net.ttddyy.dsproxy.QueryInfo;
 import net.ttddyy.dsproxy.listener.QueryExecutionListener;
@@ -11,11 +10,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-@RequiredArgsConstructor
 class QueryAnalysisExecutionListener implements QueryExecutionListener {
 
     private final Supplier<ExecutionPlanManager> executionPlanManagerSupplier;
     private final ExecutionPlanAnalyzer analyzer;
+
+    QueryAnalysisExecutionListener(Supplier<ExecutionPlanManager> executionPlanManagerSupplier, ExecutionPlanAnalyzer analyzer) {
+        this.executionPlanManagerSupplier = executionPlanManagerSupplier;
+        this.analyzer = analyzer;
+    }
 
     @Override
     public void beforeQuery(ExecutionInfo execInfo, List<QueryInfo> queryInfoList) { /* */ }

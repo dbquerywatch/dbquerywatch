@@ -1,12 +1,12 @@
 package org.dbquerywatch.testapp.domain;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import org.immutables.value.Value;
 
-@Data
-@NoArgsConstructor
-public class Journal {
-    String id;
-    String name;
-    String publisher;
+@Value.Immutable
+public interface Journal {
+    String getId();
+
+    String getName();
+
+    String getPublisher();
 }
