@@ -1,9 +1,8 @@
 package org.dbquerywatch.common;
 
-import lombok.experimental.UtilityClass;
-
-@UtilityClass
-public class Strings {
+public final class Strings {
+    private Strings() {
+    }
 
     public static boolean prefixedBy(String str, String prefix, boolean ignoreCase, char separator) {
         if (prefix.length() > str.length()) {

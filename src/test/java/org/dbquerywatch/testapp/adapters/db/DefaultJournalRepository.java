@@ -3,7 +3,7 @@ package org.dbquerywatch.testapp.adapters.db;
 import org.dbquerywatch.testapp.application.out.JournalRepository;
 import org.dbquerywatch.testapp.domain.Journal;
 import org.jdbi.v3.core.Jdbi;
-import org.jdbi.v3.core.mapper.reflect.BeanMapper;
+import org.jdbi.v3.core.mapper.immutables.JdbiImmutables;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
@@ -15,8 +15,9 @@ class DefaultJournalRepository implements JournalRepository {
     private final Jdbi jdbi;
 
     public DefaultJournalRepository(DataSource datasource) {
-        this.jdbi = Jdbi.create(datasource)
-            .registerRowMapper(BeanMapper.factory(Journal.class));
+        this.jdbi = Jdbi.create(datasource);
+        this.jdbi.getConfig(JdbiImmutables.class)
+            .registerImmutable(Journal.class);
     }
 
     @Override

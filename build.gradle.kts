@@ -23,7 +23,6 @@ plugins {
 
     id("com.adarshr.test-logger") version "4.0.0"
     id("com.github.ksoichiro.console.reporter") version "0.6.3"
-    id("io.freefair.lombok") version "8.6"
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
     id("net.ltgt.errorprone") version "4.0.1"
     id("org.ajoberstar.grgit") version "5.2.2"
@@ -79,13 +78,16 @@ dependencies {
 
     errorprone("com.google.errorprone", "error_prone_core", versions.errorprone.get())
     annotationProcessor("com.uber.nullaway", "nullaway", versions.nullaway.get())
+    annotationProcessor("org.immutables", "value", versions.immutables.get())
 
     compileOnly("com.google.errorprone", "error_prone_annotations", versions.errorprone.get())
+    compileOnly("org.immutables", "value", versions.immutables.get())
 
     implementation("com.google.code.findbugs", "jsr305", versions.findbugs.get())
     implementation("com.jayway.jsonpath", "json-path")
     implementation("net.ttddyy", "datasource-proxy", versions.dsproxy.get())
     implementation("org.json", "json", versions.orgjson.get())
+    implementation("org.jspecify", "jspecify", versions.jspecify.get())
     implementation("org.slf4j", "slf4j-api")
     implementation("org.springframework", "spring-aop")
     implementation("org.springframework", "spring-context")
@@ -95,7 +97,10 @@ dependencies {
     implementation("org.springframework.boot", "spring-boot")
     implementation("org.springframework.boot", "spring-boot-test")
 
+    testAnnotationProcessor("org.immutables", "value", versions.immutables.get())
     testAnnotationProcessor("org.mapstruct", "mapstruct-processor", versions.mapstruct.get())
+
+    testCompileOnly("org.immutables", "value", versions.immutables.get())
 
     testImplementation(platform("org.springframework.boot:spring-boot-dependencies:$testBootVersion"))
     testImplementation(platform("org.testcontainers:testcontainers-bom:${versions.testcontainers.get()}"))

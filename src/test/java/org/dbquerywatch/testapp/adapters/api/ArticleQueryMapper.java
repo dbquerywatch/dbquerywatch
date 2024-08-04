@@ -1,6 +1,7 @@
 package org.dbquerywatch.testapp.adapters.api;
 
 import org.dbquerywatch.testapp.application.service.ArticleQuery;
+import org.dbquerywatch.testapp.application.service.ImmutableArticleQuery;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;
 

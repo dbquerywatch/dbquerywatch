@@ -1,14 +1,17 @@
 package org.dbquerywatch.application.domain.model;
 
-import lombok.Value;
+import org.immutables.value.Value;
+import org.jspecify.annotations.Nullable;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.Serializable;
 
-@Value
-public class Issue implements Serializable {
-    @Nonnull IssueType type;
-    @Nonnull String objectName;
-    @Nullable String predicate;
+@Value.Immutable
+@Value.Style(allParameters = true)
+public interface Issue extends Serializable {
+    IssueType getType();
+
+    String getObjectName();
+
+    @Nullable
+    String getPredicate();
 }

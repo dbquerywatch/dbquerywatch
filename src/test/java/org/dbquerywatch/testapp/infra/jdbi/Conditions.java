@@ -1,7 +1,6 @@
 package org.dbquerywatch.testapp.infra.jdbi;
 
 import com.google.common.base.Joiner;
-import lombok.experimental.UtilityClass;
 import org.jdbi.v3.core.statement.Query;
 
 import java.util.Arrays;
@@ -9,8 +8,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
-@UtilityClass
-public class Conditions {
+public final class Conditions {
+    private Conditions() {
+    }
 
     public static List<Condition> of(Condition... conditions) {
         return Arrays.stream(conditions)

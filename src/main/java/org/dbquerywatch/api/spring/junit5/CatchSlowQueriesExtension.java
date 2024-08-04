@@ -1,6 +1,5 @@
 package org.dbquerywatch.api.spring.junit5;
 
-import lombok.val;
 import org.dbquerywatch.application.domain.service.AnalyzerSettings;
 import org.dbquerywatch.application.domain.service.ClassIdRepository;
 import org.dbquerywatch.application.domain.service.ExecutionPlanManager;
@@ -9,6 +8,7 @@ import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.BeforeTestExecutionCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -18,8 +18,8 @@ class CatchSlowQueriesExtension implements BeforeAllCallback, BeforeTestExecutio
 
     @Override
     public void beforeAll(ExtensionContext context) {
-        val springContext = (GenericApplicationContext) SpringExtension.getApplicationContext(context);
-        val settings = springContext.getBean(AnalyzerSettings.class);
+        GenericApplicationContext springContext = (GenericApplicationContext) SpringExtension.getApplicationContext(context);
+        AnalyzerSettings settings = springContext.getBean(AnalyzerSettings.class);
         springContext.registerBean(ExecutionPlanManager.class, settings);
     }
 
@@ -35,8 +35,8 @@ class CatchSlowQueriesExtension implements BeforeAllCallback, BeforeTestExecutio
 
     @Override
     public void afterAll(ExtensionContext context) {
-        val springContext = SpringExtension.getApplicationContext(context);
-        val executionPlanManager = requireNonNull(springContext.getBean(ExecutionPlanManager.class));
+        ApplicationContext springContext = SpringExtension.getApplicationContext(context);
+        ExecutionPlanManager executionPlanManager = requireNonNull(springContext.getBean(ExecutionPlanManager.class));
         executionPlanManager.verifyAll(context.getRequiredTestClass());
     }
 }

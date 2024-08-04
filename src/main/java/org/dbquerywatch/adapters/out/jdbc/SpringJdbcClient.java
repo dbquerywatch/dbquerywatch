@@ -2,9 +2,9 @@ package org.dbquerywatch.adapters.out.jdbc;
 
 import org.dbquerywatch.application.domain.model.NamedDataSource;
 import org.dbquerywatch.application.port.out.AbstractJdbcClient;
+import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import javax.annotation.Nullable;
 import java.sql.PreparedStatement;
 import java.util.List;
 import java.util.Map;

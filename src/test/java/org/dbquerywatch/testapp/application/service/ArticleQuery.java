@@ -1,22 +1,19 @@
 package org.dbquerywatch.testapp.application.service;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import org.immutables.value.Value;
+import org.jspecify.annotations.Nullable;
 
-import javax.annotation.Nullable;
-
-@Data
-@NoArgsConstructor
-public class ArticleQuery {
+@Value.Immutable
+public interface ArticleQuery {
     @Nullable
-    String authorLastName;
+    String getAuthorLastName();
 
     @Nullable
-    Integer fromYear;
+    Integer getFromYear();
 
     @Nullable
-    Integer toYear;
+    Integer getToYear();
 
     @Nullable
-    String journalName;
+    String getJournalName();
 }

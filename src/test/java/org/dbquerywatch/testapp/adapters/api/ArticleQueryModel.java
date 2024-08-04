@@ -1,21 +1,27 @@
 package org.dbquerywatch.testapp.adapters.api;
 
 
-import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import org.immutables.value.Value;
+import org.jspecify.annotations.Nullable;
 
-import javax.annotation.Nullable;
-
-@Data
-class ArticleQueryModel {
+@Value.Immutable
+@JsonDeserialize(as = ImmutableArticleQueryModel.class)
+interface ArticleQueryModel {
     @Nullable
-    String authorLastName;
-
-    @Nullable
-    Integer fromYear;
-
-    @Nullable
-    Integer toYear;
+    @JsonProperty("author_last_name")
+    String getAuthorLastName();
 
     @Nullable
-    String journalName;
+    @JsonProperty("from_year")
+    Integer getFromYear();
+
+    @Nullable
+    @JsonProperty("to_year")
+    Integer getToYear();
+
+    @Nullable
+    @JsonProperty("journal_name")
+    String getJournalName();
 }

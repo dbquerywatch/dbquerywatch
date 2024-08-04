@@ -4,7 +4,6 @@ import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-import javax.annotation.Nonnull;
 import java.util.Map;
 
 class PostgresDatabaseContainerInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
@@ -24,7 +23,7 @@ class PostgresDatabaseContainerInitializer implements ApplicationContextInitiali
     );
 
     @Override
-    public void initialize(@Nonnull ConfigurableApplicationContext applicationContext) {
+    public void initialize(ConfigurableApplicationContext applicationContext) {
         SINGLETON_INITIALIZER.initialize(applicationContext);
     }
 }

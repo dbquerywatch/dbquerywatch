@@ -1,17 +1,22 @@
 package org.dbquerywatch.testapp.domain;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import org.immutables.value.Value;
+import org.jspecify.annotations.Nullable;
 
 import java.time.LocalDate;
 
-@Data
-@NoArgsConstructor
-public class Article {
-    Long id;
-    LocalDate publishedAt;
-    String authorFullName;
-    String authorLastName;
-    String title;
-    Journal journal;
+@Value.Immutable
+public interface Article {
+    Long getId();
+
+    LocalDate getPublishedAt();
+
+    String getAuthorFullName();
+
+    String getAuthorLastName();
+
+    String getTitle();
+
+    @Nullable
+    Journal getJournal();
 }

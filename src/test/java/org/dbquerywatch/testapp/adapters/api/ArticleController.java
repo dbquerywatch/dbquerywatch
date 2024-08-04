@@ -1,6 +1,5 @@
 package org.dbquerywatch.testapp.adapters.api;
 
-import lombok.RequiredArgsConstructor;
 import org.dbquerywatch.testapp.application.service.ArticleService;
 import org.dbquerywatch.testapp.domain.Article;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,12 +13,16 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/articles")
 class ArticleController {
 
     private final ArticleService articleService;
     private final ArticleQueryMapper queryMapper;
+
+    ArticleController(ArticleService articleService, ArticleQueryMapper queryMapper) {
+        this.articleService = articleService;
+        this.queryMapper = queryMapper;
+    }
 
     @GetMapping("/{id}")
     public Optional<Article> getArticle(@PathVariable("id") long id) {

@@ -1,11 +1,12 @@
 package org.dbquerywatch.common;
 
-import lombok.RequiredArgsConstructor;
-
-@RequiredArgsConstructor
 public class CleanRuntimeException extends RuntimeException {
     // Having my own message in order to prevent the error message printed TWICE on console.
     protected final String detailMessage;
+
+    public CleanRuntimeException(String detailMessage) {
+        this.detailMessage = detailMessage;
+    }
 
     @Override
     public String getLocalizedMessage() {

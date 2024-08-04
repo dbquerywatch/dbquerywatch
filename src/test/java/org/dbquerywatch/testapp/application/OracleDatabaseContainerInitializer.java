@@ -4,8 +4,6 @@ import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.testcontainers.containers.OracleContainer;
 
-import javax.annotation.Nonnull;
-
 class OracleDatabaseContainerInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
     private static final JdbcDatabaseContainerInitializer SINGLETON_INITIALIZER = new JdbcDatabaseContainerInitializer(
@@ -14,7 +12,7 @@ class OracleDatabaseContainerInitializer implements ApplicationContextInitialize
     );
 
     @Override
-    public void initialize(@Nonnull ConfigurableApplicationContext applicationContext) {
+    public void initialize(ConfigurableApplicationContext applicationContext) {
         SINGLETON_INITIALIZER.initialize(applicationContext);
     }
 }

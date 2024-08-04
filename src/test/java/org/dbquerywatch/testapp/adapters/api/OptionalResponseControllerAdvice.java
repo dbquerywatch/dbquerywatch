@@ -11,24 +11,23 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
-import javax.annotation.Nonnull;
 import java.util.Optional;
 
 @ControllerAdvice
 class OptionalResponseControllerAdvice implements ResponseBodyAdvice<Object> {
 
     @Override
-    public boolean supports(MethodParameter returnType, @Nonnull Class converterType) {
+    public boolean supports(MethodParameter returnType, Class converterType) {
         return returnType.getParameterType().equals(Optional.class);
     }
 
     @Override
     public Object beforeBodyWrite(Object body,
-                                  @Nonnull MethodParameter returnType,
-                                  @Nonnull MediaType selectedContentType,
-                                  @Nonnull Class<? extends HttpMessageConverter<?>> selectedConverterType,
-                                  @Nonnull ServerHttpRequest request,
-                                  @Nonnull ServerHttpResponse response) {
+                                  MethodParameter returnType,
+                                  MediaType selectedContentType,
+                                  Class<? extends HttpMessageConverter<?>> selectedConverterType,
+                                  ServerHttpRequest request,
+                                  ServerHttpResponse response) {
         return ((Optional<?>) body).orElseThrow(() -> new ResourceNotFoundException("No object found: " + request.getURI()));
     }
 

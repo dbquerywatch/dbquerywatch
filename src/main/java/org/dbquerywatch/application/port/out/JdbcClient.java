@@ -2,8 +2,8 @@ package org.dbquerywatch.application.port.out;
 
 import net.ttddyy.dsproxy.proxy.ParameterSetOperation;
 import org.dbquerywatch.application.domain.model.NamedDataSource;
+import org.jspecify.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;

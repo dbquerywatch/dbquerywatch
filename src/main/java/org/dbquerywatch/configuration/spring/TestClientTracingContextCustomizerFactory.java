@@ -1,9 +1,8 @@
 package org.dbquerywatch.configuration.spring;
 
-import lombok.EqualsAndHashCode;
-import lombok.RequiredArgsConstructor;
 import org.dbquerywatch.api.helpers.SpringTestHelpers;
 import org.dbquerywatch.api.spring.junit5.CatchSlowQueries;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.boot.test.web.reactive.server.WebTestClientBuilderCustomizer;
@@ -15,8 +14,8 @@ import org.springframework.test.context.MergedContextConfiguration;
 import org.springframework.test.context.TestContextAnnotationUtils;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
-import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Objects;
 
 import static org.springframework.util.StringUtils.uncapitalize;
 
@@ -35,12 +34,12 @@ class TestClientTracingContextCustomizerFactory implements ContextCustomizerFact
         return new WebTestClientTracingContextCustomizer(testClass);
     }
 
-    @RequiredArgsConstructor
-    // CRITICAL, otherwise the spring context won't be cached!
-    // @see https://docs.spring.io/spring-framework/reference/testing/testcontext-framework/ctx-management/caching.html
-    @EqualsAndHashCode
     private static class WebTestClientTracingContextCustomizer implements ContextCustomizer {
         private final Class<?> testClass;
+
+        private WebTestClientTracingContextCustomizer(Class<?> testClass) {
+            this.testClass = testClass;
+        }
 
         @Override
         public void customizeContext(
@@ -55,12 +54,31 @@ class TestClientTracingContextCustomizerFactory implements ContextCustomizerFact
                     ).getBeanDefinition()
                 );
         }
+
+        // Equals & HashCode are CRITICAL, otherwise the spring context won't be cached!
+        // @see https://docs.spring.io/spring-framework/reference/testing/testcontext-framework/ctx-management/caching.html
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            WebTestClientTracingContextCustomizer that = (WebTestClientTracingContextCustomizer) o;
+            return Objects.equals(testClass, that.testClass);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hashCode(testClass);
+        }
     }
 
-    @RequiredArgsConstructor
     private static class WebTestClientTracingCustomizer implements WebTestClientBuilderCustomizer {
 
         private final Class<?> testClass;
+
+        private WebTestClientTracingCustomizer(Class<?> testClass) {
+            this.testClass = testClass;
+        }
 
         @Override
         public void customize(WebTestClient.Builder builder) {
