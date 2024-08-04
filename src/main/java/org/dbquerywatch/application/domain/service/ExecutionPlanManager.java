@@ -1,14 +1,14 @@
 package org.dbquerywatch.application.domain.service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.Value;
-import lombok.extern.slf4j.Slf4j;
 import net.ttddyy.dsproxy.proxy.ParameterSetOperation;
 import org.dbquerywatch.application.domain.model.Issue;
 import org.dbquerywatch.application.domain.model.SlowQueryReport;
 import org.dbquerywatch.application.port.out.AnalysisResult;
 import org.dbquerywatch.application.port.out.ExecutionPlanAnalyzer;
 import org.dbquerywatch.application.port.out.JdbcClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,8 +24,6 @@ import static org.dbquerywatch.application.domain.service.ClassIdSupport.generat
 import static org.dbquerywatch.common.SqlUtils.tableNameMatch;
 import static org.dbquerywatch.common.Strings.prefixedBy;
 
-@RequiredArgsConstructor
-@Slf4j
 public class ExecutionPlanManager {
 
     private static final Pattern ANALYZABLE_COMMANDS = Pattern.compile(
@@ -43,6 +41,10 @@ public class ExecutionPlanManager {
     private static final Map<String, Map<ExecutionPlanAnalyzer, Map<String, QueryUsage>>> QUERIES = new ConcurrentHashMap<>();
 
     private final AnalyzerSettings settings;
+
+    public ExecutionPlanManager(AnalyzerSettings settings) {
+        this.settings = settings;
+    }
 
     public void acceptQuery(
         ExecutionPlanAnalyzer analyzer,
@@ -64,6 +66,7 @@ public class ExecutionPlanManager {
     }
 
     public void verifyAll(Class<?> clazz) throws SlowQueriesFoundException {
+        Logger log = LoggerFactory.getLogger(this.getClass());
         Map<ExecutionPlanAnalyzer, Map<String, QueryUsage>> usagesPerAnalyzer = QUERIES.remove(generateClassId(clazz));
         if (usagesPerAnalyzer == null) {
             log.warn("No query data found for class {}", clazz.getName());
