@@ -12,8 +12,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.UUID;
-import java.util.stream.Collectors;
+
+import static java.util.UUID.randomUUID;
+import static java.util.stream.Collectors.toList;
 
 public class OracleExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
 
@@ -41,12 +42,12 @@ public class OracleExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
                     return objectName != null ? ImmutableIssue.of(IssueType.FULL_ACCESS, objectName, predicate) : null;
                 })
                 .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+                .collect(toList());
         return ImmutableAnalysisResult.of(toJson(plans), issues);
     }
 
     private static String getStatementID() {
-        String uuid = UUID.randomUUID().toString();
+        String uuid = randomUUID().toString();
         // Oracle STATEMENT_ID capacity is 30 chars.
         return uuid.substring(uuid.length() - (24 + 3));
     }

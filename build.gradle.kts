@@ -77,13 +77,13 @@ dependencies {
     api("org.junit.jupiter", "junit-jupiter-api")
 
     errorprone("com.google.errorprone", "error_prone_core", versions.errorprone.get())
+    errorprone("tech.picnic.error-prone-support", "error-prone-contrib", versions.picnic.errorprone.get())
     annotationProcessor("com.uber.nullaway", "nullaway", versions.nullaway.get())
     annotationProcessor("org.immutables", "value", versions.immutables.get())
 
     compileOnly("com.google.errorprone", "error_prone_annotations", versions.errorprone.get())
     compileOnly("org.immutables", "value", versions.immutables.get())
 
-    implementation("com.google.code.findbugs", "jsr305", versions.findbugs.get())
     implementation("com.jayway.jsonpath", "json-path")
     implementation("net.ttddyy", "datasource-proxy", versions.dsproxy.get())
     implementation("org.json", "json", versions.orgjson.get())
@@ -97,6 +97,7 @@ dependencies {
     implementation("org.springframework.boot", "spring-boot")
     implementation("org.springframework.boot", "spring-boot-test")
 
+    testAnnotationProcessor("com.uber.nullaway", "nullaway", versions.nullaway.get())
     testAnnotationProcessor("org.immutables", "value", versions.immutables.get())
     testAnnotationProcessor("org.mapstruct", "mapstruct-processor", versions.mapstruct.get())
 
@@ -177,6 +178,15 @@ tasks.compileJava {
     options.errorprone {
         check("NullAway", CheckSeverity.ERROR)
         option("NullAway:AnnotatedPackages", "org.dbquerywatch")
+        enable(
+            "Var",
+        )
+        disable(
+            "LexicographicalAnnotationListing",
+            "LexicographicalAnnotationAttributeListing",
+        )
+        disableWarningsInGeneratedCode = true // for @Generated
+        excludedPaths = ".*/build/generated/.*" // for other generated scenarios (MapStruct, OpenApi Generator, RecordBuilder)
     }
 }
 
@@ -187,6 +197,7 @@ tasks.compileTestJava {
         "-Amapstruct.suppressGeneratorVersionInfoComment=true",
         "-Amapstruct.verbose=false",
     ))
+    options.errorprone.isEnabled = false
 }
 
 tasks.withType<Test> {

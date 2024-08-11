@@ -16,7 +16,9 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+
+import static java.util.regex.Pattern.CASE_INSENSITIVE;
+import static java.util.stream.Collectors.toList;
 
 public class MySQLExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
 
@@ -24,7 +26,7 @@ public class MySQLExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
 
     private static final Pattern TABLE_ALIAS_DEFINITION = Pattern.compile(
         "\\b(?:from|join)\\s+([\\w.]+)\\s+([\\w.]+)\\b",
-        Pattern.CASE_INSENSITIVE
+        CASE_INSENSITIVE
     );
     private static final JsonPath JSON_PATH = JsonPath.compile("$..table");
 
@@ -47,7 +49,7 @@ public class MySQLExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
                 return objectName != null ? ImmutableIssue.of(IssueType.FULL_ACCESS, objectName, predicate) : null;
             })
             .filter(Objects::nonNull)
-            .collect(Collectors.toList());
+            .collect(toList());
         return ImmutableAnalysisResult.of(compactJson(planJson), issues);
     }
 

@@ -1,6 +1,7 @@
 package org.dbquerywatch.application.domain.service;
 
 import com.google.errorprone.annotations.FormatMethod;
+import com.google.errorprone.annotations.Var;
 import org.dbquerywatch.application.domain.model.Issue;
 import org.dbquerywatch.application.domain.model.NamedDataSource;
 import org.dbquerywatch.application.domain.model.SlowQueryReport;
@@ -8,8 +9,9 @@ import org.dbquerywatch.common.CleanRuntimeException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
+
+import static java.util.Collections.unmodifiableList;
 
 /**
  * Thrown when one or multiple issues are found on the queries performed by the integration tests.
@@ -39,7 +41,7 @@ public class SlowQueriesFoundException extends CleanRuntimeException {
      * @return The SlowQueryReport items.
      */
     public List<SlowQueryReport> getSlowQueries() {
-        return Collections.unmodifiableList(slowQueries);
+        return unmodifiableList(slowQueries);
     }
 
     private static String describe(List<SlowQueryReport> slowQueries) {
@@ -59,7 +61,7 @@ public class SlowQueriesFoundException extends CleanRuntimeException {
             sb.append("\nIssues:");
             for (Issue issue : slowQuery.getIssues()) {
                 sb.append(LF_INDENT).append("- ")
-                    .append(issue.toString());
+                    .append(issue);
             }
             sb.append("\nCaller Methods:");
             for (String methodName : slowQuery.getMethods()) {
@@ -77,7 +79,7 @@ public class SlowQueriesFoundException extends CleanRuntimeException {
         String title = String.format(fmt, args);
         char[] chars = new char[80];
         Arrays.fill(chars, '-');
-        int index = 5;
+        @Var int index = 5;
         chars[index++] = '|';
         chars[index++] = ' ';
         for (int i = 0; i < title.length(); i++) {

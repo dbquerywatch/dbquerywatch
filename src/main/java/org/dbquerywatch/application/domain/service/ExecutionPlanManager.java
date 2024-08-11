@@ -17,9 +17,10 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
+import static java.util.regex.Pattern.CASE_INSENSITIVE;
+import static java.util.stream.Collectors.toList;
 import static org.dbquerywatch.application.domain.service.ClassIdSupport.generateClassId;
 import static org.dbquerywatch.common.SqlUtils.tableNameMatch;
 import static org.dbquerywatch.common.Strings.prefixedBy;
@@ -28,7 +29,7 @@ public class ExecutionPlanManager {
 
     private static final Pattern ANALYZABLE_COMMANDS = Pattern.compile(
         "^\\s*(delete|insert|merge|replace|select|table|update|with)\\b",
-        Pattern.CASE_INSENSITIVE
+        CASE_INSENSITIVE
     );
 
     // Structured as:
@@ -82,7 +83,7 @@ public class ExecutionPlanManager {
                             settings.getSmallTables().stream()
                                 .noneMatch(st -> tableNameMatch(st, issue.getObjectName()))
                         )
-                        .collect(Collectors.toList());
+                        .collect(toList());
                     log.debug("Query SQL: {}", querySql);
                     log.debug("Execution plan: {}", result.getExecutionPlan());
                     log.debug("Issues: {}", issues);

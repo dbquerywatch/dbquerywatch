@@ -39,17 +39,15 @@ public final class TestHelpers {
      */
     public static Map<String, String> buildTraceHeaders(Class<?> clazz, @Nullable String spanId) {
         String traceId = generateClassId(clazz);
-        if (spanId == null) {
-            spanId = generateRandomSpanId();
-        }
+        String actualSpanId = (spanId != null) ? spanId : generateRandomSpanId();
         Map<String, String> headers = new HashMap<>();
         // OpenTelemetry / W3C
         // @see https://w3c.github.io/trace-context/#traceparent-header
-        headers.put("traceparent", String.format("00-%s-%s-00", traceId, spanId));
+        headers.put("traceparent", String.format("00-%s-%s-00", traceId, actualSpanId));
         // brave (128 bit)
         // @see https://github.com/openzipkin/b3-propagation/blob/master/STATUS.md
         headers.put("X-B3-TraceId", traceId);
-        headers.put("X-B3-SpanId", spanId);
+        headers.put("X-B3-SpanId", actualSpanId);
         return headers;
     }
 
