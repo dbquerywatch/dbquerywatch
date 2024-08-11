@@ -59,6 +59,7 @@ class TestClientTracingContextCustomizerFactory implements ContextCustomizerFact
         // @see https://docs.spring.io/spring-framework/reference/testing/testcontext-framework/ctx-management/caching.html
 
         @Override
+        @SuppressWarnings("EqualsGetClass")
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;

@@ -5,9 +5,6 @@ import org.springframework.context.annotation.Import;
 
 
 @Configuration
-@Import({
-        AnalyzerProperties.class,
-        DatasourceProxyBeanPostProcessor.class,
-})
+@Import({AnalyzerProperties.class, DatasourceProxyBeanPostProcessor.class})
 public class DbQueryWatchConfiguration {
 }

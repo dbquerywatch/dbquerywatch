@@ -8,10 +8,10 @@ import org.springframework.core.Ordered;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.Collections.singletonMap;
+import static java.util.stream.Collectors.toList;
 
 /**
  * Used to collect some useful information from the SpringBootApplication object.
@@ -41,7 +41,7 @@ class SpringBootApplicationRunListener implements SpringApplicationRunListener, 
                 }
                 return Stream.empty();
             })
-            .collect(Collectors.toList());
+            .collect(toList());
     }
 
     private static List<String> getBasePackages(ComponentScan componentScan, String defaultPackageName) {

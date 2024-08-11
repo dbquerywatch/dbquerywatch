@@ -10,22 +10,22 @@ import org.dbquerywatch.application.port.out.AnalysisResult;
 import org.dbquerywatch.application.port.out.ImmutableAnalysisResult;
 import org.dbquerywatch.application.port.out.JdbcClient;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.StringJoiner;
-import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toList;
 
 public class PostgresExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
 
     private static final String EXPLAIN_PLAN_QUERY = "EXPLAIN (FORMAT JSON) ";
-    private static final List<String> NODE_TYPES = Collections.singletonList("Seq Scan");
 
     private static final JsonPath JSON_PATH;
+    private static final List<String> NODE_TYPES = singletonList("Seq Scan");
 
     static {
         StringJoiner sj = new StringJoiner("','", "$..[?(@['Node Type'] in ['", "'])]");
@@ -60,7 +60,7 @@ public class PostgresExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer
                 return objectName != null ? ImmutableIssue.of(IssueType.FULL_ACCESS, objectName, predicate) : null;
             })
             .filter(Objects::nonNull)
-            .collect(Collectors.toList());
+            .collect(toList());
         return ImmutableAnalysisResult.of(compactJson(planJson), issues);
     }
 }
