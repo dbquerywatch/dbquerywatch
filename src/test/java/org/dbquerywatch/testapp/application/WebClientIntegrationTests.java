@@ -1,34 +1,34 @@
 package org.dbquerywatch.testapp.application;
 
-import org.dbquerywatch.application.domain.service.ClassIdRepository;
+import org.dbquerywatch.application.domain.service.TestMethodIdRepository;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.junit.jupiter.api.parallel.Execution;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.jupiter.api.parallel.ExecutionMode.CONCURRENT;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @Disabled("Expected to fail. Go to junit-platform.properties to re-enable all disabled tests at once.")
 @SuppressWarnings({"java:S5786", "WeakerAccess"})  // public required by ByteBuddy
+@Execution(CONCURRENT)
 public class WebClientIntegrationTests extends BaseIntegrationTests {
-
-    @Autowired WebTestClient client;
 
     @AfterAll
     void verifyMetrics() {
-        assertThat(ClassIdRepository.getMdcHits()).isGreaterThan(0);
-        assertThat(ClassIdRepository.getThreadLocalHits()).isEqualTo(0);
+        assertThat(TestMethodIdRepository.getMdcHits()).isGreaterThan(0);
+        assertThat(TestMethodIdRepository.getThreadLocalHits()).isEqualTo(0);
     }
 
     @Test
-    void should_find_article_by_author_last_name() {
+    void should_find_article_by_author_last_name(WebTestClient client) {
         client.post()
             .uri("/articles/query")
             .accept(MediaType.APPLICATION_JSON)
@@ -44,7 +44,7 @@ public class WebClientIntegrationTests extends BaseIntegrationTests {
 
     @Test
     @Tag("slow-query")
-    void should_find_article_by_year_range() {
+    void should_find_article_by_year_range(WebTestClient client) {
         client.post()
             .uri("/articles/query")
             .accept(MediaType.APPLICATION_JSON)
@@ -62,7 +62,7 @@ public class WebClientIntegrationTests extends BaseIntegrationTests {
 
     @Test
     @Tag("slow-query")
-    void should_find_journal_by_publisher() {
+    void should_find_journal_by_publisher(WebTestClient client) {
         client.get()
             .uri("/journals/{publisher}", "ACM")
             .accept(MediaType.APPLICATION_JSON)

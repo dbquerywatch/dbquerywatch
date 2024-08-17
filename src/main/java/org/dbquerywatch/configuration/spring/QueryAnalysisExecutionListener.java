@@ -27,8 +27,7 @@ class QueryAnalysisExecutionListener implements QueryExecutionListener {
     public void afterQuery(ExecutionInfo execInfo, List<QueryInfo> queryInfoList) {
         getExecutionPlanManager().ifPresent(executionPlanManager -> {
                 for (QueryInfo queryInfo : queryInfoList) {
-                    String querySql = queryInfo.getQuery();
-                    executionPlanManager.acceptQuery(analyzer, querySql, queryInfo.getParametersList());
+                    executionPlanManager.acceptSqlStatement(analyzer, queryInfo.getQuery(), queryInfo.getParametersList());
                 }
             }
         );

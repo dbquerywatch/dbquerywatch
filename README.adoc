@@ -170,7 +170,7 @@ A sample report taken from the sample application test class:
 
 ....
 
-org.dbquerywatch.application.domain.service.SlowQueriesFoundException: Potential slow queries were found!
+org.dbquerywatch.application.domain.service.DatabasePerformanceIssuesDetectedException: Potential slow queries were found!
 
 ~~~~~ Query 1/1 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 DataSource:

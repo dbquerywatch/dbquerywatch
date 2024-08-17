@@ -5,7 +5,6 @@ import org.dbquerywatch.testapp.application.service.ArticleQuery;
 import org.dbquerywatch.testapp.domain.Article;
 import org.dbquerywatch.testapp.infra.jdbi.Condition;
 import org.dbquerywatch.testapp.infra.jdbi.Conditions;
-import org.dbquerywatch.testapp.infra.jdbi.ImmutableCondition;
 import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.core.mapper.immutables.JdbiImmutables;
 import org.jspecify.annotations.Nullable;
@@ -61,14 +60,14 @@ class DefaultArticleRepository implements ArticleRepository {
         if (str == null) {
             return null;
         }
-        return ImmutableCondition.of("author_last_name = :authorLastName", query -> query.bind("authorLastName", str));
+        return new Condition("author_last_name = :authorLastName", query -> query.bind("authorLastName", str));
     }
 
     private static @Nullable Condition fromYear(@Nullable Integer year) {
         if (year == null) {
             return null;
         }
-        return ImmutableCondition.of("published_at >= :fromYear",
+        return new Condition("published_at >= :fromYear",
             query -> query.bind("fromYear", LocalDate.of(year, Month.JANUARY, 1)));
     }
 
@@ -76,7 +75,7 @@ class DefaultArticleRepository implements ArticleRepository {
         if (year == null) {
             return null;
         }
-        return ImmutableCondition.of("published_at <= :toYear",
+        return new Condition("published_at <= :toYear",
             query -> query.bind("toYear", LocalDate.of(year, Month.DECEMBER, 31)));
     }
 }

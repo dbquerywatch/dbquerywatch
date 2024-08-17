@@ -10,5 +10,5 @@ public interface ExecutionPlanAnalyzer {
 
     void checkConfiguration();
 
-    AnalysisResult analyze(String querySql, List<ParameterSetOperation> operations);
+    AnalysisReport analyze(String querySql, List<ParameterSetOperation> operations);
 }

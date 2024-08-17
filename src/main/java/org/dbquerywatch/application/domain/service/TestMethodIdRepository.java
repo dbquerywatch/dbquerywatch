@@ -7,27 +7,27 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-public final class ClassIdRepository {
+public final class TestMethodIdRepository {
 
     private static final AtomicInteger THREAD_LOCAL_HITS = new AtomicInteger();
     private static final AtomicInteger MDC_HITS = new AtomicInteger();
 
-    private ClassIdRepository() {
+    private TestMethodIdRepository() {
     }
 
     static Optional<String> load() {
         return or(
-            () -> meteredOptional(ThreadLocalClassIdRepository.load(), THREAD_LOCAL_HITS),
-            () -> meteredOptional(MdcClassIdRepository.load(), MDC_HITS)
+            () -> meteredOptional(ThreadLocalTestMethodIdRepository.load(), THREAD_LOCAL_HITS),
+            () -> meteredOptional(MdcTestMethodIdRepository.load(), MDC_HITS)
         );
     }
 
-    public static void save(Class<?> clazz) {
-        ThreadLocalClassIdRepository.save(clazz);
+    public static void save(String uniqueId) {
+        ThreadLocalTestMethodIdRepository.save(uniqueId);
     }
 
     public static void clear() {
-        ThreadLocalClassIdRepository.clear();
+        ThreadLocalTestMethodIdRepository.clear();
     }
 
     public static void resetMetrics() {
@@ -51,35 +51,35 @@ public final class ClassIdRepository {
         return optional;
     }
 
-    private static final class ThreadLocalClassIdRepository {
+    private static final class ThreadLocalTestMethodIdRepository {
 
-        private static final ThreadLocal<String> CLASS_ID = new ThreadLocal<>();
+        private static final ThreadLocal<String> TEST_METHOD_ID = new ThreadLocal<>();
 
-        private ThreadLocalClassIdRepository() {
+        private ThreadLocalTestMethodIdRepository() {
         }
 
         private static Optional<String> load() {
-            return Optional.ofNullable(CLASS_ID.get());
+            return Optional.ofNullable(TEST_METHOD_ID.get());
         }
 
-        private static void save(Class<?> clazz) {
-            CLASS_ID.set(ClassIdSupport.generateClassId(clazz));
+        private static void save(String uniqueId) {
+            TEST_METHOD_ID.set(TestMethodIdSupport.generateTestMethodId(uniqueId));
         }
 
         private static void clear() {
-            CLASS_ID.remove();
+            TEST_METHOD_ID.remove();
         }
     }
 
-    private static final class MdcClassIdRepository {
+    private static final class MdcTestMethodIdRepository {
         private static final String MDC_TRACE_ID = "traceId";
 
-        private MdcClassIdRepository() {
+        private MdcTestMethodIdRepository() {
         }
 
         private static Optional<String> load() {
             String traceId = MDC.get(MDC_TRACE_ID);
-            return ClassIdSupport.isValidClassHashId(traceId) ? Optional.of(traceId) : Optional.empty();
+            return TestMethodIdSupport.isValidTestMethodHashId(traceId) ? Optional.of(traceId) : Optional.empty();
         }
     }
 

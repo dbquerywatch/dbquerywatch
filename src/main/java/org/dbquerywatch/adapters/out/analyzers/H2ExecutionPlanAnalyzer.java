@@ -1,11 +1,8 @@
 package org.dbquerywatch.adapters.out.analyzers;
 
 import net.ttddyy.dsproxy.proxy.ParameterSetOperation;
-import org.dbquerywatch.application.domain.model.ImmutableIssue;
-import org.dbquerywatch.application.domain.model.Issue;
-import org.dbquerywatch.application.domain.model.IssueType;
-import org.dbquerywatch.application.port.out.AnalysisResult;
-import org.dbquerywatch.application.port.out.ImmutableAnalysisResult;
+import org.dbquerywatch.application.domain.model.SeqScan;
+import org.dbquerywatch.application.port.out.AnalysisReport;
 import org.dbquerywatch.application.port.out.JdbcClient;
 
 import java.util.ArrayList;
@@ -26,14 +23,14 @@ public class H2ExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
     }
 
     @Override
-    public AnalysisResult analyze(String querySql, List<ParameterSetOperation> operations) {
+    public AnalysisReport analyze(String querySql, List<ParameterSetOperation> operations) {
         String commentedPlan = jdbcClient.queryForString(EXPLAIN_PLAN_QUERY + querySql, operations)
             .orElseThrow(NoSuchElementException::new);
         Matcher matcher = TABLE_SCAN_PATTERN.matcher(requireNonNull(commentedPlan));
-        List<Issue> issues = new ArrayList<>();
+        List<SeqScan> seqScans = new ArrayList<>();
         while (matcher.find()) {
-            issues.add(ImmutableIssue.of(IssueType.FULL_ACCESS, matcher.group(1), null));
+            seqScans.add(new SeqScan(matcher.group(1), null));
         }
-        return ImmutableAnalysisResult.of(commentedPlan, issues);
+        return new AnalysisReport(commentedPlan, seqScans);
     }
 }

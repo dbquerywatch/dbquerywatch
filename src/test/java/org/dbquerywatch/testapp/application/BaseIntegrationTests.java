@@ -3,7 +3,7 @@ package org.dbquerywatch.testapp.application;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import org.dbquerywatch.api.spring.junit5.CatchSlowQueries;
-import org.dbquerywatch.application.domain.service.ClassIdRepository;
+import org.dbquerywatch.application.domain.service.TestMethodIdRepository;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
@@ -17,7 +17,7 @@ abstract class BaseIntegrationTests {
 
     @BeforeAll
     void clearMetrics() {
-        ClassIdRepository.resetMetrics();
+        TestMethodIdRepository.resetMetrics();
     }
 
     // avoid spurious log messages after all tests are ran
