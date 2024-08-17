@@ -40,17 +40,17 @@ class NoQueriesWereAnalyzedTests {
 
     @Test
     void should_warn_if_no_queries_were_analyzed() {
-        // Copied from a production code I saw a while ago and I can't just unsee :-(
+        // Copied from a real production code I saw a while ago, and I can't unsee it :-(
         assertTrue(true);
     }
 
     static class VerificationExtension implements AfterAllCallback {
         @Override
-        public void afterAll(ExtensionContext context) throws Exception {
+        public void afterAll(ExtensionContext context) {
             NoQueriesWereAnalyzedTests instance = (NoQueriesWereAnalyzedTests) context.getRequiredTestInstance();
             LogCaptor logCaptor = instance.logCaptor;
             assertThat(logCaptor.getWarnLogs())
-                .containsExactly("No query data found for class org.dbquerywatch.testapp.application.NoQueriesWereAnalyzedTests");
+                .containsExactly("No query data found for [engine:junit-jupiter]/[class:org.dbquerywatch.testapp.application.NoQueriesWereAnalyzedTests]/[method:should_warn_if_no_queries_were_analyzed()]");
         }
     }
 }

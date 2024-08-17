@@ -1,14 +1,13 @@
 package org.dbquerywatch.adapters.out.analyzers;
 
+import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import net.ttddyy.dsproxy.proxy.ParameterSetOperation;
-import org.dbquerywatch.application.domain.model.ImmutableIssue;
-import org.dbquerywatch.application.domain.model.Issue;
-import org.dbquerywatch.application.domain.model.IssueType;
-import org.dbquerywatch.application.domain.service.ExecutionPlanAnalyzerException;
-import org.dbquerywatch.application.port.out.AnalysisResult;
-import org.dbquerywatch.application.port.out.ImmutableAnalysisResult;
+import org.dbquerywatch.application.domain.model.SeqScan;
+import org.dbquerywatch.application.port.out.AnalysisReport;
 import org.dbquerywatch.application.port.out.JdbcClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -22,17 +21,19 @@ import static java.util.stream.Collectors.toList;
 
 public class PostgresExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
 
-    private static final String EXPLAIN_PLAN_QUERY = "EXPLAIN (FORMAT JSON) ";
+    public static final Logger LOGGER = LoggerFactory.getLogger(PostgresExecutionPlanAnalyzer.class);
 
-    private static final JsonPath JSON_PATH;
+    private static final String EXPLAIN_PLAN_QUERY = "EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) ";
     private static final List<String> NODE_TYPES = singletonList("Seq Scan");
+
+    private static final JsonPath SLOW_JSON_PATH;
 
     static {
         StringJoiner sj = new StringJoiner("','", "$..[?(@['Node Type'] in ['", "'])]");
         for (String nodeType : NODE_TYPES) {
             sj.add(nodeType);
         }
-        JSON_PATH = JsonPath.compile(sj.toString());
+        SLOW_JSON_PATH = JsonPath.compile(sj.toString());
     }
 
     public PostgresExecutionPlanAnalyzer(JdbcClient jdbcClient) {
@@ -44,23 +45,24 @@ public class PostgresExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer
         String state = jdbcClient.queryForString("SHOW ENABLE_SEQSCAN", emptyList())
             .orElse("");
         if (!"off".equalsIgnoreCase(state)) {
-            throw new ExecutionPlanAnalyzerException(String.format("ENABLE_SEQSCAN is set to '%s' but expected 'off'", state));
+            LOGGER.warn("ENABLE_SEQSCAN is set to '{}' but expected 'off'", state);
         }
     }
 
     @Override
-    public AnalysisResult analyze(String querySql, List<ParameterSetOperation> operations) {
+    public AnalysisReport analyze(String querySql, List<ParameterSetOperation> operations) {
         String planJson = jdbcClient.queryForString(EXPLAIN_PLAN_QUERY + querySql, operations)
             .orElseThrow(NoSuchElementException::new);
-        List<Map<String, Object>> plan = JsonPath.parse(planJson).read(JSON_PATH);
-        List<Issue> issues = plan.stream()
+        DocumentContext document = JsonPath.parse(planJson);
+        List<SeqScan> seqScans = document
+            .<List<Map<String, Object>>>read(SLOW_JSON_PATH).stream()
             .map(p -> {
                 String objectName = getString(p, "Relation Name");
                 String predicate = getString(p, "Filter");
-                return objectName != null ? ImmutableIssue.of(IssueType.FULL_ACCESS, objectName, predicate) : null;
+                return objectName != null ? new SeqScan(objectName, predicate) : null;
             })
             .filter(Objects::nonNull)
             .collect(toList());
-        return ImmutableAnalysisResult.of(compactJson(planJson), issues);
+        return new AnalysisReport(compactJson(planJson), seqScans);
     }
 }

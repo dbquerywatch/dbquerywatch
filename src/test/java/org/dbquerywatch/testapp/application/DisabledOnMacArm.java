@@ -11,5 +11,5 @@ import java.lang.annotation.Target;
 @Target({ ElementType.TYPE, ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
 @DisabledOnOs(value = OS.MAC, architectures = "aarch64")
-public @interface DisabledOnMacM1 {
+public @interface DisabledOnMacArm {
 }

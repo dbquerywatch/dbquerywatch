@@ -2,11 +2,8 @@ package org.dbquerywatch.adapters.out.analyzers;
 
 import com.jayway.jsonpath.JsonPath;
 import net.ttddyy.dsproxy.proxy.ParameterSetOperation;
-import org.dbquerywatch.application.domain.model.ImmutableIssue;
-import org.dbquerywatch.application.domain.model.Issue;
-import org.dbquerywatch.application.domain.model.IssueType;
-import org.dbquerywatch.application.port.out.AnalysisResult;
-import org.dbquerywatch.application.port.out.ImmutableAnalysisResult;
+import org.dbquerywatch.application.domain.model.SeqScan;
+import org.dbquerywatch.application.port.out.AnalysisReport;
 import org.dbquerywatch.application.port.out.JdbcClient;
 
 import java.util.HashMap;
@@ -35,22 +32,22 @@ public class MySQLExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
     }
 
     @Override
-    public AnalysisResult analyze(String querySql, List<ParameterSetOperation> operations) {
+    public AnalysisReport analyze(String querySql, List<ParameterSetOperation> operations) {
         Map<String, String> tableAliases = findTableAliases(querySql);
         String planJson = jdbcClient.queryForString(EXPLAIN_PLAN_QUERY + querySql, operations)
             .orElseThrow(NoSuchElementException::new);
         List<Map<String, Object>> plan = JsonPath.parse(planJson).read(JSON_PATH);
-        List<Issue> issues = plan.stream()
+        List<SeqScan> seqScans = plan.stream()
             .filter(p -> "ALL".equals(p.get("access_type")))
             .map(p -> {
                 String tableName = getString(p, "table_name");
                 String objectName = tableAliases.getOrDefault(tableName, tableName);
                 String predicate = getString(p, "attached_condition");
-                return objectName != null ? ImmutableIssue.of(IssueType.FULL_ACCESS, objectName, predicate) : null;
+                return objectName != null ? new SeqScan(objectName, predicate) : null;
             })
             .filter(Objects::nonNull)
             .collect(toList());
-        return ImmutableAnalysisResult.of(compactJson(planJson), issues);
+        return new AnalysisReport(compactJson(planJson), seqScans);
     }
 
     private static Map<String, String> findTableAliases(String querySql) {

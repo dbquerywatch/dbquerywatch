@@ -1,7 +1,5 @@
 package org.dbquerywatch.api.spring.junit5;
 
-import org.junit.jupiter.api.extension.ExtendWith;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
@@ -15,6 +13,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
-@ExtendWith(CatchSlowQueriesExtension.class)
+@DbQueryWatch(allowSeqScans = false)
 public @interface CatchSlowQueries {
 }

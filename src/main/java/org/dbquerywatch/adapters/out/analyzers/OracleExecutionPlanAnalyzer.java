@@ -1,11 +1,8 @@
 package org.dbquerywatch.adapters.out.analyzers;
 
 import net.ttddyy.dsproxy.proxy.ParameterSetOperation;
-import org.dbquerywatch.application.domain.model.ImmutableIssue;
-import org.dbquerywatch.application.domain.model.Issue;
-import org.dbquerywatch.application.domain.model.IssueType;
-import org.dbquerywatch.application.port.out.AnalysisResult;
-import org.dbquerywatch.application.port.out.ImmutableAnalysisResult;
+import org.dbquerywatch.application.domain.model.SeqScan;
+import org.dbquerywatch.application.port.out.AnalysisReport;
 import org.dbquerywatch.application.port.out.JdbcClient;
 
 import java.util.Arrays;
@@ -27,23 +24,23 @@ public class OracleExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
     }
 
     @Override
-    public AnalysisResult analyze(String querySql, List<ParameterSetOperation> operations) {
+    public AnalysisReport analyze(String querySql, List<ParameterSetOperation> operations) {
         String statementId = getStatementID();
         String explainPlanSql = String.format("EXPLAIN PLAN SET STATEMENT_ID = '%s' FOR %s", statementId, querySql);
         jdbcClient.queryForString(explainPlanSql, operations);
         List<Map<String, Object>> plans = jdbcClient.queryForList(GET_PLAN_QUERY, statementId);
         removeNoisyProperties(plans);
-        List<Issue> issues = plans.stream()
+        List<SeqScan> seqScans = plans.stream()
                 .filter(plan -> OPERATIONS.contains(getString(plan, "OPERATION")) &&
                         OPTIONS.contains(getString(plan, "OPTIONS")))
                 .map(plan -> {
                     String objectName = getString(plan, "OBJECT_NAME");
                     String predicate = getString(plan, "FILTER_PREDICATES");
-                    return objectName != null ? ImmutableIssue.of(IssueType.FULL_ACCESS, objectName, predicate) : null;
+                    return objectName != null ? new SeqScan(objectName, predicate) : null;
                 })
                 .filter(Objects::nonNull)
                 .collect(toList());
-        return ImmutableAnalysisResult.of(toJson(plans), issues);
+        return new AnalysisReport(toJson(plans), seqScans);
     }
 
     private static String getStatementID() {

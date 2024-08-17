@@ -113,8 +113,8 @@ dependencies {
     testImplementation("com.tngtech.archunit", "archunit-junit5", versions.archunit.get())
     testImplementation("io.github.hakky54", "logcaptor", versions.logcaptor.get())
     testImplementation("net.bytebuddy", "byte-buddy")
+    testImplementation("one.util", "streamex", versions.streamex.get())
     testImplementation("org.jdbi", "jdbi3-core", versions.jdbi.get())
-    testImplementation("org.jetbrains", "annotations", versions.jbannotations.get())
     testImplementation("org.junit-pioneer", "junit-pioneer", versions.junit.pioneer.get())
     testImplementation("org.junit.jupiter", "junit-jupiter-engine")
     testImplementation("org.junit.platform", "junit-platform-testkit")
@@ -206,7 +206,7 @@ tasks.withType<Test> {
 }
 
 testlogger {
-    showSkipped = true
+    showSkipped = false
 }
 
 tasks.jacocoTestReport {
@@ -326,12 +326,14 @@ publishing {
     }
 }
 
-signing {
-    val signingKey: String? by project
-    val signingPassword: String? by project
+val signingKey: String? by project
+val signingPassword: String? by project
 
-    useInMemoryPgpKeys(signingKey, signingPassword)
-    sign(publishing.publications[artifactId])
+if ((signingKey != null) && (signingPassword != null)) {
+    signing {
+        useInMemoryPgpKeys(signingKey, signingPassword)
+        sign(publishing.publications[artifactId])
+    }
 }
 
 nexusPublishing {

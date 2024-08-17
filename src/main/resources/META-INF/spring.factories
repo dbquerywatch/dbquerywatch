@@ -1,3 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=org.dbquerywatch.configuration.spring.DbQueryWatchConfiguration
 org.springframework.boot.SpringApplicationRunListener=org.dbquerywatch.configuration.spring.SpringBootApplicationRunListener
-org.springframework.test.context.ContextCustomizerFactory=org.dbquerywatch.configuration.spring.TestClientTracingContextCustomizerFactory

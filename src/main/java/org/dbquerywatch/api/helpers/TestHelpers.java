@@ -1,6 +1,6 @@
 package org.dbquerywatch.api.helpers;
 
-import org.dbquerywatch.application.domain.service.ClassIdSupport;
+import org.dbquerywatch.application.domain.service.TestMethodIdSupport;
 import org.jspecify.annotations.Nullable;
 
 import java.math.BigInteger;
@@ -23,22 +23,22 @@ public final class TestHelpers {
     /**
      * Generate the hash ID for a given test class, compatible with 128 bit traceId.
      *
-     * @param clazz The wanted test class.
+     * @param uniqueId  Unique ID of the test method.
      * @return The hash ID as a 32-chars hex string.
      */
-    public static String generateClassId(Class<?> clazz) {
-        return ClassIdSupport.generateClassId(clazz);
+    public static String generateTestMethodId(String uniqueId) {
+        return TestMethodIdSupport.generateTestMethodId(uniqueId);
     }
 
     /**
      * Create additional HTTP headers to enable the matching query/testClass via tracing.
      *
-     * @param clazz  The test class.
+     * @param uniqueId  Unique ID of the test method.
      * @param spanId The optional spanId. If null, a new random (8 bytes) will be generated.
      * @return All headers required to support both W3C (OpenTelemetry) and Brave tracers.
      */
-    public static Map<String, String> buildTraceHeaders(Class<?> clazz, @Nullable String spanId) {
-        String traceId = generateClassId(clazz);
+    public static Map<String, String> buildTraceHeaders(String uniqueId, @Nullable String spanId) {
+        String traceId = generateTestMethodId(uniqueId);
         String actualSpanId = (spanId != null) ? spanId : generateRandomSpanId();
         Map<String, String> headers = new HashMap<>();
         // OpenTelemetry / W3C

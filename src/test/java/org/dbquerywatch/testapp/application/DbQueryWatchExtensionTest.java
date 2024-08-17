@@ -3,24 +3,22 @@ package org.dbquerywatch.testapp.application;
 import com.google.common.truth.Correspondence;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.annotation.AnnotationDescription;
-import org.dbquerywatch.application.domain.model.Issue;
-import org.dbquerywatch.application.domain.model.SlowQueryReport;
-import org.dbquerywatch.application.domain.service.ExecutionPlanAnalyzerException;
-import org.dbquerywatch.application.domain.service.SlowQueriesFoundException;
+import one.util.streamex.StreamEx;
+import org.dbquerywatch.application.domain.model.PerStatementIssuesReport;
+import org.dbquerywatch.application.domain.model.ReportElement;
+import org.dbquerywatch.application.domain.model.SeqScan;
+import org.dbquerywatch.application.domain.service.DatabasePerformanceIssuesDetectedException;
 import org.dbquerywatch.common.SqlUtils;
-import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.engine.descriptor.ClassTestDescriptor;
+import org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor;
 import org.junit.platform.commons.util.ReflectionUtils;
 import org.junit.platform.engine.Filter;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.launcher.TagFilter;
 import org.junit.platform.testkit.engine.EngineExecutionResults;
 import org.junit.platform.testkit.engine.EngineTestKit;
-import org.junit.platform.testkit.engine.Event;
 import org.junit.platform.testkit.engine.EventType;
 import org.junit.platform.testkit.engine.Events;
 import org.junitpioneer.jupiter.cartesian.CartesianTest;
@@ -36,29 +34,30 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.Optional;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.platform.engine.TestExecutionResult.Status.FAILED;
-import static org.junit.platform.engine.TestExecutionResult.Status.SUCCESSFUL;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
 
 @SuppressWarnings("SameParameterValue")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class CatchSlowQueriesTest {
+class DbQueryWatchExtensionTest {
 
     private enum DatabaseKind {
         H2(null, null),
         MySQL(MySQLDatabaseContainerInitializer.class, null),
-        Oracle(OracleDatabaseContainerInitializer.class, DisabledOnMacM1.class),
+        Oracle(OracleDatabaseContainerInitializer.class, DisabledOnMacArm.class),
         Postgres(PostgresDatabaseContainerInitializer.class, null);
 
         private final @Nullable Class<? extends ApplicationContextInitializer<ConfigurableApplicationContext>> initializer;
         @Nullable
         private final Class<? extends Annotation> extraAnnotation;
 
-        DatabaseKind(@Nullable Class<? extends ApplicationContextInitializer<ConfigurableApplicationContext>> initializer, @Nullable Class<? extends Annotation> extraAnnotation) {
+        DatabaseKind(
+            @Nullable Class<? extends ApplicationContextInitializer<ConfigurableApplicationContext>> initializer,
+            @Nullable Class<? extends Annotation> extraAnnotation
+        ) {
             this.initializer = initializer;
             this.extraAnnotation = extraAnnotation;
         }
@@ -66,8 +65,12 @@ class CatchSlowQueriesTest {
 
     @SuppressWarnings("unused")
     private enum ClientKind {
-        Sequential(MockMvcIntegrationTests.class),
-        Concurrent(WebClientIntegrationTests.class);
+        // When using WebEnvironment.MOCK, client and server run on the same thread
+        // Strategy to correlated Query to TestMethod uses ThreadLocal
+        SameThread(MockMvcIntegrationTests.class),
+        // When using WebEnvironment.RANDOM_PORT and a client *other* than MockMvc, client and server run on different threads
+        // Strategy to correlated Query to TestMethod uses MDC managed by a tracing library
+        OtherThread(WebClientIntegrationTests.class);
 
         private final Class<? extends BaseIntegrationTests> baseClass;
 
@@ -93,7 +96,7 @@ class CatchSlowQueriesTest {
         @CartesianTest.Enum ClientKind clientKind
     ) {
         Class<?> testClass = createTestClass(clientKind, DatabaseKind.H2);
-        runIntegrationTests(testClass, 1, null, TagFilter.excludeTags("slow-query"));
+        runIntegrationTests(testClass, 1, 0, null, TagFilter.excludeTags("slow-query"));
     }
 
     @CartesianTest
@@ -105,22 +108,27 @@ class CatchSlowQueriesTest {
         Class<?> testClass = createTestClass(clientKind, databaseKind);
 
         // When
-        SlowQueriesFoundException ex = runIntegrationTests(testClass, 3, SlowQueriesFoundException.class);
-        List<SlowQueryReport> reports = ex.getSlowQueries();
+        List<ReportElement> reports = StreamEx.of(runIntegrationTests(testClass, 3, 2, DatabasePerformanceIssuesDetectedException.class))
+            .flatCollection(DatabasePerformanceIssuesDetectedException::getReports)
+            .toList();
+
+        List<PerStatementIssuesReport> perStatementReports = StreamEx.of(reports)
+            .select(PerStatementIssuesReport.class)
+            .toList();
 
         // Then
-        assertThat(reports).hasSize(2);
+        assertThat(perStatementReports).hasSize(2);
 
-        assertThat(reports.stream()
+        assertThat(perStatementReports.stream()
             .flatMap(rep -> rep.getMethods().stream()))
             .containsExactly(
                 "org.dbquerywatch.testapp.adapters.db.DefaultArticleRepository::query",
                 "org.dbquerywatch.testapp.adapters.db.DefaultJournalRepository::findByPublisher"
             );
 
-        List<String> tableNames = reports.stream()
-            .flatMap(rep -> rep.getIssues().stream()
-                .map(Issue::getObjectName))
+        List<String> tableNames = perStatementReports.stream()
+            .flatMap(rep -> rep.getSeqScans().stream()
+                .map(SeqScan::getObjectName))
             .toList();
 
         assertThat(tableNames)
@@ -137,19 +145,24 @@ class CatchSlowQueriesTest {
         Class<?> testClass = createTestClass(clientKind, databaseKind, "dbquerywatch.small-tables=journals");
 
         // When
-        SlowQueriesFoundException ex = runIntegrationTests(testClass, 3, SlowQueriesFoundException.class);
-        List<SlowQueryReport> reports = ex.getSlowQueries();
+        List<ReportElement> reports = StreamEx.of(runIntegrationTests(testClass, 3, 1, DatabasePerformanceIssuesDetectedException.class))
+            .flatCollection(DatabasePerformanceIssuesDetectedException::getReports)
+            .toList();
+
+        List<PerStatementIssuesReport> perStatementReports = StreamEx.of(reports)
+            .select(PerStatementIssuesReport.class)
+            .toList();
 
         // Then
-        assertThat(reports).hasSize(1);
+        assertThat(perStatementReports).hasSize(1);
 
-        SlowQueryReport singleReport = reports.get(0);
+        PerStatementIssuesReport singleReport = perStatementReports.get(0);
 
         assertThat(singleReport.getMethods())
             .containsExactly("org.dbquerywatch.testapp.adapters.db.DefaultArticleRepository::query");
 
-        List<String> tableNames = singleReport.getIssues().stream()
-            .map(Issue::getObjectName)
+        List<String> tableNames = singleReport.getSeqScans().stream()
+            .map(SeqScan::getObjectName)
             .toList();
 
         assertThat(tableNames)
@@ -158,14 +171,6 @@ class CatchSlowQueriesTest {
         assertThat(tableNames)
             .comparingElementsUsing(Correspondence.from(SqlUtils::tableNameMatch, "equivalent table name"))
             .containsExactly("articles");
-    }
-
-    @Test
-    void should_throw_exception_if_postgres_is_misconfigured() {
-        Class<?> testClass = createTestClass(DatabaseKind.Postgres.toString(),
-            MockMvcIntegrationTests.class, PostgresDatabaseMisconfiguredContainerInitializer.class, null);
-        ExecutionPlanAnalyzerException ex = runIntegrationTests(testClass, 3, ExecutionPlanAnalyzerException.class);
-        assertThat(ex.getLocalizedMessage()).contains("ENABLE_SEQSCAN");
     }
 
     private Class<?> createTestClass(ClientKind clientKind, DatabaseKind databaseKind, String... properties) {
@@ -212,10 +217,10 @@ class CatchSlowQueriesTest {
             .getLoaded();
     }
 
-    @Contract("_, _, null, _ -> null; _, _, !null, _ -> !null")
-    private static <T extends RuntimeException> T runIntegrationTests(
+    private static <T extends RuntimeException> List<T> runIntegrationTests(
         Class<?> testClass,
         int numTests,
+        int expectedFailures,
         @Nullable Class<T> expectedExceptionClass,
         Filter<?>... filters
     ) {
@@ -230,28 +235,30 @@ class CatchSlowQueriesTest {
         Events containerEvents = engineResults.containerEvents();
         assumeTrue(containerEvents.skipped().count() < containerEvents.started().stream().count());
 
-        engineResults
-            .testEvents()
-            .assertStatistics(stats -> stats.started(numTests).failed(0).succeeded(numTests));
+        Events testEvents = engineResults.testEvents();
 
-        List<Event> events = engineResults.containerEvents().stream()
-            .filter(ev -> ev.getTestDescriptor() instanceof ClassTestDescriptor && ev.getType() == EventType.FINISHED)
+        testEvents.assertStatistics(stats -> stats
+            .started(numTests)
+            .failed(expectedFailures)
+            .succeeded(numTests - expectedFailures)
+        );
+
+        List<Throwable> throwables = testEvents.stream()
+            .filter(ev -> ev.getTestDescriptor() instanceof TestMethodTestDescriptor && ev.getType() == EventType.FINISHED)
+            .map(ev -> ev.getRequiredPayload(TestExecutionResult.class))
+            .filter(result -> result.getStatus() == FAILED)
+            .<Throwable>mapMulti((result, c) -> result.getThrowable().ifPresent(c))
             .toList();
 
-        assertThat(events)
-            .hasSize(1);
+        assertThat(throwables)
+            .hasSize(expectedFailures);
 
-        Event classFinishedEvent = events.get(0);
-        TestExecutionResult executionResult = classFinishedEvent.getRequiredPayload(TestExecutionResult.class);
-        if (expectedExceptionClass == null) {
-            assertThat(executionResult.getStatus()).isEqualTo(SUCCESSFUL);
-            return null;
-        }
-        assertThat(executionResult.getStatus()).isEqualTo(FAILED);
-        Optional<Throwable> throwable = executionResult.getThrowable();
-        assertThat(throwable).isPresent();
-        assertThat(throwable.get()).isInstanceOf(expectedExceptionClass);
-
-        return expectedExceptionClass.cast(throwable.get());
+        return throwables.stream()
+            .map(throwable -> {
+                //noinspection DataFlowIssue
+                assertThat(throwable).isInstanceOf(expectedExceptionClass);
+                return expectedExceptionClass.cast(throwable);
+            })
+            .toList();
     }
 }
