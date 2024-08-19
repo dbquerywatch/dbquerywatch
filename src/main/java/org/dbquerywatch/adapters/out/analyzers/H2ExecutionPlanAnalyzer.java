@@ -31,6 +31,6 @@ public class H2ExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
         while (matcher.find()) {
             seqScans.add(new SeqScan(matcher.group(1), null));
         }
-        return new AnalysisReport(commentedPlan, seqScans);
+        return new AnalysisReport(commentedPlan, seqScans, 0);
     }
 }

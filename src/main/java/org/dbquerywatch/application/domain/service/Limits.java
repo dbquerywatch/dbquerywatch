@@ -5,4 +5,6 @@ import org.immutables.value.Value;
 @Value.Immutable
 public interface Limits {
     boolean allowSeqScans();
+
+    long maxOverallCost();
 }

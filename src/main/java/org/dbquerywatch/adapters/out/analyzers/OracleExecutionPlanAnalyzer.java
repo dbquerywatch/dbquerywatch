@@ -40,7 +40,7 @@ public class OracleExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
                 })
                 .filter(Objects::nonNull)
                 .collect(toList());
-        return new AnalysisReport(toJson(plans), seqScans);
+        return new AnalysisReport(toJson(plans), seqScans, 0);
     }
 
     private static String getStatementID() {

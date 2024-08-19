@@ -15,18 +15,22 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.StringJoiner;
 
+import static java.lang.Double.parseDouble;
+import static java.lang.Math.round;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 
 public class PostgresExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(PostgresExecutionPlanAnalyzer.class);
 
-    private static final String EXPLAIN_PLAN_QUERY = "EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) ";
+    private static final String EXPLAIN_PLAN_QUERY = "EXPLAIN (ANALYZE, COSTS, BUFFERS, FORMAT JSON) ";
     private static final List<String> NODE_TYPES = singletonList("Seq Scan");
 
     private static final JsonPath SLOW_JSON_PATH;
+    private static final JsonPath TOTAL_COSTS_JSON_PATH = JsonPath.compile("$..[?(@['Total Cost'] > 0)]");
 
     static {
         StringJoiner sj = new StringJoiner("','", "$..[?(@['Node Type'] in ['", "'])]");
@@ -63,6 +67,11 @@ public class PostgresExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer
             })
             .filter(Objects::nonNull)
             .collect(toList());
-        return new AnalysisReport(compactJson(planJson), seqScans);
+        long totalCost = document.
+            <List<Map<String, Object>>>read(TOTAL_COSTS_JSON_PATH).stream()
+            .mapToLong(p -> round(parseDouble(requireNonNull(getString(p, "Total Cost")))))
+            .max()
+            .orElse(0);
+        return new AnalysisReport(compactJson(planJson), seqScans, totalCost);
     }
 }

@@ -15,6 +15,8 @@ public interface StatementReport extends Pojo {
 
     String getExecutionPlan();
 
+    long getTotalCost();
+
     Set<String> getMethods();
 
     @Override
@@ -23,6 +25,7 @@ public interface StatementReport extends Pojo {
         result.put("DataSource", format("'%s (%s)'", getNamedDataSource().getName(), getNamedDataSource().getProductName()));
         result.put("SQL", format("\"%s\"", getSqlStatement()));
         result.put("ExecutionPlan", format("'%s'", getExecutionPlan()));
+        result.put("TotalCost", getTotalCost());
         result.put("CallerMethods", getMethods());
         return result;
     }

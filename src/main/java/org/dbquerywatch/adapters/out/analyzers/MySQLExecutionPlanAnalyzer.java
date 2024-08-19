@@ -47,7 +47,7 @@ public class MySQLExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
             })
             .filter(Objects::nonNull)
             .collect(toList());
-        return new AnalysisReport(compactJson(planJson), seqScans);
+        return new AnalysisReport(compactJson(planJson), seqScans, 0);
     }
 
     private static Map<String, String> findTableAliases(String querySql) {

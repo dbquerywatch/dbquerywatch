@@ -80,6 +80,7 @@ class DbQueryWatchExtension implements BeforeAllCallback,
             DbQueryWatch anno = mergedAnnotation.synthesize();
             return Optional.of(ImmutableLimits.builder()
                 .allowSeqScans(anno.allowSeqScans())
+                .maxOverallCost(anno.maxOverallCost())
                 .build());
         }
         return Optional.empty();
