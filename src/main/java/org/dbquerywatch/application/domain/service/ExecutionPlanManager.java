@@ -2,6 +2,7 @@ package org.dbquerywatch.application.domain.service;
 
 import net.ttddyy.dsproxy.proxy.ParameterSetOperation;
 import org.dbquerywatch.application.domain.model.ImmutablePerStatementIssuesReport;
+import org.dbquerywatch.application.domain.model.ImmutablePerTestIssuesReport;
 import org.dbquerywatch.application.domain.model.ReportElement;
 import org.dbquerywatch.application.domain.model.SeqScan;
 import org.dbquerywatch.application.domain.model.SimpleStatementReport;
@@ -17,9 +18,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 
 import static java.util.Collections.emptyList;
+import static java.util.Comparator.comparingLong;
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static java.util.stream.Collectors.toList;
 import static org.dbquerywatch.common.SqlUtils.tableNameMatch;
@@ -83,6 +86,8 @@ public class ExecutionPlanManager {
             return;
         }
         List<ReportElement> reportElements = new ArrayList<>();
+        AtomicLong overallCost = new AtomicLong(0);
+        List<StatementReport> nonFreeStatements = new ArrayList<>();
         usagesPerAnalyzer.forEach((analyzer, usagesPerSql) -> {
                 analyzer.checkConfiguration();
                 usagesPerSql.forEach((sqlStatement, usages) -> {
@@ -91,6 +96,7 @@ public class ExecutionPlanManager {
                         analyzer.getJdbcClient().getNamedDataSource(),
                         sqlStatement,
                         analysisReport.getExecutionPlan(),
+                        analysisReport.getTotalCost(),
                         usages.methods
                     );
                     List<SeqScan> seqScans = analysisReport.getSeqScans().stream()
@@ -101,7 +107,12 @@ public class ExecutionPlanManager {
                         .collect(toList());
                     LOGGER.info("Query SQL: {}", sqlStatement);
                     LOGGER.info("Execution plan: {}", analysisReport.getExecutionPlan());
+                    LOGGER.info("Total Cost: {}", analysisReport.getTotalCost());
                     LOGGER.info("Seq Scans: {}", seqScans);
+                    if (analysisReport.getTotalCost() > 0) {
+                        overallCost.addAndGet(analysisReport.getTotalCost());
+                        nonFreeStatements.add(statementReport);
+                    }
                     if (!seqScans.isEmpty() && !limits.allowSeqScans()) {
                         reportElements.add(ImmutablePerStatementIssuesReport.builder()
                             .from(statementReport)
@@ -111,6 +122,18 @@ public class ExecutionPlanManager {
                 });
             }
         );
+        if (overallCost.get() > limits.maxOverallCost()) {
+            List<StatementReport> criticalStatements = nonFreeStatements.stream()
+                .sorted(comparingLong(StatementReport::getTotalCost).reversed())
+                .limit(2)
+                .collect(toList());
+            reportElements.add(ImmutablePerTestIssuesReport.builder()
+                .title("Excessive Overall Cost")
+                .actual(overallCost.get())
+                .maximum(limits.maxOverallCost())
+                .criticalStatements(criticalStatements)
+                .build());
+        }
         if (!reportElements.isEmpty()) {
             throw new DatabasePerformanceIssuesDetectedException(reportElements);
         }

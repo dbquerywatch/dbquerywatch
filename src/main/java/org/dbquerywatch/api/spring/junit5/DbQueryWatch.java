@@ -42,4 +42,11 @@ public @interface DbQueryWatch {
      * @return true if SeqScans are allowed, false otherwise
      */
     boolean allowSeqScans() default true;
+
+    /**
+     * Returns the maximum overall cost of queries allowed for database queries.
+     *
+     * @return the maximum overall cost of queries allowed
+     */
+    long maxOverallCost() default Long.MAX_VALUE;
 }
