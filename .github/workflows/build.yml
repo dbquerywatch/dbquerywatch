@@ -33,7 +33,7 @@ jobs:
           restore-keys: ${{ runner.os }}-sonar
 
       - name: Pull containers images
-        run: docker-compose pull
+        run: docker compose pull
 
       - name: Build and test for Spring Boot 2
         uses: burrunan/gradle-cache-action@v1
