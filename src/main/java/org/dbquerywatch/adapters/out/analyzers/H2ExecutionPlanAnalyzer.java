@@ -31,6 +31,10 @@ public class H2ExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
         while (matcher.find()) {
             seqScans.add(new SeqScan(matcher.group(1), null));
         }
-        return new AnalysisReport(commentedPlan, seqScans, 0);
+        return new AnalysisReport(stripLineFeeds(commentedPlan), seqScans, 0);
+    }
+
+    private static String stripLineFeeds(String text) {
+        return text.replaceAll(" *\r?\n *", " ");
     }
 }
