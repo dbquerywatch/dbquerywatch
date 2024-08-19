@@ -194,7 +194,7 @@ org.dbquerywatch.application.domain.service.DatabasePerformanceIssuesDetectedExc
       - objectName: articles
         predicate: "((published_at >= '1970-01-01'::date) AND (published_at <= '1980-12-31'::date))"
 ## 2/2 Excessive Overall Cost
-- Actual: 10000000011
+- Actual: 11
   Maximum: 5
   CriticalStatements:
       - DataSource: 'dataSource (PostgreSQL)'
