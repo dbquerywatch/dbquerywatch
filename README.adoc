@@ -23,7 +23,7 @@ endif::[]
 :gh-repo: dbquerywatch
 :release-group: org.dbquerywatch
 :release-module: dbquerywatch
-:release-version: 1.3.2
+:release-version: 2.0.0
 :sleuth-version: 3.1.11
 
 image:https://img.shields.io/maven-central/v/{release-group}/{release-module}.svg?label=Maven%20Central[Maven Central, link=https://search.maven.org/search?q=g:{release-group}%20AND%20a:{release-module}&core=gav]
@@ -38,6 +38,8 @@ You may be thinking: _Handling slow queries is straightforward: just utilize a m
 Slow system response frustrates users [{counter:ref}], requiring the engineering team to swiftly identify and resolve the problematic query (or queries).
 
 Approximately 50% of SQL performance issues stem from improper utilization of indexes. Fortunately, this kind of problem could be detected in advance by analyzing the execution plan of all database operations executed by the application.
+
+Some DBMS like PostgreSQL, for example, can reports the estimated total cost of a query. But how you can make use of this key information to establish an upper-bound for DB operations in a particular integration test?
 
 This is where dbQueryWatch comes into play!
 
@@ -114,18 +116,23 @@ Most Spring Boot integration tests are based on MockMvc that operates in a mock 
 
 [source,java]
 ----
-import org.dbquerywatch.api.spring.junit5.CatchSlowQueries;
+import org.dbquerywatch.api.spring.junit5.DbQueryWatch;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@CatchSlowQueries  // <1>
+@DbQueryWatch(allowSeqScans = false)  // <1>
 class SomeIntegrationTest {
     @Autowired MockMvc mvc;
 
-    // ...
+    @Test
+    @DbQueryWatch(allowSeqScans = false, maxOverallCost = 10000)  // <2>
+    void an_integration_test() {
+        // ...
+    }
 }
 ----
-<1> Enables the slow query detector
+<1> Enables the detector for all test methods
+<2> Uses custom settings for an individual test method
 
 ==== Real Servlet Environment
 
@@ -135,17 +142,23 @@ dbQueryWatch automatically customize the autowired WebTestClient to include the 
 
 [source,java]
 ----
-import org.dbquerywatch.api.spring.junit5.CatchSlowQueries;
+import org.dbquerywatch.api.spring.junit5.DbQueryWatch;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @CatchSlowQueries  // <1>
+@Execution(CONCURRENT) // <2>
 class SomeIntegrationTest {
-    @Autowired WebTestClient client;
-
-    // ...
+    @Test
+    @DbQueryWatch(allowSeqScans = false, maxOverallCost = 10000)  // <3>
+    void an_integration_test(WebTestClient client) {
+        // ...
+    }
 }
 ----
-<1> Enables the slow query detector
+<1> Enables the detector for all test methods. `@CatchSlowQueries` is equivalent to `@DbQueryWatch(allowSeqScans = false)`
+<2> Parallel mode is supported when using `WebEnvironment.RANDOM_PORT` + JUnit injected WebTestClient
+<3> Uses custom settings for an individual test method
+
 
 === Understanding the issues report
 
@@ -169,20 +182,27 @@ dbQueryWatch monitors all database operations executed within the scope of a tes
 A sample report taken from the sample application test class:
 
 ....
-
-org.dbquerywatch.application.domain.service.DatabasePerformanceIssuesDetectedException: Potential slow queries were found!
-
-~~~~~ Query 1/1 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-DataSource:
-    dataSource (jdbc:postgresql://localhost:32920/test?loggerLevel=OFF)
-SQL:
-    select "public"."articles"."id", "public"."articles"."published_at", "public"."articles"."author_full_name", "public"."articles"."author_last_name", "public"."articles"."title", "public"."articles"."doi", "public"."articles"."journal_id" from "public"."articles" where ("public"."articles"."published_at" >= cast(? as date) and "public"."articles"."published_at" <= cast(? as date))
-Execution Plan:
-    [{"JIT":{"Options":{"Expressions":true,"Optimization":true,"Deforming":true,"Inlining":true},"Functions":2},"Plan":{"Total Cost":10000000011.05,"Relation Name":"articles","Parallel Aware":false,"Filter":"((published_at >= '1970-01-01'::date) AND (published_at <= '1980-12-31'::date))","Alias":"articles","Node Type":"Seq Scan","Plan Width":1116,"Startup Cost":10000000000,"Async Capable":false,"Plan Rows":1}}]
-Issues:
-    - Issue(type=FULL_ACCESS, objectName=articles, predicate=((published_at >= '1970-01-01'::date) AND (published_at <= '1980-12-31'::date)))
-Caller Methods:
-    - org.dbquerywatch.sample.adapters.db.JooqArticleRepository::query
+org.dbquerywatch.application.domain.service.DatabasePerformanceIssuesDetectedException: Found 2 database performance issues!
+## 1/2 SeqScan
+- DataSource: 'dataSource (PostgreSQL)'
+  SQL: "SELECT id, published_at, author_full_name, author_last_name, title FROM articles WHERE published_at >= ? AND published_at <= ?"
+  ExecutionPlan: '[{"JIT":{"Options":{"Expressions":true,"Optimization":true,"Deforming":true,"Inlining":true},"Functions":4,"Timing":{"Generation":0.181,"Total":19.134,"Emission":9.686,"Optimization":8.021,"Inlining":1.246}},"Planning Time":0.045,"Triggers":[],"Planning":{"Local Written Blocks":0,"Temp Written Blocks":0,"Shared Hit Blocks":0,"Local Hit Blocks":0,"Local Dirtied Blocks":0,"Temp Read Blocks":0,"Local Read Blocks":0,"Shared Read Blocks":0,"Shared Dirtied Blocks":0,"Shared Written Blocks":0},"Plan":{"Relation Name":"articles","Temp Written Blocks":0,"Local Read Blocks":0,"Plan Rows":1,"Total Cost":11.05,"Local Written Blocks":0,"Shared Hit Blocks":1,"Startup Cost":0,"Actual Total Time":18.972,"Local Hit Blocks":0,"Plan Width":960,"Local Dirtied Blocks":0,"Temp Read Blocks":0,"Shared Read Blocks":0,"Shared Dirtied Blocks":0,"Rows Removed by Filter":1,"Parallel Aware":false,"Actual Startup Time":18.967,"Filter":"((published_at >= '1970-01-01'::date) AND (published_at <= '1980-12-31'::date))","Alias":"articles","Actual Loops":1,"Node Type":"Seq Scan","Async Capable":false,"Actual Rows":3,"Shared Written Blocks":0},"Execution Time":19.182}]'
+  TotalCost: 11
+  CallerMethods:
+      - org.dbquerywatch.testapp.adapters.db.DefaultArticleRepository::query
+  SeqScans:
+      - objectName: articles
+        predicate: "((published_at >= '1970-01-01'::date) AND (published_at <= '1980-12-31'::date))"
+## 2/2 Excessive Overall Cost
+- Actual: 10000000011
+  Maximum: 5
+  CriticalStatements:
+      - DataSource: 'dataSource (PostgreSQL)'
+        SQL: "SELECT id, published_at, author_full_name, author_last_name, title FROM articles WHERE published_at >= ? AND published_at <= ?"
+        ExecutionPlan: '[{"JIT":{"Options":{"Expressions":true,"Optimization":true,"Deforming":true,"Inlining":true},"Functions":4,"Timing":{"Generation":0.181,"Total":19.134,"Emission":9.686,"Optimization":8.021,"Inlining":1.246}},"Planning Time":0.045,"Triggers":[],"Planning":{"Local Written Blocks":0,"Temp Written Blocks":0,"Shared Hit Blocks":0,"Local Hit Blocks":0,"Local Dirtied Blocks":0,"Temp Read Blocks":0,"Local Read Blocks":0,"Shared Read Blocks":0,"Shared Dirtied Blocks":0,"Shared Written Blocks":0},"Plan":{"Relation Name":"articles","Temp Written Blocks":0,"Local Read Blocks":0,"Plan Rows":1,"Total Cost":11.05,"Local Written Blocks":0,"Shared Hit Blocks":1,"Startup Cost":0,"Actual Total Time":18.972,"Local Hit Blocks":0,"Plan Width":960,"Local Dirtied Blocks":0,"Temp Read Blocks":0,"Shared Read Blocks":0,"Shared Dirtied Blocks":0,"Rows Removed by Filter":1,"Parallel Aware":false,"Actual Startup Time":18.967,"Filter":"((published_at >= '1970-01-01'::date) AND (published_at <= '1980-12-31'::date))","Alias":"articles","Actual Loops":1,"Node Type":"Seq Scan","Async Capable":false,"Actual Rows":3,"Shared Written Blocks":0},"Execution Time":19.182}]'
+        TotalCost: 11
+        CallerMethods:
+            - org.dbquerywatch.testapp.adapters.db.DefaultArticleRepository::query
 ....
 
 As indicated by the issue's description, there was a _Full Table Scan_ on table `articles` due to a missing index over column `published_at`. Simply adding this index will fix the performance issue for this operation.
