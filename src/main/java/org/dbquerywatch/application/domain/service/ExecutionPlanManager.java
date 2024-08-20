@@ -38,7 +38,7 @@ import static org.dbquerywatch.common.Strings.prefixedBy;
  *
  */
 public class ExecutionPlanManager {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ExecutionPlanManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ExecutionPlanManager.class);
 
     private static final Pattern ANALYZABLE_STATEMENTS = Pattern.compile(
         "^\\s*(delete|insert|merge|replace|select|table|update|with)\\b",
@@ -82,7 +82,7 @@ public class ExecutionPlanManager {
     public void verifyAll(String uniqueId, Limits limits) throws DatabasePerformanceIssuesDetectedException {
         Map<ExecutionPlanAnalyzer, Map<String, StatementUsage>> usagesPerAnalyzer = STATEMENTS.remove(TestMethodIdSupport.generateTestMethodId(uniqueId));
         if (usagesPerAnalyzer == null) {
-            LOGGER.warn("No query data found for {}", uniqueId);
+            LOG.warn("No query data found for {}", uniqueId);
             return;
         }
         List<ReportElement> reportElements = new ArrayList<>();
@@ -105,10 +105,10 @@ public class ExecutionPlanManager {
                                 .noneMatch(st -> tableNameMatch(st, seqScan.getObjectName()))
                         )
                         .collect(toList());
-                    LOGGER.info("Query SQL: {}", sqlStatement);
-                    LOGGER.info("Execution plan: {}", analysisReport.getExecutionPlan());
-                    LOGGER.info("Total Cost: {}", analysisReport.getTotalCost());
-                    LOGGER.info("Seq Scans: {}", seqScans);
+                    LOG.info("Query SQL: {}", sqlStatement);
+                    LOG.info("Execution plan: {}", analysisReport.getExecutionPlan());
+                    LOG.info("Total Cost: {}", analysisReport.getTotalCost());
+                    LOG.info("Seq Scans: {}", seqScans);
                     if (analysisReport.getTotalCost() > 0) {
                         overallCost.addAndGet(analysisReport.getTotalCost());
                         nonFreeStatements.add(statementReport);
