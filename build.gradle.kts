@@ -25,8 +25,8 @@ plugins {
     id("com.github.ksoichiro.console.reporter") version "0.6.3"
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
     id("net.ltgt.errorprone") version "4.0.1"
-    id("org.ajoberstar.grgit") version "5.2.2"
-    id("org.jetbrains.gradle.plugin.idea-ext") version "1.1.8"
+    id("org.ajoberstar.grgit") version "5.3.0"
+    id("org.jetbrains.gradle.plugin.idea-ext") version "1.1.9"
     id("org.sonarqube") version "5.1.0.4882"
 
     id("dependencyUpdates")
