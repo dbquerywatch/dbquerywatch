@@ -4,6 +4,7 @@ boot3 = "3.0.13"
 boot31 = "3.1.12"
 boot32 = "3.2.12"
 boot33 = "3.3.9"
+boot34 = "3.4.3"
 
 archunit = "1.4.0"
 dsproxy = "1.9"

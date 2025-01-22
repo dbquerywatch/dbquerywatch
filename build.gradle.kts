@@ -61,6 +61,7 @@ val testBootVersion = when (testBootVariant) {
     "3.1" -> versions.boot31.get()
     "3.2" -> versions.boot32.get()
     "3.3" -> versions.boot33.get()
+    "3.4" -> versions.boot34.get()
     else -> throw GradleException("Unknown Spring Boot variant: $testBootVariant")
 }
 println("Spring Boot version: $testBootVersion")
