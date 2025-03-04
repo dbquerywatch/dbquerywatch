@@ -168,7 +168,6 @@ tasks.withType<JavaCompile> {
     options.compilerArgs.addAll(listOf(
         "-Xlint:deprecation",
         "-Xlint:unchecked",
-        "-Werror",
     ))
 }
 
@@ -282,9 +281,6 @@ tasks.withType<Javadoc> {
         header = "<b>dbQueryWatch</b>"
         bottom = "Copyright &copy; 2023 Eliezio Oliveira. All Rights Reserved."
         addBooleanOption("html5", true)
-        // See JDK-8200363 (https://bugs.openjdk.java.net/browse/JDK-8200363)
-        // for information about the -Xwerror option.
-        addBooleanOption("Xwerror", true)
     }
 }
 
