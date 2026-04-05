@@ -2,7 +2,6 @@ package org.dbquerywatch.adapters.out.jdbc;
 
 import org.dbquerywatch.application.domain.model.NamedDataSource;
 import org.dbquerywatch.application.port.out.AbstractJdbcClient;
-import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.PreparedStatement;
@@ -22,7 +21,7 @@ public class SpringJdbcClient extends AbstractJdbcClient {
     }
 
     @Override
-    public List<Map<String, Object>> queryForList(String sql, @Nullable Object... args) {
+    public List<Map<String, Object>> queryForList(String sql, Object... args) {
         return jdbcTemplate.queryForList(sql, args);
     }
 

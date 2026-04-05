@@ -24,7 +24,7 @@ import static java.util.stream.Collectors.toList;
 
 public class PostgresExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer {
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(PostgresExecutionPlanAnalyzer.class);
+    private static final Logger LOG = LoggerFactory.getLogger(PostgresExecutionPlanAnalyzer.class);
 
     private static final String EXPLAIN_PLAN_QUERY = "EXPLAIN (ANALYZE, COSTS, BUFFERS, FORMAT JSON) ";
     private static final List<String> NODE_TYPES = singletonList("Seq Scan");
@@ -49,7 +49,7 @@ public class PostgresExecutionPlanAnalyzer extends AbstractExecutionPlanAnalyzer
         String state = jdbcClient.queryForString("SHOW ENABLE_SEQSCAN", emptyList())
             .orElse("");
         if (!"off".equalsIgnoreCase(state)) {
-            LOGGER.warn("ENABLE_SEQSCAN is set to '{}' but expected 'off'", state);
+            LOG.warn("ENABLE_SEQSCAN is set to '{}' but expected 'off'", state);
         }
     }
 

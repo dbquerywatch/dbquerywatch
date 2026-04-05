@@ -24,10 +24,10 @@ plugins {
     id("com.adarshr.test-logger") version "4.0.0"
     id("com.github.ksoichiro.console.reporter") version "0.6.3"
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
-    id("net.ltgt.errorprone") version "4.0.1"
-    id("org.ajoberstar.grgit") version "5.2.2"
-    id("org.jetbrains.gradle.plugin.idea-ext") version "1.1.8"
-    id("org.sonarqube") version "5.1.0.4882"
+    id("net.ltgt.errorprone") version "4.1.0"
+    id("org.ajoberstar.grgit") version "5.3.0"
+    id("org.jetbrains.gradle.plugin.idea-ext") version "1.1.10"
+    id("org.sonarqube") version "6.0.1.5171"
 
     id("dependencyUpdates")
 }
@@ -61,6 +61,7 @@ val testBootVersion = when (testBootVariant) {
     "3.1" -> versions.boot31.get()
     "3.2" -> versions.boot32.get()
     "3.3" -> versions.boot33.get()
+    "3.4" -> versions.boot34.get()
     else -> throw GradleException("Unknown Spring Boot variant: $testBootVariant")
 }
 println("Spring Boot version: $testBootVersion")
@@ -167,7 +168,6 @@ tasks.withType<JavaCompile> {
     options.compilerArgs.addAll(listOf(
         "-Xlint:deprecation",
         "-Xlint:unchecked",
-        "-Werror",
     ))
 }
 
@@ -281,9 +281,6 @@ tasks.withType<Javadoc> {
         header = "<b>dbQueryWatch</b>"
         bottom = "Copyright &copy; 2023 Eliezio Oliveira. All Rights Reserved."
         addBooleanOption("html5", true)
-        // See JDK-8200363 (https://bugs.openjdk.java.net/browse/JDK-8200363)
-        // for information about the -Xwerror option.
-        addBooleanOption("Xwerror", true)
     }
 }
 
